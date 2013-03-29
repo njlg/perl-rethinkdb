@@ -15,20 +15,20 @@ our $VERSION = '0.01';
 
 my $handle;
 
-has host => 'localhost';
-has port => 28015;
+has host       => 'localhost';
+has port       => 28015;
 has default_db => 'test';
 has 'handle';
 
 sub import {
-  my $class = shift;
+  my $class   = shift;
   my $package = caller;
   no strict;
   *{"$package\::r"} = \&r;
 }
 
 sub r {
-  return __PACKAGE__->new(handle => $handle);
+  return __PACKAGE__->new( handle => $handle );
 }
 
 sub connect {
@@ -43,7 +43,7 @@ sub connect {
     Reuse    => 1,
   ) or croak "ERROR: Could not connect to $host:$port";
 
-  $handle->send(pack 'L<', 0xaf61ba35);
+  $handle->send( pack 'L<', 0xaf61ba35 );
 
   $self->host($host);
   $self->port($port);
@@ -74,7 +74,7 @@ sub reconnect {
     Reuse    => 1,
   ) or croak "ERROR: Could not reconnect to @{[$self->host]}:@{[$self->port]}";
 
-  $handle->send(pack 'L<', 0xaf61ba35);
+  $handle->send( pack 'L<', 0xaf61ba35 );
 
   $self->handle($handle);
 
@@ -83,7 +83,7 @@ sub reconnect {
 
 sub use {
   my $self = shift;
-  my $db = shift;
+  my $db   = shift;
 
   $self->default_db($db);
 
@@ -96,7 +96,7 @@ sub db_create {
   my $name = shift;
 
   my $db = Rethinkdb::Database->new(
-    rdb => $self,
+    rdb  => $self,
     name => $name,
   );
 
@@ -109,7 +109,7 @@ sub db_drop {
   my $name = shift;
 
   my $db = Rethinkdb::Database->new(
-    rdb => $self,
+    rdb  => $self,
     name => $name,
   );
 
@@ -132,14 +132,14 @@ sub db {
   my $self = shift;
   my $name = shift;
 
-  my $db = Rethinkdb::Database->new(rdb => $self, name => $name);
+  my $db = Rethinkdb::Database->new( rdb => $self, name => $name );
   weaken $db->{rdb};
   return $db;
 }
 
 sub table_create {
-  my $self = shift;
-  my $name = shift;
+  my $self   = shift;
+  my $name   = shift;
   my @params = @_;
 
   return Rethinkdb::Table->new(
@@ -160,11 +160,9 @@ sub table_drop {
 
 sub table_list {
   my $self = shift;
-  my $name = shift;
-  my @params = @_;
 
   return Rethinkdb::Table->new(
-    db   => $self->default_db,
+    db => $self->default_db,
   )->list;
 }
 
@@ -173,7 +171,7 @@ sub table {
   my $name = shift;
 
   my $t = Rethinkdb::Table->new(
-    rdb => $self,
+    rdb  => $self,
     db   => $self->default_db,
     name => $name,
   );
@@ -219,27 +217,26 @@ sub asc {
 }
 
 sub expr {
-  my $self = shift;
+  my $self  = shift;
   my $value = shift;
 
-  if( ! ref $value ) {
-    return Rethinkdb::Util::to_term($value)
+  if ( !ref $value ) {
+    return Rethinkdb::Util::to_term($value);
   }
 
-  if( ref $value eq 'ARRAY' ) {
+  if ( ref $value eq 'ARRAY' ) {
     return $self->_expr_array($value);
   }
 
   my $obj = [];
   foreach ( keys %{$value} ) {
     push @{$obj}, {
-      var => $_,
-      term => $self->expr($value->{$_})
-    };
+      var  => $_,
+      term => $self->expr( $value->{$_} ) };
   }
 
   my $expr = {
-    type => Term::TermType::OBJECT,
+    type   => Term::TermType::OBJECT,
     object => $obj
   };
 
@@ -247,7 +244,7 @@ sub expr {
 }
 
 sub _expr_array {
-  my $self = shift;
+  my $self   = shift;
   my $values = shift;
 
   my $list = [];
@@ -256,7 +253,7 @@ sub _expr_array {
   }
 
   my $expr = {
-    type => Term::TermType::ARRAY,
+    type  => Term::TermType::ARRAY,
     array => $list
   };
 
@@ -268,21 +265,13 @@ sub false { Rethinkdb::_False->new; }
 
 package Rethinkdb::_True;
 
-use overload '""'   => sub {'true'},
-  'bool' => sub {1},
-  'eq' => sub { $_[1] eq 'true' ? 1 : 0; },
-  '==' => sub { $_[1] == 1 ? 1 : 0; },
-  fallback => 1;
+use overload '""' => sub { 'true' }, 'bool' => sub { 1 }, 'eq' => sub { $_[1] eq 'true' ? 1 : 0; }, '==' => sub { $_[1] == 1 ? 1 : 0; }, fallback => 1;
 
 sub new { bless {}, $_[0] }
 
 package Rethinkdb::_False;
 
-use overload '""'   => sub {'false'},
-  'bool' => sub {0},
-  'eq' => sub { $_[1] eq 'false' ? 1 : 0; },
-  '==' => sub { $_[1] == 0 ? 1 : 0; },
-  fallback => 1;
+use overload '""' => sub { 'false' }, 'bool' => sub { 0 }, 'eq' => sub { $_[1] eq 'false' ? 1 : 0; }, '==' => sub { $_[1] == 0 ? 1 : 0; }, fallback => 1;
 
 sub new { bless {}, $_[0] }
 

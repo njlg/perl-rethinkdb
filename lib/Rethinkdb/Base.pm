@@ -17,10 +17,10 @@ sub import {
   no strict 'refs';
 
   # Base
-  if ($flag eq '-base') { $flag = $class }
+  if ( $flag eq '-base' ) { $flag = $class }
 
   # Strict
-  elsif ($flag eq '-strict') { $flag = undef }
+  elsif ( $flag eq '-strict' ) { $flag = undef }
 
   # Module
   else {
@@ -33,7 +33,7 @@ sub import {
   if ($flag) {
     my $caller = caller;
     push @{"${caller}::ISA"}, $flag;
-    *{"${caller}::has"} = sub { attr($caller, @_) };
+    *{"${caller}::has"} = sub { attr( $caller, @_ ) };
   }
 
   # Mojo modules are strict!
@@ -45,28 +45,28 @@ sub import {
 
 sub new {
   my $class = shift;
-  bless @_ ? @_ > 1 ? {@_} : {%{$_[0]}} : {}, ref $class || $class;
+  bless @_ ? @_ > 1 ? {@_} : { %{ $_[0] } } : {}, ref $class || $class;
 }
 
 # Performance is very important for something as often used as accessors,
 # so we optimize them by compiling our own code, don't be scared, we have
 # tests for every single case
 sub attr {
-  my ($class, $attrs, $default) = @_;
-  return unless ($class = ref $class || $class) && $attrs;
+  my ( $class, $attrs, $default ) = @_;
+  return unless ( $class = ref $class || $class ) && $attrs;
 
   Carp::croak 'Default has to be a code reference or constant value'
     if ref $default && ref $default ne 'CODE';
 
   # Compile attributes
-  for my $attr (@{ref $attrs eq 'ARRAY' ? $attrs : [$attrs]}) {
+  for my $attr ( @{ ref $attrs eq 'ARRAY' ? $attrs : [$attrs] } ) {
     Carp::croak qq{Attribute "$attr" invalid} unless $attr =~ /^[a-zA-Z_]\w*$/;
 
     # Header (check arguments)
     my $code = "package $class;\nsub $attr {\n  if (\@_ == 1) {\n";
 
     # No default value (return value)
-    unless (defined $default) { $code .= "    return \$_[0]{'$attr'};" }
+    unless ( defined $default ) { $code .= "    return \$_[0]{'$attr'};" }
 
     # Default value
     else {
@@ -93,7 +93,7 @@ sub attr {
 }
 
 sub tap {
-  my ($self, $cb) = @_;
+  my ( $self, $cb ) = @_;
   $_->$cb for $self;
   return $self;
 }

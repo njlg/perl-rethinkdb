@@ -11,16 +11,14 @@ sub create {
   my $name = shift || $self->name;
 
   my $q = Rethinkdb::Query->new(
-    rdb => $self->rdb,
-    query => Query->encode({
-      type => Query::QueryType::META,
-      token => Rethinkdb::Util::token(),
-      meta_query => {
-        type => MetaQuery::MetaQueryType::CREATE_DB,
-        db_name => $name
-      }
-    })
-  );
+    rdb   => $self->rdb,
+    query => Query->encode( {
+        type       => Query::QueryType::META,
+        token      => Rethinkdb::Util::token(),
+        meta_query => {
+          type    => MetaQuery::MetaQueryType::CREATE_DB,
+          db_name => $name
+        } } ) );
 
   weaken $q->{rdb};
   return $q;
@@ -31,16 +29,14 @@ sub drop {
   my $name = shift || $self->name;
 
   my $q = Rethinkdb::Query->new(
-    rdb => $self->rdb,
-    query => Query->encode({
-      type => Query::QueryType::META,
-      token => Rethinkdb::Util::token(),
-      meta_query => {
-        type => MetaQuery::MetaQueryType::DROP_DB,
-        db_name => $name
-      }
-    })
-  );
+    rdb   => $self->rdb,
+    query => Query->encode( {
+        type       => Query::QueryType::META,
+        token      => Rethinkdb::Util::token(),
+        meta_query => {
+          type    => MetaQuery::MetaQueryType::DROP_DB,
+          db_name => $name
+        } } ) );
 
   weaken $q->{rdb};
   return $q;
@@ -51,23 +47,19 @@ sub list {
 
   # token needs to be random? unique per connection
   my $q = Rethinkdb::Query->new(
-    rdb => $self->rdb,
-    query => Query->encode({
-      type => Query::QueryType::META,
-      token => Rethinkdb::Util::token(),
-      meta_query => {
-        type => MetaQuery::MetaQueryType::LIST_DBS
-      }
-    })
-  );
+    rdb   => $self->rdb,
+    query => Query->encode( {
+        type       => Query::QueryType::META,
+        token      => Rethinkdb::Util::token(),
+        meta_query => { type => MetaQuery::MetaQueryType::LIST_DBS } } ) );
 
   weaken $q->{rdb};
   return $q;
 }
 
 sub table_create {
-  my $self = shift;
-  my $name = shift;
+  my $self   = shift;
+  my $name   = shift;
   my @params = @_;
 
   my $t = Rethinkdb::Table->new(
@@ -99,7 +91,7 @@ sub table_list {
 
   my $t = Rethinkdb::Table->new(
     rdb => $self->rdb,
-    db => $self->name,
+    db  => $self->name,
   );
 
   weaken $t->{rdb};
