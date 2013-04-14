@@ -6,7 +6,7 @@ use Scalar::Util 'weaken';
 use IO::Socket::INET;
 
 use Rethinkdb::Database;
-use Rethinkdb::Query;
+# use Rethinkdb::Query;
 use Rethinkdb::Table;
 use Rethinkdb::Protocol;
 use Rethinkdb::Util;
@@ -43,7 +43,7 @@ sub connect {
     Reuse    => 1,
   ) or croak "ERROR: Could not connect to $host:$port";
 
-  $handle->send( pack 'L<', 0xaf61ba35 );
+  $handle->send( pack 'L<', VersionDummy::Version::V0_1 );
 
   $self->host($host);
   $self->port($port);
@@ -72,12 +72,11 @@ sub reconnect {
     PeerHost => $self->host,
     PeerPort => $self->port,
     Reuse    => 1,
-  ) or croak "ERROR: Could not reconnect to @{[$self->host]}:@{[$self->port]}";
+  ) or croak "ERROR: Could not reconnect to $self->host:$self->port";
 
-  $handle->send( pack 'L<', 0xaf61ba35 );
+  $handle->send( pack 'L<', VersionDummy::Version::V0_1 );
 
   $self->handle($handle);
-
   return $self;
 }
 
@@ -86,7 +85,6 @@ sub use {
   my $db   = shift;
 
   $self->default_db($db);
-
   return $self;
 }
 
@@ -132,7 +130,11 @@ sub db {
   my $self = shift;
   my $name = shift;
 
-  my $db = Rethinkdb::Database->new( rdb => $self, name => $name );
+  my $db = Rethinkdb::Database->new(
+    rdb => $self,
+    name => $name
+  );
+
   weaken $db->{rdb};
   return $db;
 }
@@ -177,7 +179,6 @@ sub table {
   );
 
   weaken $t->{rdb};
-
   return $t;
 }
 
@@ -236,7 +237,7 @@ sub expr {
   }
 
   my $expr = {
-    type   => Term::TermType::OBJECT,
+    type   => 'Term::TermType::OBJECT',
     object => $obj
   };
 
@@ -253,7 +254,7 @@ sub _expr_array {
   }
 
   my $expr = {
-    type  => Term::TermType::ARRAY,
+    type  => 'Term::TermType::ARRAY',
     array => $list
   };
 
@@ -265,13 +266,21 @@ sub false { Rethinkdb::_False->new; }
 
 package Rethinkdb::_True;
 
-use overload '""' => sub { 'true' }, 'bool' => sub { 1 }, 'eq' => sub { $_[1] eq 'true' ? 1 : 0; }, '==' => sub { $_[1] == 1 ? 1 : 0; }, fallback => 1;
+use overload '""' => sub { 'true' },
+  'bool' => sub { 1 },
+  'eq' => sub { $_[1] eq 'true' ? 1 : 0; },
+  '==' => sub { $_[1] == 1 ? 1 : 0; },
+  fallback => 1;
 
 sub new { bless {}, $_[0] }
 
 package Rethinkdb::_False;
 
-use overload '""' => sub { 'false' }, 'bool' => sub { 0 }, 'eq' => sub { $_[1] eq 'false' ? 1 : 0; }, '==' => sub { $_[1] == 0 ? 1 : 0; }, fallback => 1;
+use overload '""' => sub { 'false' },
+  'bool' => sub { 0 },
+  'eq' => sub { $_[1] eq 'false' ? 1 : 0; },
+  '==' => sub { $_[1] == 0 ? 1 : 0; },
+  fallback => 1;
 
 sub new { bless {}, $_[0] }
 

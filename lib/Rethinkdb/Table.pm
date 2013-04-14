@@ -20,17 +20,29 @@ sub create {
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
     query => Query->encode( {
-        type       => Query::QueryType::META,
+        type       => Query::QueryType::START,
         token      => Rethinkdb::Util::token(),
-        meta_query => {
-          type => MetaQuery::MetaQueryType::CREATE_TABLE,
+        query => {
+          type => Term::TermType::TABLE_CREATE,
           # db_name => $self->db,
-          create_table => {
-            table_ref => {
-              db_name    => $self->db,
-              table_name => $self->name,
+          args => [
+            {
+              type  => Term::TermType::DB,
+              args => {
+                type => Term::TermType::DATUM,
+                datum => Rethinkdb::Util->to_datum($self->db),
+              }
             },
-            %{$params} } } } ) );
+            {
+              type  => Term::TermType::DATUM,
+              datum => Rethinkdb::Util->to_datum($self->name),
+            }
+            # %{$params}
+          ]
+        }
+      }
+    )
+  );
 
   weaken $q->{rdb};
   return $q;
@@ -42,15 +54,28 @@ sub drop {
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
     query => Query->encode( {
-        type       => Query::QueryType::META,
-        token      => Rethinkdb::Util::token(),
-        meta_query => {
-          type => MetaQuery::MetaQueryType::DROP_TABLE,
-          # db_name => $self->db,
-          drop_table => {
-            db_name    => $self->db,
-            table_name => $self->name,
-          } } } ) );
+        type  => Query::QueryType::START,
+        token => Rethinkdb::Util::token(),
+        query => {
+          type => Term::TermType::TABLE_DROP,
+          args => [
+            {
+              type  => Term::TermType::DB,
+              args => {
+                type => Term::TermType::DATUM,
+                datum => Rethinkdb::Util->to_datum($self->db),
+              }
+            },
+            {
+              type  => Term::TermType::DATUM,
+              datum => Rethinkdb::Util->to_datum($self->name),
+            }
+          ]
+        }
+      }
+    )
+  );
+
   weaken $q->{rdb};
   return $q;
 }
@@ -61,12 +86,23 @@ sub list {
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
     query => Query->encode( {
-        type       => Query::QueryType::META,
+        type       => Query::QueryType::START,
         token      => Rethinkdb::Util::token(),
-        meta_query => {
-          type    => MetaQuery::MetaQueryType::LIST_TABLES,
-          db_name => $self->db,
-        } } ) );
+        query => {
+          type    => Term::TermType::TABLE_LIST,
+          args => [
+            {
+              type  => Term::TermType::DB,
+              args => {
+                type => Term::TermType::DATUM,
+                datum => Rethinkdb::Util->to_datum($self->db),
+              }
+            }
+          ]
+        }
+      }
+    )
+  );
 
   weaken $q->{rdb};
   return $q;
@@ -83,10 +119,10 @@ sub insert {
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
     query => Query->encode( {
-        type        => Query::QueryType::WRITE,
+        type        => Query::QueryType::START,
         token       => Rethinkdb::Util::token(),
         write_query => {
-          type => WriteQuery::WriteQueryType::INSERT,
+          type => 'WriteQuery::WriteQueryType::INSERT',
           # db_name => $self->db,
           insert => {
             table_ref => {
@@ -95,7 +131,12 @@ sub insert {
             },
             terms     => $values,
             overwrite => $overwrite,
-          } } } ) );
+          }
+        }
+      }
+    )
+  );
+
   weaken $q->{rdb};
   return $q;
 }
@@ -107,10 +148,10 @@ sub delete {
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
     query => Query->encode( {
-        type        => Query::QueryType::WRITE,
+        type        => Query::QueryType::START,
         token       => Rethinkdb::Util::token(),
         write_query => {
-          type => WriteQuery::WriteQueryType::DELETE,
+          type => 'WriteQuery::WriteQueryType::DELETE',
           # db_name => $self->db,
           delete => {
             view => {
@@ -121,7 +162,12 @@ sub delete {
                   table_name => $self->name,
                 } }
             },
-          } } } ) );
+          }
+        }
+      }
+    )
+  );
+
   weaken $q->{rdb};
   return $q;
 }
@@ -132,16 +178,22 @@ sub run {
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
     query => Query->encode( {
-        type       => Query::QueryType::READ,
+        type       => Query::QueryType::START,
         token      => Rethinkdb::Util::token(),
-        read_query => {
+        query => {
           term => {
             type  => Term::TermType::TABLE,
             table => {
               table_ref => {
                 db_name    => $self->db,
                 table_name => $self->name,
-              } } } } } ) );
+              }
+            }
+          }
+        }
+      }
+    )
+  );
 
   weaken $q->{rdb};
   return $q->run;
@@ -176,14 +228,14 @@ sub between {
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
     query => Query->encode( {
-        type       => Query::QueryType::READ,
+        type       => Query::QueryType::START,
         token      => Rethinkdb::Util::token(),
-        read_query => {
+        query => {
           term => {
-            type => Term::TermType::CALL,
+            type => Term::TermType::FUNCALL,
             call => {
               builtin => {
-                type  => Builtin::BuiltinType::RANGE,
+                type  => 'Term::TermType::RANGE',
                 range => {
                   attrname   => $attr,
                   lowerbound => Rethinkdb::Util::to_term($lower),
@@ -196,7 +248,15 @@ sub between {
                   table_ref => {
                     db_name    => $self->db,
                     table_name => $self->name,
-                  } } } } } } } ) );
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    )
+  );
 
   weaken $q->{rdb};
   return $q;
@@ -224,26 +284,29 @@ sub filter {
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
     query => Query->encode( {
-        type       => Query::QueryType::READ,
+        type       => Query::QueryType::START,
         token      => Rethinkdb::Util::token(),
-        read_query => {
+        query => {
           term => {
-            type => Term::TermType::CALL,
+            type => Term::TermType::FUNCALL,
             call => {
               builtin => {
-                type   => Builtin::BuiltinType::FILTER,
+                type   => Term::TermType::FILTER,
                 filter => {
                   predicate => {
                     arg  => 'row',
                     body => {
-                      type => Term::TermType::CALL,
+                      type => Term::TermType::FUNCALL,
                       call => {
                         builtin => {
-                          type => Builtin::BuiltinType::ALL,
+                          type => Term::TermType::ALL,
                         },
                         # args could be an array
                         args => $filters
-                      } } } }
+                      }
+                    }
+                  }
+                }
               },
               args => {
                 type  => Term::TermType::TABLE,
@@ -252,7 +315,15 @@ sub filter {
                     db_name    => $self->db,
                     table_name => $self->name,
                     # use_outdated => 0
-                  } } } } } } } ) );
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    )
+  );
 
   weaken $q->{rdb};
   return $q;
@@ -267,17 +338,17 @@ sub _get_filters {
   foreach ( keys %{$filters} ) {
     $val = Rethinkdb::Util::to_term( $filters->{$_} );
     push @{$retval}, {
-      type => Term::TermType::CALL,
+      type => Term::TermType::FUNCALL,
       call => {
         builtin => {
-          type       => Builtin::BuiltinType::COMPARE,
-          comparison => Builtin::Comparison::EQ
+          type       => 'Term::TermType::COMPARE',
+          comparison => Term::TermType::EQ
         },
         args => [ {
-            type => Term::TermType::CALL,
+            type => Term::TermType::FUNCALL,
             call => {
               builtin => {
-                type => Builtin::BuiltinType::GETATTR,
+                type => Term::TermType::GETATTR,
                 attr => $_
               },
               args => {
@@ -285,7 +356,9 @@ sub _get_filters {
               } }
           },
           $val
-        ] } };
+        ]
+      }
+    };
   }
 
   return $retval;
@@ -301,22 +374,29 @@ sub inner_join {
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
     query => Query->encode( {
-        type       => Query::QueryType::READ,
+        type       => Query::QueryType::START,
         token      => Rethinkdb::Util::token(),
-        read_query => {
+        query => {
           term => {
-            type => Term::TermType::CALL,
+            type => Term::TermType::FUNCALL,
             call => {
               builtin => {
-                type   => Builtin::BuiltinType::FILTER,
+                type   => Term::TermType::FILTER,
                 filter => {
                   predicate => {
                     arg  => '',
                     body => {
                       type => '',
-                    } } }
+                    }
+                  }
+                }
               },
-            } } } } ) );
+            }
+          }
+        }
+      }
+    )
+  );
 
   weaken $q->{rdb};
   return $q;
@@ -371,14 +451,14 @@ sub order_by {
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
     query => Query->encode( {
-        type       => Query::QueryType::READ,
+        type       => Query::QueryType::START,
         token      => Rethinkdb::Util::token(),
-        read_query => {
+        query => {
           term => {
-            type => Term::TermType::CALL,
+            type => Term::TermType::FUNCALL,
             call => {
               builtin => {
-                type     => Builtin::BuiltinType::ORDERBY,
+                type     => Term::TermType::ORDERBY,
                 order_by => $order_by
               },
               args => {
@@ -387,7 +467,15 @@ sub order_by {
                   table_ref => {
                     db_name    => $self->db,
                     table_name => $self->name,
-                  } } } } } } } ) );
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    )
+  );
 
   weaken $q->{rdb};
   return $q;
@@ -402,25 +490,28 @@ sub skip {
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
     query => Query->encode( {
-        type       => Query::QueryType::READ,
+        type       => Query::QueryType::START,
         token      => Rethinkdb::Util::token(),
-        read_query => {
+        query => {
           term => {
-            type => Term::TermType::CALL,
+            type => Term::TermType::FUNCALL,
             call => {
               builtin => {
-                type => Builtin::BuiltinType::SLICE,
+                type => Term::TermType::SLICE,
               },
-              args => {
-                type   => Term::TermType::NUMBER,
-                number => $number
-              }
+              args => Rethinkdb::Util->to_datum($number)
             },
             table => {
               table_ref => {
                 db_name    => $self->db,
                 table_name => $self->name,
-              } } } } } ) );
+              }
+            }
+          }
+        }
+      }
+    )
+  );
 
   weaken $q->{rdb};
   return $q;
@@ -436,25 +527,28 @@ sub limit {
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
     query => Query->encode( {
-        type       => Query::QueryType::READ,
+        type       => Query::QueryType::START,
         token      => Rethinkdb::Util::token(),
-        read_query => {
+        query => {
           term => {
-            type => Term::TermType::CALL,
+            type => Term::TermType::FUNCALL,
             call => {
               builtin => {
-                type => Builtin::BuiltinType::SLICE,
+                type => Term::TermType::SLICE,
               },
-              args => {
-                type   => Term::TermType::NUMBER,
-                number => $number
-              }
+              args => Rethinkdb::Util->to_datum($number)
             },
             table => {
               table_ref => {
                 db_name    => $self->db,
                 table_name => $self->name,
-              } } } } } ) );
+              }
+            }
+          }
+        }
+      }
+    )
+  );
 
   weaken $q->{rdb};
   return $q;
@@ -469,29 +563,31 @@ sub slice {
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
     query => Query->encode( {
-        type       => Query::QueryType::READ,
+        type       => Query::QueryType::START,
         token      => Rethinkdb::Util::token(),
-        read_query => {
+        query => {
           term => {
-            type => Term::TermType::CALL,
+            type => Term::TermType::FUNCALL,
             call => {
               builtin => {
-                type => Builtin::BuiltinType::SLICE,
+                type => Term::TermType::SLICE,
               },
-              args => [ {
-                  type   => Term::TermType::NUMBER,
-                  number => $lower
-                }, {
-                  type   => Term::TermType::NUMBER,
-                  number => $upper
-                },
+              args => [
+                Rethinkdb::Util->to_datum($lower),
+                Rethinkdb::Util->to_datum($upper),
               ]
             },
             table => {
               table_ref => {
                 db_name    => $self->db,
                 table_name => $self->name,
-              } } } } } ) );
+              }
+            }
+          }
+        }
+      }
+    )
+  );
 
   weaken $q->{rdb};
   return $q;
@@ -504,25 +600,28 @@ sub nth {
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
     query => Query->encode( {
-        type       => Query::QueryType::READ,
+        type       => Query::QueryType::START,
         token      => Rethinkdb::Util::token(),
-        read_query => {
+        query => {
           term => {
-            type => Term::TermType::CALL,
+            type => Term::TermType::FUNCALL,
             call => {
               builtin => {
-                type => Builtin::BuiltinType::NTH,
+                type => Term::TermType::NTH,
               },
-              args => {
-                type   => Term::TermType::NUMBER,
-                number => $number
-              },
+              args => Rethinkdb::Util->to_datum($number)
             },
             table => {
               table_ref => {
                 db_name    => $self->db,
                 table_name => $self->name,
-              } } } } } ) );
+              }
+            }
+          }
+        }
+      }
+    )
+  );
 
   weaken $q->{rdb};
   return $q;
@@ -544,14 +643,14 @@ sub pluck {
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
     query => Query->encode( {
-        type       => Query::QueryType::READ,
+        type       => Query::QueryType::START,
         token      => Rethinkdb::Util::token(),
-        read_query => {
+        query => {
           term => {
-            type => Term::TermType::CALL,
+            type => Term::TermType::FUNCALL,
             call => {
               builtin => {
-                type  => Builtin::BuiltinType::PICKATTRS,
+                type  => Term::TermType::PLUCK,
                 attrs => $args
               },
             },
@@ -559,7 +658,13 @@ sub pluck {
               table_ref => {
                 db_name    => $self->db,
                 table_name => $self->name,
-              } } } } } ) );
+              }
+            }
+          }
+        }
+      }
+    )
+  );
 
   weaken $q->{rdb};
   return $q;
@@ -580,14 +685,14 @@ sub without {
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
     query => Query->encode( {
-        type       => Query::QueryType::READ,
+        type       => Query::QueryType::START,
         token      => Rethinkdb::Util::token(),
-        read_query => {
+        query => {
           term => {
-            type => Term::TermType::CALL,
+            type => Term::TermType::FUNCALL,
             call => {
               builtin => {
-                type  => Builtin::BuiltinType::WITHOUT,
+                type  => Term::TermType::WITHOUT,
                 attrs => $args
               },
             },
@@ -595,7 +700,13 @@ sub without {
               table_ref => {
                 db_name    => $self->db,
                 table_name => $self->name,
-              } } } } } ) );
+              }
+            }
+          }
+        }
+      }
+    )
+  );
 
   weaken $q->{rdb};
   return $q;
@@ -607,21 +718,27 @@ sub count {
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
     query => Query->encode( {
-        type       => Query::QueryType::READ,
+        type       => Query::QueryType::START,
         token      => Rethinkdb::Util::token(),
-        read_query => {
+        query => {
           term => {
-            type => Term::TermType::CALL,
+            type => Term::TermType::FUNCALL,
             call => {
               builtin => {
-                type => Builtin::BuiltinType::LENGTH,
+                type => Term::TermType::COUNT,
               },
             },
             table => {
               table_ref => {
                 db_name    => $self->db,
                 table_name => $self->name,
-              } } } } } ) );
+              }
+            }
+          }
+        }
+      }
+    )
+  );
 
   weaken $q->{rdb};
   return $q;
@@ -633,21 +750,27 @@ sub distinct {
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
     query => Query->encode( {
-        type       => Query::QueryType::READ,
+        type       => Query::QueryType::START,
         token      => Rethinkdb::Util::token(),
-        read_query => {
+        query => {
           term => {
-            type => Term::TermType::CALL,
+            type => Term::TermType::FUNCALL,
             call => {
               builtin => {
-                type => Builtin::BuiltinType::DISTINCT,
+                type => Term::TermType::DISTINCT,
               },
             },
             table => {
               table_ref => {
                 db_name    => $self->db,
                 table_name => $self->name,
-              } } } } } ) );
+              }
+            }
+          }
+        }
+      }
+    )
+  );
 
   weaken $q->{rdb};
   return $q;

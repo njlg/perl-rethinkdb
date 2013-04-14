@@ -13,12 +13,18 @@ sub create {
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
     query => Query->encode( {
-        type       => Query::QueryType::META,
-        token      => Rethinkdb::Util::token(),
-        meta_query => {
-          type    => MetaQuery::MetaQueryType::CREATE_DB,
-          db_name => $name
-        } } ) );
+        type  => Query::QueryType::START,
+        token => Rethinkdb::Util::token(),
+        query => {
+          type  => Term::TermType::DB_CREATE,
+          args => {
+            type => Term::TermType::DATUM,
+            datum => Rethinkdb::Util->to_datum($name)
+          }
+        }
+      }
+    )
+  );
 
   weaken $q->{rdb};
   return $q;
@@ -31,12 +37,18 @@ sub drop {
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
     query => Query->encode( {
-        type       => Query::QueryType::META,
-        token      => Rethinkdb::Util::token(),
-        meta_query => {
-          type    => MetaQuery::MetaQueryType::DROP_DB,
-          db_name => $name
-        } } ) );
+        type  => Query::QueryType::START,
+        token => Rethinkdb::Util::token(),
+        query => {
+          type  => Term::TermType::DB_DROP,
+          args => {
+            type => Term::TermType::DATUM,
+            datum => Rethinkdb::Util->to_datum($name)
+          }
+        }
+      }
+    )
+  );
 
   weaken $q->{rdb};
   return $q;
@@ -49,9 +61,14 @@ sub list {
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
     query => Query->encode( {
-        type       => Query::QueryType::META,
-        token      => Rethinkdb::Util::token(),
-        meta_query => { type => MetaQuery::MetaQueryType::LIST_DBS } } ) );
+        type  => Query::QueryType::START,
+        token => Rethinkdb::Util::token(),
+        query => {
+          type => Term::TermType::DB_LIST
+        }
+      }
+    )
+  );
 
   weaken $q->{rdb};
   return $q;

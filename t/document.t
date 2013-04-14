@@ -2,6 +2,9 @@ use Test::More;
 
 use Rethinkdb;
 
+use Data::Dumper;
+use feature ':5.10';
+
 # setup
 r->connect;
 r->db('test')->drop->run;
