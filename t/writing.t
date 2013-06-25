@@ -2,6 +2,9 @@ use Test::More;
 
 use Rethinkdb;
 
+use Data::Dumper;
+use feature ':5.10';
+
 # setup
 r->connect;
 r->db('test')->drop->run;
@@ -10,15 +13,18 @@ r->db('test')->table('marvel')->create(primary_key => 'superhero')->run;
 
 my $res = r->table('marvel')->run;
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
-is $res->status_code, 3, 'Correct status code';
+is $res->type, 3, 'Correct status code';
 is $res->response, undef, 'Correctly shows table empty';
+
 
 # insert one entry
 isa_ok r->table('marvel')->insert({}), 'Rethinkdb::Query', 'Correct class';
 $res = r->table('marvel')->insert({ superhero => 'Iron Man', superpower => 'Arc Reactor' })->run;
+say Dumper $res;
+exit;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
-is $res->status_code, 1, 'Correct status code';
+is $res->type, 1, 'Correct status code';
 isa_ok $res->response, 'ARRAY', 'Response has correct type';
 isa_ok $res->response->[0], 'HASH', 'Response has correct type';
 is $res->response->[0]->{errors}, 0, 'No errors';
@@ -39,7 +45,7 @@ $res = r->table('marvel')->insert([
 ])->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
-is $res->status_code, 1, 'Correct status code';
+is $res->type, 1, 'Correct status code';
 isa_ok $res->response, 'ARRAY', 'Response has correct type';
 isa_ok $res->response->[0], 'HASH', 'Response has correct type';
 is $res->response->[0]->{errors}, 0, 'No errors';

@@ -40,11 +40,28 @@ sub run {
 
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
-    query => Query->encode( {
-        type       => Query::QueryType::START,
-        token      => Rethinkdb::Util::token(),
-        read_query => {
-          term => $term
+    query => Query->encode(
+      {
+        type  => Query::QueryType::START,
+        token => Rethinkdb::Util::token(),
+        query => {
+          type => Term::TermType::TABLE,
+          args => [
+            {
+              type  => Term::TermType::DB,
+              args => {
+                type => Term::TermType::DATUM,
+                datum => Rethinkdb::Util->to_datum($self->db),
+              }
+            },
+            {
+              type  => Term::TermType::DATUM,
+              datum => Rethinkdb::Util->to_datum($self->table),
+            }
+          ],
+          optargs => [
+            Rethinkdb::Util->to_datum({ use_outdated => r->false }),
+          ],
         }
       }
     )
@@ -70,7 +87,8 @@ sub pick {
 
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
-    query => Query->encode( {
+    query => Query->encode(
+      {
         type       => Query::QueryType::START,
         token      => Rethinkdb::Util::token(),
         read_query => {

@@ -6,7 +6,7 @@ use Scalar::Util 'weaken';
 use IO::Socket::INET;
 
 use Rethinkdb::Database;
-# use Rethinkdb::Query;
+use Rethinkdb::Query;
 use Rethinkdb::Table;
 use Rethinkdb::Protocol;
 use Rethinkdb::Util;
@@ -221,45 +221,9 @@ sub expr {
   my $self  = shift;
   my $value = shift;
 
-  if ( !ref $value ) {
-    return Rethinkdb::Util::to_term($value);
-  }
-
-  if ( ref $value eq 'ARRAY' ) {
-    return $self->_expr_array($value);
-  }
-
-  my $obj = [];
-  foreach ( keys %{$value} ) {
-    push @{$obj}, {
-      var  => $_,
-      term => $self->expr( $value->{$_} ) };
-  }
-
-  my $expr = {
-    type   => 'Term::TermType::OBJECT',
-    object => $obj
-  };
-
-  return $expr;
+  return Rethinkdb::Util->to_datum($value);
 }
 
-sub _expr_array {
-  my $self   = shift;
-  my $values = shift;
-
-  my $list = [];
-  foreach ( @{$values} ) {
-    push @{$list}, $self->expr($_);
-  }
-
-  my $expr = {
-    type  => 'Term::TermType::ARRAY',
-    array => $list
-  };
-
-  return $expr;
-}
 
 sub true  { Rethinkdb::_True->new; }
 sub false { Rethinkdb::_False->new; }

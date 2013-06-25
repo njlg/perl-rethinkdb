@@ -18,8 +18,10 @@ sub init {
   };
 
   my $response = [];
-  foreach( @{$data->response} ) {
-    push @{$response}, Rethinkdb::Util->from_datum($_);
+  if( $data->response ) {
+    foreach( @{$data->response} ) {
+      push @{$response}, Rethinkdb::Util->from_datum($_);
+    }
   }
 
   $args->{response} = $response;
@@ -41,7 +43,6 @@ sub init {
     $args->{backtrace} = $data->backtrace;
   }
 
-  say Dumper $args;
   return $class->new($args);
 }
 

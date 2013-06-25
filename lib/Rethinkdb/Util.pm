@@ -5,6 +5,9 @@ use Carp 'croak';
 use Sys::Hostname 'hostname';
 use Digest::MD5 qw{md5 md5_hex};
 
+use Data::Dumper;
+use feature ':5.10';
+
 my $MACHINE = join '', ( md5_hex(hostname) =~ /\d/g );
 my $COUNTER = 0;
 
@@ -26,6 +29,8 @@ sub to_datum {
   my $self = shift;
   my $value = shift;
   my $hash  = {};
+
+  say Dumper $value;
 
   if ( ref $value eq 'ARRAY' ) {
     return $self->_to_datum_array($value);
@@ -65,7 +70,10 @@ sub _to_datum_object {
   foreach ( keys %{$values} ) {
     push @{$object}, {
       var  => $_,
-      term => Rethinkdb::Util::to_datum( $values->{$_} )
+      val => {
+        type => Term::TermType::DATUM,
+        datum => Rethinkdb::Util->to_datum( $values->{$_} )
+      }
     };
   }
 
@@ -83,7 +91,7 @@ sub _to_datum_array {
 
   my $list = [];
   foreach ( @{$values} ) {
-    push @{$list}, Rethinkdb::Util::to_datum($_);
+    push @{$list}, Rethinkdb::Util->to_datum($_);
   }
 
   my $expr = {
@@ -97,8 +105,6 @@ sub _to_datum_array {
 sub from_datum {
   my $self = shift;
   my $datum = shift;
-
-  # say Dumper $datum;
 
   if( $datum->type == Datum::DatumType::R_NULL ) {
     return $datum->r_null;

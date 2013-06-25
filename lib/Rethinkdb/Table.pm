@@ -8,6 +8,9 @@ use Rethinkdb::Document;
 use Rethinkdb::Protocol;
 use Rethinkdb::Util;
 
+use Data::Dumper;
+use feature ':5.10';
+
 has [qw{rdb db name}];
 
 # primary_key=None,
@@ -115,27 +118,46 @@ sub insert {
 
   my $values = $self->rdb->expr($data);
 
+  say Dumper $values;
+
   # r.table('marvel').insert({ 'superhero': 'Iron Man', 'superpower': 'Arc Reactor' }).run
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
     query => Query->encode( {
-        type        => Query::QueryType::START,
-        token       => Rethinkdb::Util::token(),
-        write_query => {
-          type => 'WriteQuery::WriteQueryType::INSERT',
-          # db_name => $self->db,
-          insert => {
-            table_ref => {
-              db_name    => $self->db,
-              table_name => $self->name,
-            },
-            terms     => $values,
-            overwrite => $overwrite,
+      type  => Query::QueryType::START,
+      token => Rethinkdb::Util::token(),
+      query => {
+        type => Term::TermType::INSERT,
+        args => [
+          # {
+          #   type  => Term::TermType::DB,
+          #   args => {
+          #     type => Term::TermType::DATUM,
+          #     datum => Rethinkdb::Util->to_datum($self->db),
+          #   }
+          # },
+          {
+            type  => Term::TermType::TABLE,
+            args => {
+              type => Term::TermType::DATUM,
+              datum => Rethinkdb::Util->to_datum($self->name),
+            }
+          },
+          {
+            type => Term::TermType::MAKE_OBJ,
+            optargs => $values->{r_object}
           }
-        }
-      }
-    )
+        ]
+      },
+      # global_optargs => [
+      #   Rethinkdb::Util->to_datum({ db => $self->db })->{r_object},
+      # ],
+    })
   );
+
+# $Data::Dumper::Indent = 1;
+# $Data::Dumper::Sortkeys = 1;
+  say Dumper(Query->decode($q->query));
 
   weaken $q->{rdb};
   return $q;
@@ -148,24 +170,23 @@ sub delete {
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
     query => Query->encode( {
-        type        => Query::QueryType::START,
-        token       => Rethinkdb::Util::token(),
-        write_query => {
-          type => 'WriteQuery::WriteQueryType::DELETE',
-          # db_name => $self->db,
-          delete => {
-            view => {
-              type  => Term::TermType::TABLE,
-              table => {
-                table_ref => {
-                  db_name    => $self->db,
-                  table_name => $self->name,
-                } }
-            },
-          }
+      type  => Query::QueryType::START,
+      token => Rethinkdb::Util::token(),
+      query => {
+        type => Term::TermType::DELETE,
+        # db_name => $self->db,
+        delete => {
+          view => {
+            type  => Term::TermType::TABLE,
+            table => {
+              table_ref => {
+                db_name    => $self->db,
+                table_name => $self->name,
+              } }
+          },
         }
       }
-    )
+    })
   );
 
   weaken $q->{rdb};
@@ -177,22 +198,29 @@ sub run {
 
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
-    query => Query->encode( {
-        type       => Query::QueryType::START,
-        token      => Rethinkdb::Util::token(),
-        query => {
-          term => {
-            type  => Term::TermType::TABLE,
-            table => {
-              table_ref => {
-                db_name    => $self->db,
-                table_name => $self->name,
-              }
+    query => Query->encode({
+      type   => Query::QueryType::START,
+      token  => Rethinkdb::Util::token(),
+      query => {
+        type => Term::TermType::TABLE,
+        args => [
+          {
+            type  => Term::TermType::DB,
+            args => {
+              type => Term::TermType::DATUM,
+              datum => Rethinkdb::Util->to_datum($self->db),
             }
+          },
+          {
+            type  => Term::TermType::DATUM,
+            datum => Rethinkdb::Util->to_datum($self->name),
           }
-        }
+        ],
+        # optargs => [
+        #   Rethinkdb::Util->to_datum({ use_outdated => Rethinkdb->false }),
+        # ],
       }
-    )
+    })
   );
 
   weaken $q->{rdb};
