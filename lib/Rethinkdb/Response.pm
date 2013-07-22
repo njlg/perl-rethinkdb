@@ -1,9 +1,6 @@
 package Rethinkdb::Response;
 use Rethinkdb::Base -base;
 
-use Data::Dumper;
-use feature ':5.10';
-
 use JSON::PP;
 use Rethinkdb::Protocol;
 
@@ -22,6 +19,11 @@ sub init {
     foreach( @{$data->response} ) {
       push @{$response}, Rethinkdb::Util->from_datum($_);
     }
+  }
+
+  # not sure about this:
+  if( $data->type == 1 ) {
+    $response = $response->[0];
   }
 
   $args->{response} = $response;

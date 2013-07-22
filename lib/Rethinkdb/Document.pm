@@ -30,7 +30,7 @@ sub run {
       type => Term::TermType::FUNCALL,
       call => {
         builtin => {
-          type => Term::TermType::GETATTR,
+          type => Term::TermType::GET_FIELD,
           attr => $self->getattr
         },
         args => $get_by_key
@@ -230,7 +230,7 @@ sub append {
                   type => Term::TermType::FUNCALL,
                   call => {
                     builtin => {
-                      type => Term::TermType::GETATTR,
+                      type => Term::TermType::GET_FIELD,
                       attr => $self->getattr,
                     },
                     args => {

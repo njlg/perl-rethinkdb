@@ -25,7 +25,7 @@ r->table('loadouts')->insert({kit => 'alienInvasionKit', equipment => ['alienHel
 # replace one document
 my $res = r->table('marvel')->get('Iron Man', 'superhero')->replace({ superhero => 'Iron Man', age => 30 })->run;
 isa_ok $res, 'Rethinkdb::Response';
-is $res->status_code, 1, 'Correct status code';
+is $res->type, 1, 'Correct status code';
 isa_ok $res->response, 'ARRAY', 'Correct response type';
 is $res->response->[0]->{errors}, 0, 'Correct number of errors';
 is $res->response->[0]->{inserted}, 0, 'Correct number of inserts';
@@ -35,28 +35,28 @@ is $res->response->[0]->{modified}, 1, 'Correct number of updates';
 # merge to documents
 $res = r->table('marvel')->get('Iron Man', 'superhero')->merge(r->table('loadouts')->get('alienInvasionKit', 'kit'))->run;
 isa_ok $res, 'Rethinkdb::Response';
-is $res->status_code, 1, 'Correct status code';
+is $res->type, 1, 'Correct status code';
 isa_ok $res->response, 'ARRAY', 'Correct response type';
 is_deeply [keys %{$res->response->[0]}], ['superhero', 'kit', 'equipment', 'age'], 'Correct merged document attribute';
 
 # check for an attribute (that doesn't exist)
 $res = r->table('marvel')->get('Iron Man', 'superhero')->contains('active_status')->run;
 isa_ok $res, 'Rethinkdb::Response';
-is $res->status_code, 1, 'Correct status code';
+is $res->type, 1, 'Correct status code';
 isa_ok $res->response, 'ARRAY', 'Correct response type';
 is $res->response->[0], 0, 'Correct response';
 
 # check for an attribute (that does exist)
 $res = r->table('marvel')->get('Iron Man', 'superhero')->contains('age')->run;
 isa_ok $res, 'Rethinkdb::Response';
-is $res->status_code, 1, 'Correct status code';
+is $res->type, 1, 'Correct status code';
 isa_ok $res->response, 'ARRAY', 'Correct response type';
 is $res->response->[0], 1, 'Correct response';
 
 # get one attribute value
 $res = r->table('marvel')->get('Iron Man', 'superhero')->attr('age')->run;
 isa_ok $res, 'Rethinkdb::Response';
-is $res->status_code, 1, 'Correct status code';
+is $res->type, 1, 'Correct status code';
 isa_ok $res->response, 'ARRAY', 'Correct response type';
 is $res->response->[0], 30, 'Correct response';
 
@@ -77,7 +77,7 @@ $res = r->table('marvel')->get('Iron Man', 'superhero')->attr('equipment')->appe
 
 # pick the attributes from the document
 $res = r->table('marvel')->get('Iron Man', 'superhero')->pick('reactorState', 'reactorPower')->run;
-is $res->status_code, 1, 'Correct status code';
+is $res->type, 1, 'Correct status code';
 is_deeply $res->response, [{
   reactorState => 'medium',
   reactorPower => 4500,
@@ -85,7 +85,7 @@ is_deeply $res->response, [{
 
 # pick all but some attributes from the document
 $res = r->table('marvel')->get('Iron Man', 'superhero')->unpick('personalVictoriesList', 'equipment')->run;
-is $res->status_code, 1, 'Correct status code';
+is $res->type, 1, 'Correct status code';
 is_deeply $res->response, [{
   reactorState => 'medium',
   reactorPower => 4500,
@@ -95,7 +95,7 @@ is_deeply $res->response, [{
 
 # delete one document
 $res = r->table('marvel')->get('Iron Man', 'superhero')->delete->run;
-is $res->status_code, 1, 'Correct status code';
+is $res->type, 1, 'Correct status code';
 is_deeply $res->response, [{
   deleted => 1,
   }], 'Correct response';

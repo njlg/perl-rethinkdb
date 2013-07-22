@@ -8,17 +8,21 @@ use Rethinkdb::Document;
 use Rethinkdb::Protocol;
 use Rethinkdb::Util;
 
-use Data::Dumper;
-use feature ':5.10';
-
 has [qw{rdb db name}];
 
-# primary_key=None,
-# primary_datacenter=None,
-# cache_size
+# primary_key = None
+# datacenter = None
+# durability = hard|soft
+# cache_size = '1024MB'
 sub create {
   my $self = shift;
   my $params = ref $_[0] ? $_[0] : {@_};
+
+  my $args = {};
+  if( $params ) {
+    my $values = Rethinkdb::Util->to_datum($params);
+    $args->{optargs} = $values->{r_object};
+  }
 
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
@@ -40,8 +44,8 @@ sub create {
               type  => Term::TermType::DATUM,
               datum => Rethinkdb::Util->to_datum($self->name),
             }
-            # %{$params}
-          ]
+          ],
+          %{$args}
         }
       }
     )
@@ -118,7 +122,37 @@ sub insert {
 
   my $values = $self->rdb->expr($data);
 
-  say Dumper $values;
+  my $args = {};
+  if( $values->{r_object} ) {
+    $args = {
+      type => Term::TermType::MAKE_OBJ,
+      optargs => $values->{r_object}
+    };
+  }
+  elsif( $values->{r_array} ) {
+    foreach( @{$values->{r_array}} ) {
+      push @{$args->{args}}, {
+        type => Term::TermType::MAKE_OBJ,
+        optargs => $_->{r_object}
+      };
+    }
+
+    $args->{type} = Term::TermType::MAKE_ARRAY;
+  }
+  # elsif( $values->{r_array} ) {
+  #   $args = {
+  #     type => Term::TermType::MAKE_ARRAY,
+  #     optargs => $values->{r_array}
+  #   };
+  # }
+
+# use feature ':5.10';
+# use Data::Dumper;
+# say 'INSERT ------------';
+# say Dumper $data;
+# say Dumper $values;
+# say Dumper $args;
+# say '-------------------';
 
   # r.table('marvel').insert({ 'superhero': 'Iron Man', 'superpower': 'Arc Reactor' }).run
   my $q = Rethinkdb::Query->new(
@@ -143,10 +177,7 @@ sub insert {
               datum => Rethinkdb::Util->to_datum($self->name),
             }
           },
-          {
-            type => Term::TermType::MAKE_OBJ,
-            optargs => $values->{r_object}
-          }
+          $args
         ]
       },
       # global_optargs => [
@@ -154,10 +185,6 @@ sub insert {
       # ],
     })
   );
-
-# $Data::Dumper::Indent = 1;
-# $Data::Dumper::Sortkeys = 1;
-  say Dumper(Query->decode($q->query));
 
   weaken $q->{rdb};
   return $q;
@@ -376,7 +403,7 @@ sub _get_filters {
             type => Term::TermType::FUNCALL,
             call => {
               builtin => {
-                type => Term::TermType::GETATTR,
+                type => Term::TermType::GET_FIELD,
                 attr => $_
               },
               args => {

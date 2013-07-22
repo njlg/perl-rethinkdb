@@ -11,6 +11,11 @@ has [qw{rdb query}];
 sub run {
   my $self = shift;
 
+use feature ':5.10';
+use Data::Dumper;
+$Data::Dumper::Indent = 1;
+say Dumper(Query->decode($self->query));
+
   my $length = pack 'L<', length $self->query;
 
   # send message
