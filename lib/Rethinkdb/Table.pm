@@ -116,9 +116,9 @@ sub list {
 }
 
 sub insert {
-  my $self      = shift;
-  my $data      = shift;
-  my $overwrite = shift;
+  my $self   = shift;
+  my $data   = shift;
+  my $params = shift;
 
   my $values = $self->rdb->expr($data);
 
@@ -146,13 +146,16 @@ sub insert {
   #   };
   # }
 
-# use feature ':5.10';
-# use Data::Dumper;
-# say 'INSERT ------------';
-# say Dumper $data;
-# say Dumper $values;
-# say Dumper $args;
-# say '-------------------';
+  my $optargs = {};
+  if( $params ) {
+    $values = $self->rdb->expr($params);
+    if( $values->{r_object} ) {
+      $optargs->{optargs} = $values->{r_object};
+    }
+    elsif( $values->{r_array} ) {
+       $optargs->{optargs} = $values->{r_array};
+    }
+  }
 
   # r.table('marvel').insert({ 'superhero': 'Iron Man', 'superpower': 'Arc Reactor' }).run
   my $q = Rethinkdb::Query->new(
@@ -178,7 +181,8 @@ sub insert {
             }
           },
           $args
-        ]
+        ],
+        %{$optargs}
       },
       # global_optargs => [
       #   Rethinkdb::Util->to_datum({ db => $self->db })->{r_object},
@@ -193,25 +197,29 @@ sub insert {
 sub delete {
   my $self = shift;
 
-  # r.table('marvel').insert({ 'superhero': 'Iron Man', 'superpower': 'Arc Reactor' }).run
+  # r.table('marvel').delete().run
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
-    query => Query->encode( {
+    query => Query->encode({
       type  => Query::QueryType::START,
       token => Rethinkdb::Util::token(),
       query => {
-        type => Term::TermType::DELETE,
-        # db_name => $self->db,
-        delete => {
-          view => {
+        type   => Term::TermType::DELETE,
+        args => [
+          {
             type  => Term::TermType::TABLE,
-            table => {
-              table_ref => {
-                db_name    => $self->db,
-                table_name => $self->name,
-              } }
-          },
-        }
+            args => [
+              # {
+              #   type => Term::TermType::DATUM,
+              #   datum => Rethinkdb::Util->to_datum($self->db),
+              # },
+              {
+                type  => Term::TermType::DATUM,
+                datum => Rethinkdb::Util->to_datum($self->name),
+              },
+            ]
+          }
+        ]
       }
     })
   );

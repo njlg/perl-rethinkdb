@@ -24,16 +24,19 @@ r->table('loadouts')->insert({kit => 'alienInvasionKit', equipment => ['alienHel
 
 # replace one document
 my $res = r->table('marvel')->get('Iron Man', 'superhero')->replace({ superhero => 'Iron Man', age => 30 })->run;
+
 isa_ok $res, 'Rethinkdb::Response';
 is $res->type, 1, 'Correct status code';
-isa_ok $res->response, 'ARRAY', 'Correct response type';
-is $res->response->[0]->{errors}, 0, 'Correct number of errors';
-is $res->response->[0]->{inserted}, 0, 'Correct number of inserts';
-is $res->response->[0]->{deleted}, 0, 'Correct number of deletes';
-is $res->response->[0]->{modified}, 1, 'Correct number of updates';
+is $res->response->{replaced}, 1, 'Correct number of updates';
 
 # merge to documents
 $res = r->table('marvel')->get('Iron Man', 'superhero')->merge(r->table('loadouts')->get('alienInvasionKit', 'kit'))->run;
+
+use feature ':5.10';
+use Data::Dumper;
+say Dumper $res;
+exit;
+
 isa_ok $res, 'Rethinkdb::Response';
 is $res->type, 1, 'Correct status code';
 isa_ok $res->response, 'ARRAY', 'Correct response type';

@@ -74,26 +74,23 @@ $res = r->table('marvel')->insert(
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 is $res->response->{errors}, 0, 'Correct number of errors';
-is $res->response->{inserted}, 1, 'Correct number of inserts';
-
-use feature ':5.10';
-use Data::Dumper;
-say Dumper $res;
+is $res->response->{inserted}, 0, 'Correct number of inserts';
+is $res->response->{replaced}, 1, 'Correct number replaced';
 
 # forcing an insert should work with "true" value too
-$res = r->table('marvel')->insert({ superhero => 'Iron Man', superpower => 'Arc Reactor' }, r->true)->run;
+$res = r->table('marvel')->insert(
+  { superhero => 'Iron Man', superpower => 'Arc Reactor' },
+  { upsert => r->true }
+)->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
-is $res->response->{errors}, 0, 'Correct number of errors';
-is $res->response->{inserted}, 1, 'Correct number of inserts';
+is $res->response->{replaced}, 1, 'Correct number replaced';
 
 # Update
 $res = r->table('marvel')->get('Iron Man', 'superhero')->update({ age => 30 })->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
-is $res->response->{errors}, 0, 'Correct number of errors';
-is $res->response->{updated}, 1, 'Correct number of updates';
-is $res->response->{skipped}, 0, 'Correct number of skipped updates';
+is $res->response->{replaced}, 1, 'Correct number of updates';
 
 # TODO:
 # $res = r->table('marvel')->update({ age => r->row('age')->add(1) })->run;
@@ -102,11 +99,7 @@ is $res->response->{skipped}, 0, 'Correct number of skipped updates';
 $res = r->table('marvel')->get('Iron Man', 'superhero')->replace({ superhero => 'Iron Man', age => 30 })->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
-is $res->response->{errors}, 0, 'Correct number of errors';
-is $res->response->{inserted}, 0, 'Correct number of inserted documents';
-is $res->response->{deleted}, 0, 'Correct number of deleted documents';
-is $res->response->{modified}, 1, 'Correct number of modified documents';
-
+is $res->response->{replaced}, 1, 'Correct number of modified documents';
 
 # Delete one document
 $res = r->table('marvel')->get('Iron Man', 'superhero')->delete->run;

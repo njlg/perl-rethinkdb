@@ -40,31 +40,35 @@ sub run {
 
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
-    query => Query->encode(
-      {
-        type  => Query::QueryType::START,
-        token => Rethinkdb::Util::token(),
-        query => {
-          type => Term::TermType::TABLE,
-          args => [
-            {
-              type  => Term::TermType::DB,
-              args => {
-                type => Term::TermType::DATUM,
-                datum => Rethinkdb::Util->to_datum($self->db),
-              }
-            },
-            {
-              type  => Term::TermType::DATUM,
-              datum => Rethinkdb::Util->to_datum($self->table),
-            }
-          ],
-          optargs => [
-            Rethinkdb::Util->to_datum({ use_outdated => r->false }),
-          ],
-        }
+    query => Query->encode({
+      type  => Query::QueryType::START,
+      token => Rethinkdb::Util::token(),
+      query => {
+        type => Term::TermType::GET,
+        args => [
+          {
+            type  => Term::TermType::TABLE,
+            args => [
+              # {
+              #   type => Term::TermType::DATUM,
+              #   datum => Rethinkdb::Util->to_datum($self->db),
+              # },
+              {
+                type  => Term::TermType::DATUM,
+                datum => Rethinkdb::Util->to_datum($self->table),
+              },
+            ]
+          },
+          {
+            type  => Term::TermType::DATUM,
+            datum => Rethinkdb::Util->to_datum($self->value),
+          }
+        ],
+        # optargs => [
+        #   Rethinkdb::Util->to_datum({ use_outdated => r->false }),
+        # ],
       }
-    )
+    })
   );
 
   weaken $q->{rdb};
@@ -308,27 +312,41 @@ sub update {
 
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
-    query => Query->encode( {
-        type        => Query::QueryType::START,
-        token       => Rethinkdb::Util::token(),
-        query => {
-          type         => Term::TermType::UPDATE,
-          atomic       => 1,
-          point_update => {
-            table_ref => {
-              db_name    => $self->db,
-              table_name => $self->table,
-            },
-            attrname => $self->key,
-            key      => Rethinkdb::Util::to_term( $self->value ),
-            mapping  => {
-              arg  => 'row',
-              body => $term,
-            }
+    query => Query->encode({
+      type  => Query::QueryType::START,
+      token => Rethinkdb::Util::token(),
+      query => {
+        type   => Term::TermType::UPDATE,
+        args => [
+          {
+            type  => Term::TermType::GET,
+            args => [
+              {
+                type  => Term::TermType::TABLE,
+                args => [
+                  # {
+                  #   type => Term::TermType::DATUM,
+                  #   datum => Rethinkdb::Util->to_datum($self->db),
+                  # },
+                  {
+                    type  => Term::TermType::DATUM,
+                    datum => Rethinkdb::Util->to_datum($self->table),
+                  },
+                ]
+              },
+              {
+                type  => Term::TermType::DATUM,
+                datum => Rethinkdb::Util->to_datum($self->value),
+              }
+            ]
+          },
+          {
+            type    => Term::TermType::MAKE_OBJ,
+            optargs => $term->{r_object}
           }
-        }
+        ],
       }
-    )
+    })
   );
 
   weaken $q->{rdb};
@@ -343,27 +361,41 @@ sub replace {
 
   my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
-    query => Query->encode( {
-        type        => Query::QueryType::START,
-        token       => Rethinkdb::Util::token(),
-        write_query => {
-          type         => Term::TermType::REPLACE,
-          atomic       => 1,
-          point_mutate => {
-            table_ref => {
-              db_name    => $self->db,
-              table_name => $self->table,
-            },
-            attrname => $self->key,
-            key      => Rethinkdb::Util::to_term( $self->value ),
-            mapping  => {
-              arg  => 'row',
-              body => $term,
-            }
+    query => Query->encode({
+      type  => Query::QueryType::START,
+      token => Rethinkdb::Util::token(),
+      query => {
+        type   => Term::TermType::REPLACE,
+        args => [
+          {
+            type  => Term::TermType::GET,
+            args => [
+              {
+                type  => Term::TermType::TABLE,
+                args => [
+                  # {
+                  #   type => Term::TermType::DATUM,
+                  #   datum => Rethinkdb::Util->to_datum($self->db),
+                  # },
+                  {
+                    type  => Term::TermType::DATUM,
+                    datum => Rethinkdb::Util->to_datum($self->table),
+                  },
+                ]
+              },
+              {
+                type  => Term::TermType::DATUM,
+                datum => Rethinkdb::Util->to_datum($self->value),
+              }
+            ]
+          },
+          {
+            type    => Term::TermType::MAKE_OBJ,
+            optargs => $term->{r_object}
           }
-        }
+        ],
       }
-    )
+    })
   );
 
   weaken $q->{rdb};
@@ -372,25 +404,39 @@ sub replace {
 
 sub delete {
   my $self = shift;
-  my $q    = Rethinkdb::Query->new(
+  my $q = Rethinkdb::Query->new(
     rdb   => $self->rdb,
-    query => Query->encode( {
-        type        => Query::QueryType::START,
-        token       => Rethinkdb::Util::token(),
-        write_query => {
-          type         => Term::TermType::DELETE,
-          atomic       => 1,
-          point_delete => {
-            table_ref => {
-              db_name    => $self->db,
-              table_name => $self->table,
-            },
-            attrname => $self->key,
-            key      => Rethinkdb::Util::to_term( $self->value )
+    query => Query->encode({
+      type  => Query::QueryType::START,
+      token => Rethinkdb::Util::token(),
+      query => {
+        type   => Term::TermType::DELETE,
+        args => [
+          {
+            type  => Term::TermType::GET,
+            args => [
+              {
+                type  => Term::TermType::TABLE,
+                args => [
+                  # {
+                  #   type => Term::TermType::DATUM,
+                  #   datum => Rethinkdb::Util->to_datum($self->db),
+                  # },
+                  {
+                    type  => Term::TermType::DATUM,
+                    datum => Rethinkdb::Util->to_datum($self->table),
+                  },
+                ]
+              },
+              {
+                type  => Term::TermType::DATUM,
+                datum => Rethinkdb::Util->to_datum($self->value),
+              }
+            ]
           }
-        }
+        ]
       }
-    )
+    })
   );
 
   weaken $q->{rdb};
