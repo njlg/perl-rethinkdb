@@ -3,7 +3,7 @@ use Test::More;
 use Rethinkdb;
 
 # setup
-r->connect;
+r->connect->repl;
 r->db('test')->drop->run;
 r->db('test')->create->run;
 
@@ -14,6 +14,12 @@ r->db('test')->create->run;
 # db->table_create(table_name[, primary_key=None, primary_datacenter=None, cache_size=None])
 isa_ok r->db('test')->table_create('dcuniverse'), 'Rethinkdb::Query', 'Correct class';
 my $res = r->db('test')->table_create('dcuniverse')->run;
+
+use feature ':5.10';
+use Data::Dumper;
+say Dumper $res;
+exit;
+
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 is $res->type, 1, 'Correct status code';
 

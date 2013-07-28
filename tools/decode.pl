@@ -8,7 +8,7 @@ use warnings;
 # use Carp::Always;
 use Data::Dumper;
 $Data::Dumper::Indent = 1;
-$Data::Dumper::Sortkeys = 1;
+# $Data::Dumper::Sortkeys = 1;
 
 use lib qw'../google-protocolbuffers-perl/lib lib';
 use Rethinkdb::Protocol;

@@ -16,14 +16,20 @@ sub token {
 }
 
 sub to_term {
+  my $self  = shift;
   my $value = shift;
-  my $hash  = {};
 
-  return $hash;
+  my $datum  = $self->to_datum($value);
+  my $term = {
+    type  => Term::TermType::DATUM,
+    datum => $datum
+  };
+
+  return $term;
 }
 
 sub to_datum {
-  my $self = shift;
+  my $self  = shift;
   my $value = shift;
   my $hash  = {};
 

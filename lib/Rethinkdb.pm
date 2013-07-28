@@ -18,6 +18,8 @@ my $handle;
 has host       => 'localhost';
 has port       => 28015;
 has default_db => 'test';
+has auth_key   => '';
+has timeout    => 20;
 has 'handle';
 
 sub import {
@@ -32,18 +34,30 @@ sub r {
 }
 
 sub connect {
-  my $self = shift;
-  my $host = shift || 'localhost';
-  my $port = shift || 28015;
-  my $db   = shift || 'test';
+  my $self     = shift;
+  my $host     = shift || 'localhost';
+  my $port     = shift || 28015;
+  my $db       = shift || 'test';
+  my $auth_key = shift || '';
+  my $timeout  = shift || 20;
 
   $handle = IO::Socket::INET->new(
     PeerHost => $host,
     PeerPort => $port,
     Reuse    => 1,
+    Timeout  => $timeout,
   ) or croak "ERROR: Could not connect to $host:$port";
 
-  $handle->send( pack 'L<', VersionDummy::Version::V0_1 );
+  $handle->send( pack 'L<', VersionDummy::Version::V0_2 );
+  $handle->send( (pack 'L<', length $auth_key) . $auth_key );
+
+  my $response;
+  my $char = '';
+  do {
+    $handle->recv($char, 1);
+    $response .= $char;
+  }
+  while( $char ne "\0" );
 
   $self->host($host);
   $self->port($port);
@@ -53,7 +67,9 @@ sub connect {
     handle     => $handle,
     host       => $host,
     port       => $port,
-    default_db => $db
+    default_db => $db,
+    auth_key   => $auth_key,
+    timeout    => $timeout,
   );
 }
 
@@ -74,7 +90,8 @@ sub reconnect {
     Reuse    => 1,
   ) or croak "ERROR: Could not reconnect to $self->host:$self->port";
 
-  $handle->send( pack 'L<', VersionDummy::Version::V0_1 );
+  $handle->send( pack 'L<', VersionDummy::Version::V0_2 );
+  $handle->send( (pack 'L<', length $self->auth_key) . $self->auth_key );
 
   $self->handle($handle);
   return $self;

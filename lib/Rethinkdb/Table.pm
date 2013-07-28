@@ -68,15 +68,9 @@ sub drop {
           args => [
             {
               type  => Term::TermType::DB,
-              args => {
-                type => Term::TermType::DATUM,
-                datum => Rethinkdb::Util->to_datum($self->db),
-              }
+              args => Rethinkdb::Util->to_term($self->db),
             },
-            {
-              type  => Term::TermType::DATUM,
-              datum => Rethinkdb::Util->to_datum($self->name),
-            }
+            Rethinkdb::Util->to_term($self->name),
           ]
         }
       }
@@ -100,11 +94,8 @@ sub list {
           args => [
             {
               type  => Term::TermType::DB,
-              args => {
-                type => Term::TermType::DATUM,
-                datum => Rethinkdb::Util->to_datum($self->db),
-              }
-            }
+              args => Rethinkdb::Util->to_term($self->db),
+             }
           ]
         }
       }
@@ -262,24 +253,67 @@ sub run {
   return $q->run;
 }
 
-# get a document
+# get a document by primary key
 # TODO: key can be other things besides string
 sub get {
   my $self = shift;
-  my ( $key, $attr ) = @_;
-
-  $attr ||= 'id';
+  my ( $key ) = @_;
 
   my $d = Rethinkdb::Document->new(
     rdb   => $self->rdb,
     db    => $self->db,
     table => $self->name,
-    key   => $attr,
     value => $key,
   );
 
   weaken $d->{rdb};
   return $d;
+}
+
+# Get all documents where the given value matches the value of the requested index
+sub get_all {
+  my $self = shift;
+
+  # extract values
+  my $values = [@_];
+  my $params = {};
+  if( ref $values->[0] eq 'ARRAY' ) {
+    ($values, $params) = @{$values};
+  }
+
+  if( ref $values->[$#{$values}] eq 'HASH' ) {
+    $params = pop @{$values};
+  }
+
+use feature ':5.10';
+use Data::Dumper;
+  say Dumper(Rethinkdb::Util->to_term($values));
+
+  my $index = $params->{index} || 'id';
+
+  my $q = Rethinkdb::Query->new(
+    rdb   => $self->rdb,
+    query => Query->encode({
+      type  => Query::QueryType::START,
+      token => Rethinkdb::Util::token(),
+      query => {
+        type => Term::TermType::GET_ALL,
+        args => [
+          {
+            type  => Term::TermType::TABLE,
+            args => [
+              Rethinkdb::Util->to_term($self->name),
+            ]
+          },
+          Rethinkdb::Util->to_term($values),
+        ]
+      }
+    })
+  );
+
+  weaken $q->{rdb};
+  return $q;
+
 }
 
 sub between {
@@ -324,6 +358,7 @@ sub between {
   weaken $q->{rdb};
   return $q;
 }
+
 
 # predicate = JSON, expr, or sub
 # TODO: fix predicate for expr or sub
