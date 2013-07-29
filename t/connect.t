@@ -9,57 +9,61 @@ isa_ok $r, 'Rethinkdb';
 $r = r;
 isa_ok $r, 'Rethinkdb';
 
-$r = r->connect;
-isa_ok $r, 'Rethinkdb';
+my $conn = r->connect;
+isa_ok $conn, 'Rethinkdb::IO';
 
 # connect default values
-is $r->host, 'localhost';
-is $r->port, 28015;
-is $r->default_db, 'test';
+is $conn->host, 'localhost';
+is $conn->port, 28015;
+is $conn->default_db, 'test';
+is $conn->auth_key, '';
+is $conn->timeout, 20;
 
 # other values for connect
 TODO: {
-	todo_skip 'Need to make testable', 9;
+  todo_skip 'Need to make testable', 9;
 
-	$r = r->connect('wiggle');
-	isnt $r->host, 'localhost';
-	is $r->port, 28015;
-	is $r->default_db, 'test';
+  $r = r->connect('wiggle');
+  isnt $r->host, 'localhost';
+  is $r->port, 28015;
+  is $r->default_db, 'test';
 
-	$r = r->connect('wiggle', 48015);
-	isnt $r->host, 'localhost';
-	isnt $r->port, 28015;
-	is $r->default_db, 'test';
+  $r = r->connect('wiggle', 48015);
+  isnt $r->host, 'localhost';
+  isnt $r->port, 28015;
+  is $r->default_db, 'test';
 
-	$r = r->connect('wiggle', 48015, 'best');
-	isnt $r->host, 'localhost';
-	isnt $r->port, 28015;
-	isnt $r->default_db, 'test';
+  $r = r->connect('wiggle', 48015, 'best');
+  isnt $r->host, 'localhost';
+  isnt $r->port, 28015;
+  isnt $r->default_db, 'test';
 }
 
 # internal stuff
 r->connect;
-isa_ok r->handle, 'IO::Socket::INET';
+is r->io, undef;
+
+r->connect->repl;
+isa_ok r->io, 'Rethinkdb::IO';
 
 # close connection
-isa_ok r->close, 'Rethinkdb';
-isa_ok r->handle, 'IO::Socket::INET';
-is r->handle->peerport, undef;
-is r->handle->peerhost, undef;
+$conn = r->connect;
+isa_ok $conn->close, 'Rethinkdb::IO';
+isa_ok $conn->handle, 'IO::Socket::INET';
+is $conn->handle->peerport, undef;
+is $conn->handle->peerhost, undef;
 
 # reconnect
-isa_ok r->reconnect, 'Rethinkdb';
-isa_ok r->handle, 'IO::Socket::INET';
-is r->handle->peerport, 28015;
-is r->handle->peerhost, '127.0.0.1';
+isa_ok $conn->reconnect, 'Rethinkdb::IO';
+isa_ok $conn->handle, 'IO::Socket::INET';
+is $conn->handle->peerport, 28015;
+is $conn->handle->peerhost, '127.0.0.1';
 
 # switch default databases
-$r = r->use('test2');
-isa_ok $r, 'Rethinkdb';
-is $r->default_db, 'test2';
+$conn->use('test2');
+is $conn->default_db, 'test2';
 
-$r = r->use('wiggle-waggle');
-isa_ok $r, 'Rethinkdb';
-is $r->default_db, 'wiggle-waggle';
+$conn->use('wiggle-waggle');
+is $conn->default_db, 'wiggle-waggle';
 
 done_testing();

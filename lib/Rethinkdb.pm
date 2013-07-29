@@ -1,36 +1,46 @@
 package Rethinkdb;
 use Rethinkdb::Base -base;
 
+use feature ':5.10';
+use Data::Dumper;
+
 use Carp 'croak';
 use Scalar::Util 'weaken';
-use IO::Socket::INET;
 
+use Rethinkdb::IO;
 use Rethinkdb::Database;
 use Rethinkdb::Query;
 use Rethinkdb::Table;
 use Rethinkdb::Protocol;
 use Rethinkdb::Util;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
-my $handle;
-
-has host       => 'localhost';
-has port       => 28015;
-has default_db => 'test';
-has auth_key   => '';
-has timeout    => 20;
-has 'handle';
+# this is set only when connect->repl()
+has 'io';
 
 sub import {
   my $class   = shift;
   my $package = caller;
+
   no strict;
   *{"$package\::r"} = \&r;
 }
 
 sub r {
-  return __PACKAGE__->new( handle => $handle );
+  my $package = caller;
+  my $self;
+
+  if( $package::_rdb_io ) {
+    $self = __PACKAGE__->new(
+      io => $package::_rdb_io
+    );
+  }
+  else {
+    $self = __PACKAGE__->new;
+  }
+
+  return $self;
 }
 
 sub connect {
@@ -41,70 +51,18 @@ sub connect {
   my $auth_key = shift || '';
   my $timeout  = shift || 20;
 
-  $handle = IO::Socket::INET->new(
-    PeerHost => $host,
-    PeerPort => $port,
-    Reuse    => 1,
-    Timeout  => $timeout,
-  ) or croak "ERROR: Could not connect to $host:$port";
-
-  $handle->send( pack 'L<', VersionDummy::Version::V0_2 );
-  $handle->send( (pack 'L<', length $auth_key) . $auth_key );
-
-  my $response;
-  my $char = '';
-  do {
-    $handle->recv($char, 1);
-    $response .= $char;
-  }
-  while( $char ne "\0" );
-
-  $self->host($host);
-  $self->port($port);
-  $self->default_db($db);
-
-  return $self->new(
-    handle     => $handle,
-    host       => $host,
-    port       => $port,
-    default_db => $db,
-    auth_key   => $auth_key,
-    timeout    => $timeout,
+  my $io = Rethinkdb::IO->new(
+    rdb      => $self,
+    host     => $host,
+    port     => $port,
+    db       => $db,
+    auth_key => $auth_key,
+    timeout  => $timeout
   );
+
+  weaken $io->{rdb};
+  return $io->connect;
 }
-
-sub close {
-  my $self = shift;
-
-  $self->handle->close if $self->handle;
-
-  return $self;
-}
-
-sub reconnect {
-  my $self = shift;
-
-  $handle = IO::Socket::INET->new(
-    PeerHost => $self->host,
-    PeerPort => $self->port,
-    Reuse    => 1,
-  ) or croak "ERROR: Could not reconnect to $self->host:$self->port";
-
-  $handle->send( pack 'L<', VersionDummy::Version::V0_2 );
-  $handle->send( (pack 'L<', length $self->auth_key) . $self->auth_key );
-
-  $self->handle($handle);
-  return $self;
-}
-
-sub use {
-  my $self = shift;
-  my $db   = shift;
-
-  $self->default_db($db);
-  return $self;
-}
-
 
 sub db_create {
   my $self = shift;
@@ -112,11 +70,11 @@ sub db_create {
 
   my $db = Rethinkdb::Database->new(
     rdb  => $self,
-    name => $name,
+    args => $name,
   );
 
   weaken $db->{rdb};
-  return $db->create();
+  return $db->create;
 }
 
 sub db_drop {
@@ -125,7 +83,7 @@ sub db_drop {
 
   my $db = Rethinkdb::Database->new(
     rdb  => $self,
-    name => $name,
+    args => $name,
   );
 
   weaken $db->{rdb};
@@ -148,8 +106,9 @@ sub db {
   my $name = shift;
 
   my $db = Rethinkdb::Database->new(
-    rdb => $self,
-    name => $name
+    rdb  => $self,
+    type => Term::TermType::DB,
+    args => $name
   );
 
   weaken $db->{rdb};
@@ -161,28 +120,37 @@ sub table_create {
   my $name   = shift;
   my @params = @_;
 
-  return Rethinkdb::Table->new(
-    db   => $self->default_db,
-    name => $name,
+  my $t = Rethinkdb::Table->new(
+    rdb  => $self,
+    args => $name,
   )->create(@params);
+
+  weaken $t->{rdb};
+  return $t;
 }
 
 sub table_drop {
   my $self = shift;
   my $name = shift;
 
-  return Rethinkdb::Table->new(
-    db   => $self->default_db,
-    name => $name,
+  my $t = Rethinkdb::Table->new(
+    rdb  => $self,
+    args => $name,
   )->drop;
+
+  weaken $t->{rdb};
+  return $t;
 }
 
 sub table_list {
   my $self = shift;
 
-  return Rethinkdb::Table->new(
-    db => $self->default_db,
+  my $t = Rethinkdb::Table->new(
+    rdb  => $self,
   )->list;
+
+  weaken $t->{rdb};
+  return $t;
 }
 
 sub table {
@@ -191,8 +159,8 @@ sub table {
 
   my $t = Rethinkdb::Table->new(
     rdb  => $self,
-    db   => $self->default_db,
-    name => $name,
+    type => Term::TermType::TABLE,
+    args => $name,
   );
 
   weaken $t->{rdb};

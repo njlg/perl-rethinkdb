@@ -1,8 +1,7 @@
 package Rethinkdb::Database;
-use Rethinkdb::Base -base;
+use Rethinkdb::Base 'Rethinkdb::Query';
 
 use Scalar::Util 'weaken';
-use Rethinkdb::Query;
 
 has [qw{rdb name}];
 
@@ -10,68 +9,34 @@ sub create {
   my $self = shift;
   my $name = shift || $self->name;
 
-  my $q = Rethinkdb::Query->new(
-    rdb   => $self->rdb,
-    query => Query->encode( {
-        type  => Query::QueryType::START,
-        token => Rethinkdb::Util::token(),
-        query => {
-          type  => Term::TermType::DB_CREATE,
-          args => {
-            type => Term::TermType::DATUM,
-            datum => Rethinkdb::Util->to_datum($name)
-          }
-        }
-      }
-    )
-  );
+  $self->type(Term::TermType::DB_CREATE);
 
-  weaken $q->{rdb};
-  return $q;
+  if( $name ) {
+    $self->_args($name);
+  }
+
+  return $self;
 }
 
 sub drop {
   my $self = shift;
   my $name = shift || $self->name;
 
-  my $q = Rethinkdb::Query->new(
-    rdb   => $self->rdb,
-    query => Query->encode( {
-        type  => Query::QueryType::START,
-        token => Rethinkdb::Util::token(),
-        query => {
-          type  => Term::TermType::DB_DROP,
-          args => {
-            type => Term::TermType::DATUM,
-            datum => Rethinkdb::Util->to_datum($name)
-          }
-        }
-      }
-    )
-  );
+  $self->type(Term::TermType::DB_DROP);
 
-  weaken $q->{rdb};
-  return $q;
+  if( $name ) {
+    $self->_args($name);
+  }
+
+  return $self;
 }
 
 sub list {
   my $self = shift;
 
-  # token needs to be random? unique per connection
-  my $q = Rethinkdb::Query->new(
-    rdb   => $self->rdb,
-    query => Query->encode( {
-        type  => Query::QueryType::START,
-        token => Rethinkdb::Util::token(),
-        query => {
-          type => Term::TermType::DB_LIST
-        }
-      }
-    )
-  );
+  $self->type(Term::TermType::DB_LIST);
 
-  weaken $q->{rdb};
-  return $q;
+  return $self;
 }
 
 sub table_create {
@@ -80,9 +45,9 @@ sub table_create {
   my @params = @_;
 
   my $t = Rethinkdb::Table->new(
-    rdb  => $self->rdb,
-    db   => $self->name,
-    name => $name,
+    rdb     => $self->rdb,
+    args    => $name,
+    _parent => $self,
   );
 
   weaken $t->{rdb};
@@ -94,9 +59,9 @@ sub table_drop {
   my $name = shift;
 
   my $t = Rethinkdb::Table->new(
-    rdb  => $self->rdb,
-    db   => $self->name,
-    name => $name,
+    rdb     => $self->rdb,
+    _parent => $self,
+    args    => $name,
   );
 
   weaken $t->{rdb};
@@ -107,8 +72,8 @@ sub table_list {
   my $self = shift;
 
   my $t = Rethinkdb::Table->new(
-    rdb => $self->rdb,
-    db  => $self->name,
+    rdb     => $self->rdb,
+    _parent => $self,
   );
 
   weaken $t->{rdb};
@@ -120,9 +85,10 @@ sub table {
   my $name = shift;
 
   my $t = Rethinkdb::Table->new(
-    rdb  => $self->rdb,
-    db   => $self->name,
-    name => $name,
+    rdb     => $self->rdb,
+    type    => Term::TermType::TABLE,
+    args    => $name,
+    _parent => $self,
   );
 
   weaken $t->{rdb};

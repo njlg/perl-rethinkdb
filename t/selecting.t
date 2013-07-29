@@ -3,7 +3,7 @@ use Test::More;
 use Rethinkdb;
 
 # setup
-r->connect;
+r->connect->repl;
 r->db('test')->drop->run;
 r->db('test')->create->run;
 r->db('test')->table('marvel')->create(primary_key => 'superhero')->run;
@@ -38,18 +38,23 @@ $res2 = r->db('test')->table('marvel', r->true)->run;
 $res2->token($res->token);
 is_deeply $res, $res2;
 
-# get Document (defaults to using ID as primary key)
+# get Document
 $res = r->table('marvel')->get('Spiderman')->run;
-isa_ok $res, 'Rethinkdb::Response', 'Correct class';
-is $res->status_code, 103, 'Correct status code';
-is $res->response, undef, 'Correct resposne';
-like $res->error_message, qr/Attribute: id is not the primary key \(superhero\) and thus cannot be selected upon/, 'Correct error message';
-
-# get Document with correct key
-$res = r->table('marvel')->get('Spiderman', 'superhero')->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
-is $res->status_code, 1, 'Correct status code';
+is $res->type, 1, 'Correct status code';
+is $res->response->{superhero}, 'Spiderman', 'Correct resposne';
+
+# get all Documents with correct key
+$res = r->table('marvel')->get_all('Size', 'Smash', index => 'superpower')->run;
+use feature ':5.10';
+use Data::Dumper;
+$Data::Dumper::Indent = 1;
+say Dumper $res;
+exit;
+
+isa_ok $res, 'Rethinkdb::Response', 'Correct class';
+is $res->type, 1, 'Correct status code';
 isa_ok $res->response, 'ARRAY', 'Correct resposne';
 is scalar @{$res->response}, 1, 'Correct number of documents returned';
 is $res->response->[0]->{superhero}, 'Spiderman', 'Correct documents returned';
@@ -58,7 +63,7 @@ is $res->response->[0]->{superhero}, 'Spiderman', 'Correct documents returned';
 $res = r->table('marvel')->between(2, 7)->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
-is $res->status_code, 103, 'Correct status code';
+is $res->type, 103, 'Correct status code';
 is $res->response, undef, 'Correct resposne';
 like $res->error_message, qr/has no attribute id/, 'Correct error message';
 
@@ -66,7 +71,7 @@ like $res->error_message, qr/has no attribute id/, 'Correct error message';
 $res = r->table('marvel')->between(2, 7, 'user_id')->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
-is $res->status_code, 3, 'Correct status code';
+is $res->type, 3, 'Correct status code';
 isa_ok $res->response, 'ARRAY', 'Correct resposne type';
 is scalar @{$res->response}, 6, 'Correct number of documents returned';
 
@@ -74,7 +79,7 @@ is scalar @{$res->response}, 6, 'Correct number of documents returned';
 $res = r->table('marvel')->filter({active => 1})->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
-is $res->status_code, 3, 'Correct status code';
+is $res->type, 3, 'Correct status code';
 isa_ok $res->response, 'ARRAY', 'Correct resposne type';
 is scalar @{$res->response}, 5, 'Correct number of documents returned';
 
@@ -82,7 +87,7 @@ is scalar @{$res->response}, 5, 'Correct number of documents returned';
 $res = r->table('marvel')->filter({active => 1, age => 35, superpower => 'Size'})->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
-is $res->status_code, 3, 'Correct status code';
+is $res->type, 3, 'Correct status code';
 isa_ok $res->response, 'ARRAY', 'Correct resposne type';
 is scalar @{$res->response}, 1, 'Correct number of documents returned';
 is $res->response->[0]->{superhero}, 'Ant-Man', 'Correct document returned';

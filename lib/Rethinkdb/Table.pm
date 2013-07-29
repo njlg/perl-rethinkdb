@@ -1,5 +1,5 @@
 package Rethinkdb::Table;
-use Rethinkdb::Base -base;
+use Rethinkdb::Base 'Rethinkdb::Query';
 
 use Carp 'croak';
 use Scalar::Util 'weaken';
@@ -8,7 +8,7 @@ use Rethinkdb::Document;
 use Rethinkdb::Protocol;
 use Rethinkdb::Util;
 
-has [qw{rdb db name}];
+has [qw{rdb name}];
 
 # primary_key = None
 # datacenter = None
@@ -18,92 +18,28 @@ sub create {
   my $self = shift;
   my $params = ref $_[0] ? $_[0] : {@_};
 
-  my $args = {};
-  if( $params ) {
-    my $values = Rethinkdb::Util->to_datum($params);
-    $args->{optargs} = $values->{r_object};
-  }
+  $self->type(Term::TermType::TABLE_CREATE);
+  $self->_args($self->name);
+  $self->_optargs($params);
 
-  my $q = Rethinkdb::Query->new(
-    rdb   => $self->rdb,
-    query => Query->encode( {
-        type       => Query::QueryType::START,
-        token      => Rethinkdb::Util::token(),
-        query => {
-          type => Term::TermType::TABLE_CREATE,
-          # db_name => $self->db,
-          args => [
-            {
-              type  => Term::TermType::DB,
-              args => {
-                type => Term::TermType::DATUM,
-                datum => Rethinkdb::Util->to_datum($self->db),
-              }
-            },
-            {
-              type  => Term::TermType::DATUM,
-              datum => Rethinkdb::Util->to_datum($self->name),
-            }
-          ],
-          %{$args}
-        }
-      }
-    )
-  );
-
-  weaken $q->{rdb};
-  return $q;
+  return $self;
 }
 
 sub drop {
   my $self = shift;
 
-  my $q = Rethinkdb::Query->new(
-    rdb   => $self->rdb,
-    query => Query->encode( {
-        type  => Query::QueryType::START,
-        token => Rethinkdb::Util::token(),
-        query => {
-          type => Term::TermType::TABLE_DROP,
-          args => [
-            {
-              type  => Term::TermType::DB,
-              args => Rethinkdb::Util->to_term($self->db),
-            },
-            Rethinkdb::Util->to_term($self->name),
-          ]
-        }
-      }
-    )
-  );
+  $self->type(Term::TermType::TABLE_DROP);
+  $self->_args($self->name);
 
-  weaken $q->{rdb};
-  return $q;
+  return $self;
 }
 
 sub list {
   my $self = shift;
 
-  my $q = Rethinkdb::Query->new(
-    rdb   => $self->rdb,
-    query => Query->encode( {
-        type       => Query::QueryType::START,
-        token      => Rethinkdb::Util::token(),
-        query => {
-          type    => Term::TermType::TABLE_LIST,
-          args => [
-            {
-              type  => Term::TermType::DB,
-              args => Rethinkdb::Util->to_term($self->db),
-             }
-          ]
-        }
-      }
-    )
-  );
+  $self->type(Term::TermType::TABLE_LIST);
 
-  weaken $q->{rdb};
-  return $q;
+  return $self;
 }
 
 sub insert {
@@ -111,74 +47,18 @@ sub insert {
   my $data   = shift;
   my $params = shift;
 
-  my $values = $self->rdb->expr($data);
+  my $values = Rethinkdb::Util->to_json($data);
+  my $args = {
+    type => Term::TermType::JSON,
+    args => Rethinkdb::Util->to_term($values),
+  };
 
-  my $args = {};
-  if( $values->{r_object} ) {
-    $args = {
-      type => Term::TermType::MAKE_OBJ,
-      optargs => $values->{r_object}
-    };
-  }
-  elsif( $values->{r_array} ) {
-    foreach( @{$values->{r_array}} ) {
-      push @{$args->{args}}, {
-        type => Term::TermType::MAKE_OBJ,
-        optargs => $_->{r_object}
-      };
-    }
-
-    $args->{type} = Term::TermType::MAKE_ARRAY;
-  }
-  # elsif( $values->{r_array} ) {
-  #   $args = {
-  #     type => Term::TermType::MAKE_ARRAY,
-  #     optargs => $values->{r_array}
-  #   };
-  # }
-
-  my $optargs = {};
-  if( $params ) {
-    $values = $self->rdb->expr($params);
-    if( $values->{r_object} ) {
-      $optargs->{optargs} = $values->{r_object};
-    }
-    elsif( $values->{r_array} ) {
-       $optargs->{optargs} = $values->{r_array};
-    }
-  }
-
-  # r.table('marvel').insert({ 'superhero': 'Iron Man', 'superpower': 'Arc Reactor' }).run
   my $q = Rethinkdb::Query->new(
-    rdb   => $self->rdb,
-    query => Query->encode( {
-      type  => Query::QueryType::START,
-      token => Rethinkdb::Util::token(),
-      query => {
-        type => Term::TermType::INSERT,
-        args => [
-          # {
-          #   type  => Term::TermType::DB,
-          #   args => {
-          #     type => Term::TermType::DATUM,
-          #     datum => Rethinkdb::Util->to_datum($self->db),
-          #   }
-          # },
-          {
-            type  => Term::TermType::TABLE,
-            args => {
-              type => Term::TermType::DATUM,
-              datum => Rethinkdb::Util->to_datum($self->name),
-            }
-          },
-          $args
-        ],
-        %{$optargs}
-      },
-      # global_optargs => [
-      #   Rethinkdb::Util->to_datum({ db => $self->db })->{r_object},
-      # ],
-    })
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::INSERT,
+    args    => $args,
+    optargs => $params,
   );
 
   weaken $q->{rdb};
@@ -219,39 +99,6 @@ sub delete {
   return $q;
 }
 
-sub run {
-  my $self = shift;
-
-  my $q = Rethinkdb::Query->new(
-    rdb   => $self->rdb,
-    query => Query->encode({
-      type   => Query::QueryType::START,
-      token  => Rethinkdb::Util::token(),
-      query => {
-        type => Term::TermType::TABLE,
-        args => [
-          {
-            type  => Term::TermType::DB,
-            args => {
-              type => Term::TermType::DATUM,
-              datum => Rethinkdb::Util->to_datum($self->db),
-            }
-          },
-          {
-            type  => Term::TermType::DATUM,
-            datum => Rethinkdb::Util->to_datum($self->name),
-          }
-        ],
-        # optargs => [
-        #   Rethinkdb::Util->to_datum({ use_outdated => Rethinkdb->false }),
-        # ],
-      }
-    })
-  );
-
-  weaken $q->{rdb};
-  return $q->run;
-}
 
 # get a document by primary key
 # TODO: key can be other things besides string
@@ -259,15 +106,15 @@ sub get {
   my $self = shift;
   my ( $key ) = @_;
 
-  my $d = Rethinkdb::Document->new(
-    rdb   => $self->rdb,
-    db    => $self->db,
-    table => $self->name,
-    value => $key,
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::GET,
+    args    => $key,
   );
 
-  weaken $d->{rdb};
-  return $d;
+  weaken $q->{rdb};
+  return $q;
 }
 
 # Get all documents where the given value matches the value of the requested index
@@ -285,30 +132,14 @@ sub get_all {
     $params = pop @{$values};
   }
 
-use feature ':5.10';
-use Data::Dumper;
-  say Dumper(Rethinkdb::Util->to_term($values));
-
   my $index = $params->{index} || 'id';
 
   my $q = Rethinkdb::Query->new(
-    rdb   => $self->rdb,
-    query => Query->encode({
-      type  => Query::QueryType::START,
-      token => Rethinkdb::Util::token(),
-      query => {
-        type => Term::TermType::GET_ALL,
-        args => [
-          {
-            type  => Term::TermType::TABLE,
-            args => [
-              Rethinkdb::Util->to_term($self->name),
-            ]
-          },
-          Rethinkdb::Util->to_term($values),
-        ]
-      }
-    })
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::GET_ALL,
+    args    => $values,
+    optargs => $params->{index},
   );
 
   weaken $q->{rdb};
@@ -323,36 +154,11 @@ sub between {
   $attr ||= 'id';
 
   my $q = Rethinkdb::Query->new(
-    rdb   => $self->rdb,
-    query => Query->encode( {
-        type       => Query::QueryType::START,
-        token      => Rethinkdb::Util::token(),
-        query => {
-          term => {
-            type => Term::TermType::FUNCALL,
-            call => {
-              builtin => {
-                type  => 'Term::TermType::RANGE',
-                range => {
-                  attrname   => $attr,
-                  lowerbound => Rethinkdb::Util::to_term($lower),
-                  upperbound => Rethinkdb::Util::to_term($upper),
-                }
-              },
-              args => {
-                type  => Term::TermType::TABLE,
-                table => {
-                  table_ref => {
-                    db_name    => $self->db,
-                    table_name => $self->name,
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    )
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::BETWEEN,
+    args    => [$lower, $upper],
+    optargs => {index => $attr},
   );
 
   weaken $q->{rdb};
@@ -371,96 +177,21 @@ sub filter {
     $predicate = { $predicate, @_ };
   }
 
-  my $filters = [];
-  if ( ref $predicate eq 'HASH' ) {
-    $filters = $self->_get_filters($predicate);
-  }
-  else {
+  if ( ref $predicate ne 'HASH' ) {
     croak 'Unsupported predicated passed to filter.';
   }
 
   my $q = Rethinkdb::Query->new(
-    rdb   => $self->rdb,
-    query => Query->encode( {
-        type       => Query::QueryType::START,
-        token      => Rethinkdb::Util::token(),
-        query => {
-          term => {
-            type => Term::TermType::FUNCALL,
-            call => {
-              builtin => {
-                type   => Term::TermType::FILTER,
-                filter => {
-                  predicate => {
-                    arg  => 'row',
-                    body => {
-                      type => Term::TermType::FUNCALL,
-                      call => {
-                        builtin => {
-                          type => Term::TermType::ALL,
-                        },
-                        # args could be an array
-                        args => $filters
-                      }
-                    }
-                  }
-                }
-              },
-              args => {
-                type  => Term::TermType::TABLE,
-                table => {
-                  table_ref => {
-                    db_name    => $self->db,
-                    table_name => $self->name,
-                    # use_outdated => 0
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    )
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::FILTER,
+    args    => $predicate,
   );
 
   weaken $q->{rdb};
   return $q;
 }
 
-sub _get_filters {
-  my $self    = shift;
-  my $filters = shift;
-
-  my $retval = [];
-  my $val;
-  foreach ( keys %{$filters} ) {
-    $val = Rethinkdb::Util::to_term( $filters->{$_} );
-    push @{$retval}, {
-      type => Term::TermType::FUNCALL,
-      call => {
-        builtin => {
-          type       => 'Term::TermType::COMPARE',
-          comparison => Term::TermType::EQ
-        },
-        args => [ {
-            type => Term::TermType::FUNCALL,
-            call => {
-              builtin => {
-                type => Term::TermType::GET_FIELD,
-                attr => $_
-              },
-              args => {
-                type => Term::TermType::IMPLICIT_VAR,
-              } }
-          },
-          $val
-        ]
-      }
-    };
-  }
-
-  return $retval;
-}
 
 # TODO
 sub inner_join {

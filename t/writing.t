@@ -3,12 +3,13 @@ use Test::More;
 use Rethinkdb;
 
 # setup
-r->connect;
+r->connect->repl;
 r->db('test')->drop->run;
 r->db('test')->create->run;
 r->db('test')->table('marvel')->create(primary_key => 'superhero')->run;
 
-my $res = r->table('marvel')->run;
+# get an empty set
+my $res = r->db('test')->table('marvel')->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 is $res->type, 2, 'Correct status code';
@@ -87,7 +88,7 @@ isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 is $res->response->{replaced}, 1, 'Correct number replaced';
 
 # Update
-$res = r->table('marvel')->get('Iron Man', 'superhero')->update({ age => 30 })->run;
+$res = r->table('marvel')->get('Iron Man')->update({ age => 30 })->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 is $res->response->{replaced}, 1, 'Correct number of updates';
@@ -96,13 +97,13 @@ is $res->response->{replaced}, 1, 'Correct number of updates';
 # $res = r->table('marvel')->update({ age => r->row('age')->add(1) })->run;
 
 # Replace / Modify
-$res = r->table('marvel')->get('Iron Man', 'superhero')->replace({ superhero => 'Iron Man', age => 30 })->run;
+$res = r->table('marvel')->get('Iron Man')->replace({ superhero => 'Iron Man', age => 30 })->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 is $res->response->{replaced}, 1, 'Correct number of modified documents';
 
 # Delete one document
-$res = r->table('marvel')->get('Iron Man', 'superhero')->delete->run;
+$res = r->table('marvel')->get('Iron Man')->delete->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 is $res->response->{deleted}, 1, 'Correct number of deleted documents';

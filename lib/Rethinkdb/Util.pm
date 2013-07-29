@@ -1,23 +1,37 @@
 package Rethinkdb::Util;
 use Rethinkdb::Base -strict;
 
+use JSON::PP 'encode_json';
 use Carp 'croak';
 use Sys::Hostname 'hostname';
 use Digest::MD5 qw{md5 md5_hex};
 
-my $MACHINE = join '', ( md5_hex(hostname) =~ /\d/g );
 my $COUNTER = 0;
 
 sub token {
-  # my $t = time . q{} . ($COUNTER++) . $$ . $MACHINE;
-  # $t = substr $t, 0, 13;
+  return $COUNTER++;
+}
 
-  return ( $COUNTER++ );
+sub to_json {
+  my $self  = shift;
+  my $value = shift;
+
+  if( ! $value ) {
+    return;
+  }
+
+  my $json = encode_json $value;
+
+  return $json;
 }
 
 sub to_term {
   my $self  = shift;
   my $value = shift;
+
+  if( ! $value ) {
+    return;
+  }
 
   my $datum  = $self->to_datum($value);
   my $term = {
@@ -32,6 +46,10 @@ sub to_datum {
   my $self  = shift;
   my $value = shift;
   my $hash  = {};
+
+  if( ! $value ) {
+    return;
+  }
 
   if ( ref $value eq 'ARRAY' ) {
     return $self->_to_datum_array($value);
@@ -108,7 +126,7 @@ sub from_datum {
   my $datum = shift;
 
   if( $datum->type == Datum::DatumType::R_NULL ) {
-    return $datum->r_null;
+    return undef;
   }
   elsif( $datum->type == Datum::DatumType::R_BOOL ) {
     return $datum->r_bool;

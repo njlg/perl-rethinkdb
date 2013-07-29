@@ -1,5 +1,5 @@
 package Rethinkdb::Document;
-use Rethinkdb::Base -base;
+use Rethinkdb::Base 'Rethinkdb::Query';
 
 use Carp 'croak';
 use Scalar::Util 'weaken';
