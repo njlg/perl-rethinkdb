@@ -3,18 +3,18 @@ use Test::More;
 use Rethinkdb;
 
 # setup
-r->connect;
+my $conn = r->connect->repl;
 r->db('test')->drop->run;
 r->db('test')->create->run;
 r->db('test')->table('marvel')->create(primary_key => 'superhero')->run;
 r->table('marvel')->insert([
   { user_id => 1, superhero => 'Iron Man', superpower => 'Arc Reactor', active => 1, age => 35 },
   { user_id => 8, superhero => 'Wolverine', superpower => 'Adamantium', active => 0, age => 35 },
-  { user_id => 9, superhero => 'Spiderman', superpower => 'Spidy Sense', active => 0, age => 20 },
+  { user_id => 9, superhero => 'Spider-Man', superpower => 'Spidy Sense', active => 0, age => 20 },
   { user_id => 2, superhero => 'Hulk', superpower => 'Smash', active => 1, age => 35 },
   { user_id => 3, superhero => 'Captain America', superpower => 'Super Strength', active => 1, age => 135 },
   { user_id => 4, superhero => 'Thor', superpower => 'God-like powers', active => 1, age => 1035 },
-  { user_id => 5, superhero => 'Hawk-eye', superpower => 'Bow-n-arrow', active => 0, age => 35 },
+  { user_id => 5, superhero => 'Hawk-Eye', superpower => 'Bow-n-arrow', active => 0, age => 35 },
   { user_id => 6, superhero => 'Wasp', superpower => 'Bio-lasers', active => 0, age => 35 },
   { user_id => 7, superhero => 'Ant-Man', superpower => 'Size', active => 1, age => 35 },
 ])->run;
@@ -35,11 +35,6 @@ $res = r->table('marvel')->get('Iron Man')->merge(r->table('loadouts')->get('ali
 isa_ok $res, 'Rethinkdb::Response';
 is $res->type, 1, 'Correct status code';
 is_deeply [sort keys %{$res->response}], ['age', 'equipment', 'kit', 'superhero'], 'Correct merged document attribute';
-
-# TODO: this should go in a sequence test
-# get several documents
-# $res = r->table('marvel')->get_all('Iron Man', 'Spiderman', 'Ant-Man', {index => 'superhero'})->run;
-
 
 # check for an attribute (that doesn't exist)
 $res = r->table('marvel')->get('Iron Man')->has_fields('active_status')->run;
@@ -64,7 +59,8 @@ is $res->response, 30, 'Correct response';
 
 # prep for next test:
 r->table('marvel')->get('Iron Man')->update({
-  equipment => { oldBoots => 1, oldHelm => 1 },
+  equipment => [ 'oldBoots', 'oldHelm' ],
+  stuff => { laserCannons => 2, missels => 12 },
   reactorState => 'medium',
   reactorPower => 4500,
   personalVictoriesList => [
@@ -74,41 +70,129 @@ r->table('marvel')->get('Iron Man')->update({
   ],
 })->run;
 
-use feature ':5.10';
-use Data::Dumper;
-say 'before append';
+# append a value
+$res = r->table('marvel')->get('Iron Man')->attr('equipment')->append('newBoots')->run;
 
-# update one attribute
-$res = r->table('marvel')->get('Iron Man')->attr('equipment')->append({'newBoots' => 1, 'newHelm' => 1})->run;
-
-$Data::Dumper::Indent = 1;
-say Dumper $res;
-exit;
-
-# pick the attributes from the document
-$res = r->table('marvel')->get('Iron Man')->pick('reactorState', 'reactorPower')->run;
 is $res->type, 1, 'Correct status code';
-is_deeply $res->response, [{
+is_deeply $res->response, ['oldBoots', 'oldHelm', 'newBoots'];
+
+# prepend a value
+$res = r->table('marvel')->get('Iron Man')->attr('equipment')->prepend('newHelm')->run;
+
+is $res->type, 1, 'Correct status code';
+is_deeply $res->response, ['newHelm', 'oldBoots', 'oldHelm', 'newBoots'];
+
+# get the difference between to arrays
+$res = r->table('marvel')->get('Iron Man')->attr('equipment')->difference(['oldBoots'])->run;
+
+is $res->type, 1, 'Correct status code';
+is_deeply $res->response, ['oldHelm'];
+
+# Add a value to an array and return it as a set (an array with distinct values).
+$res = r->table('marvel')->get('Iron Man')->attr('equipment')->set_insert(['newBoots'])->run;
+
+is $res->type, 1, 'Correct status code';
+is_deeply $res->response, ['oldBoots', 'oldHelm', 'newBoots'];
+
+# Add a several values to an array and return it as a set (an array with distinct values)
+$res = r->table('marvel')->get('Iron Man')->attr('equipment')->set_union(['newBoots', 'arc_reactor'])->run;
+
+is $res->type, 1, 'Correct status code';
+is_deeply $res->response, ['oldBoots', 'oldHelm', 'newBoots', 'arc_reactor'];
+
+# Intersect two arrays returning values that occur in both of them as a set (an array with distinct values).
+$res = r->table('marvel')->get('Iron Man')->attr('equipment')->set_intersection(['newBoots', 'arc_reactor', 'oldBoots'])->run;
+
+is $res->type, 1, 'Correct status code';
+is_deeply $res->response, ['oldBoots'];
+
+# Remove the elements of one array from another and return them as a set (an array with distinct values).
+$res = r->table('marvel')->get('Iron Man')->attr('equipment')->set_difference(['newBoots', 'arc_reactor', 'oldBoots'])->run;
+
+is $res->type, 1, 'Correct status code';
+is_deeply $res->response, ['oldHelm'];
+
+# Plucks out one or more attributes from either an object or a sequence of objects (projection).
+$res = r->table('marvel')->get('Iron Man')->pluck('reactorState', 'reactorPower')->run;
+
+is $res->type, 1, 'Correct status code';
+is_deeply $res->response, {
   reactorState => 'medium',
   reactorPower => 4500,
-  }], 'Correct response';
+  }, 'Correct response';
 
-# pick all but some attributes from the document
-$res = r->table('marvel')->get('Iron Man')->unpick('personalVictoriesList', 'equipment')->run;
+# The opposite of pluck; takes an object or a sequence of objects, and removes all attributes except for the ones specified.
+$res = r->table('marvel')->get('Iron Man')->without('personalVictoriesList', 'equipment', 'stuff')->run;
+
 is $res->type, 1, 'Correct status code';
-is_deeply $res->response, [{
+is_deeply $res->response, {
   reactorState => 'medium',
   reactorPower => 4500,
   age => 30,
   superhero => 'Iron Man',
-  }], 'Correct response';
+  }, 'Correct response';
 
-# delete one document
-$res = r->table('marvel')->get('Iron Man')->delete->run;
+# Insert a value in to an array at a given index. Returns the modified array.
+$res = r->expr(['Iron Man', 'Spider-Man'])->insert_at(1, 'Hulk')->run($conn);
+
 is $res->type, 1, 'Correct status code';
-is_deeply $res->response, [{
-  deleted => 1,
-  }], 'Correct response';
+is_deeply $res->response, [
+  'Iron Man',
+  'Hulk',
+  'Spider-Man',
+], 'Correct status code';
+
+# Insert several values in to an array at a given index. Returns the modified array.
+r->expr(['Iron Man', 'Spider-Man'])->splice_at(1, ['Hulk', 'Thor'])->run($conn);
+
+is $res->type, 1, 'Correct status code';
+is_deeply $res->response, [
+  'Iron Man',
+  'Hulk',
+  'Thor',
+  'Spider-Man',
+], 'Correct status code';
+
+# Remove an element from an array at a given index. Returns the modified array.
+r->expr(['Iron Man', 'Spider-Man'])->delete_at(1)->run($conn);
+
+is $res->type, 1, 'Correct status code';
+is_deeply $res->response, [
+  'Iron Man'
+], 'Correct status code';
+
+# same but use a starting and ending index
+r->expr(['Iron Man', 'Hulk', 'Thor', 'Spider-Man'])->delete_at(1, 2)->run($conn);
+
+is $res->type, 1, 'Correct status code';
+is_deeply $res->response, [
+  'Iron Man',
+  'Spider-Man'
+], 'Correct status code';
+
+# Change a value in an array at a given index. Returns the modified array.
+r->expr(['Iron Man', 'Bruce Banner', 'Thor'])->change_at(1, 'Hulk')->run($conn);
+
+is $res->type, 1, 'Correct status code';
+is_deeply $res->response, [
+  'Iron Man',
+  'Hulk',
+  'Thor'
+], 'Correct status code';
+
+# Return an array containing all of the object's keys.
+$res = r->table('marvel')->get('Iron Man')->keys->run;
+
+is $res->type, 1, 'Correct status code';
+is_deeply $res->response, [
+  'age',
+  'equipment',
+  'personalVictoriesList',
+  'reactorPower',
+  'reactorState',
+  'stuff',
+  'superhero'
+], 'Correct keys';
 
 # clean up
 r->db('test')->drop->run;

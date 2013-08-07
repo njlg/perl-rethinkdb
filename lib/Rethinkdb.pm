@@ -1,9 +1,6 @@
 package Rethinkdb;
 use Rethinkdb::Base -base;
 
-use feature ':5.10';
-use Data::Dumper;
-
 use Carp 'croak';
 use Scalar::Util 'weaken';
 
@@ -66,39 +63,42 @@ sub connect {
 
 sub db_create {
   my $self = shift;
-  my $name = shift;
+  my $args = shift;
 
-  my $db = Rethinkdb::Database->new(
+  my $q = Rethinkdb::Query->new(
     rdb  => $self,
-    args => $name,
+    type => Term::TermType::DB_CREATE,
+    args => $args,
   );
 
-  weaken $db->{rdb};
-  return $db->create;
+  weaken $q->{rdb};
+  return $q;
 }
 
 sub db_drop {
   my $self = shift;
-  my $name = shift;
+  my $args = shift;
 
-  my $db = Rethinkdb::Database->new(
+  my $q = Rethinkdb::Query->new(
     rdb  => $self,
-    args => $name,
+    type => Term::TermType::DB_DROP,
+    args => $args,
   );
 
-  weaken $db->{rdb};
-  return $db->drop;
+  weaken $q->{rdb};
+  return $q;
 }
 
 sub db_list {
   my $self = shift;
 
-  my $db = Rethinkdb::Database->new(
-    rdb => $self,
+  my $q = Rethinkdb::Query->new(
+    rdb  => $self,
+    type => Term::TermType::DB_LIST,
   );
 
-  weaken $db->{rdb};
-  return $db->list;
+  weaken $q->{rdb};
+  return $q;
 }
 
 sub db {
@@ -108,7 +108,8 @@ sub db {
   my $db = Rethinkdb::Database->new(
     rdb  => $self,
     type => Term::TermType::DB,
-    args => $name
+    name => $name,
+    args => $name,
   );
 
   weaken $db->{rdb};
@@ -117,40 +118,44 @@ sub db {
 
 sub table_create {
   my $self   = shift;
-  my $name   = shift;
-  my @params = @_;
+  my $args   = shift;
+  my $optargs = ref $_[0] ? $_[0] : {@_};
 
-  my $t = Rethinkdb::Table->new(
-    rdb  => $self,
-    args => $name,
-  )->create(@params);
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self,
+    type    => Term::TermType::TABLE_CREATE,
+    args    => $args,
+    optargs => $optargs,
+  );
 
-  weaken $t->{rdb};
-  return $t;
+  weaken $q->{rdb};
+  return $q;
 }
 
 sub table_drop {
   my $self = shift;
-  my $name = shift;
+  my $args = shift;
 
-  my $t = Rethinkdb::Table->new(
+  my $q = Rethinkdb::Query->new(
     rdb  => $self,
-    args => $name,
-  )->drop;
+    type => Term::TermType::TABLE_DROP,
+    args => $args,
+  );
 
-  weaken $t->{rdb};
-  return $t;
+  weaken $q->{rdb};
+  return $q;
 }
 
 sub table_list {
   my $self = shift;
 
-  my $t = Rethinkdb::Table->new(
+  my $q = Rethinkdb::Query->new(
     rdb  => $self,
-  )->list;
+    type => Term::TermType::TABLE_LIST,
+  );
 
-  weaken $t->{rdb};
-  return $t;
+  weaken $q->{rdb};
+  return $q;
 }
 
 sub table {
@@ -158,9 +163,10 @@ sub table {
   my $name = shift;
 
   my $t = Rethinkdb::Table->new(
-    rdb  => $self,
-    type => Term::TermType::TABLE,
-    args => $name,
+    rdb     => $self,
+    type    => Term::TermType::TABLE,
+    name    => $name,
+    args    => $name,
   );
 
   weaken $t->{rdb};
@@ -173,11 +179,28 @@ sub row {
   return $self;
 }
 
+sub asc {
+  my $self = shift;
+  my $name = shift;
+
+  my $q = Rethinkdb::Query->new(
+    type => Term::TermType::ASC,
+    args => $name,
+  );
+
+  return $q;
+}
+
 sub desc {
   my $self = shift;
   my $name = shift;
 
-  return { attr => $name, ascending => 0 };
+  my $q = Rethinkdb::Query->new(
+    type => Term::TermType::DESC,
+    args => $name,
+  );
+
+  return $q;
 }
 
 sub let {
@@ -195,18 +218,11 @@ sub js {
   croak 'js is not implemented';
 }
 
-sub asc {
-  my $self = shift;
-  my $name = shift;
-
-  return { attr => $name, ascending => 1 };
-}
-
 sub expr {
   my $self  = shift;
   my $value = shift;
 
-  return Rethinkdb::Util->to_datum($value);
+  return Rethinkdb::Util->expr($value);
 }
 
 

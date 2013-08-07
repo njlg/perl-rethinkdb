@@ -1,10 +1,9 @@
 package Rethinkdb::Table;
 use Rethinkdb::Base 'Rethinkdb::Query';
 
-use Carp 'croak';
+use Carp qw'croak carp';
 use Scalar::Util 'weaken';
 
-use Rethinkdb::Document;
 use Rethinkdb::Protocol;
 use Rethinkdb::Util;
 
@@ -16,30 +15,95 @@ has [qw{rdb name}];
 # cache_size = '1024MB'
 sub create {
   my $self = shift;
-  my $params = ref $_[0] ? $_[0] : {@_};
+  my $optargs = ref $_[0] ? $_[0] : {@_};
 
-  $self->type(Term::TermType::TABLE_CREATE);
-  $self->_args($self->name);
-  $self->_optargs($params);
+  say 'name: ' . $self->name;
 
-  return $self;
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self->_parent,
+    type    => Term::TermType::TABLE_CREATE,
+    args    => $self->name,
+    optargs => $optargs,
+  );
+
+  weaken $q->{rdb};
+  return $q;
 }
 
 sub drop {
   my $self = shift;
 
-  $self->type(Term::TermType::TABLE_DROP);
-  $self->_args($self->name);
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self->_parent,
+    type    => Term::TermType::TABLE_DROP,
+    args    => $self->name,
+  );
 
-  return $self;
+  weaken $q->{rdb};
+  return $q;
 }
 
 sub list {
   my $self = shift;
 
-  $self->type(Term::TermType::TABLE_LIST);
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self->_parent,
+    type    => Term::TermType::TABLE_LIST,
+  );
 
-  return $self;
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub index_create {
+  my $self  = shift;
+  my $index = shift;
+  my $func  = shift;
+
+  if( $func ) {
+    carp 'table->index_create does not accept functions yet';
+  }
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::INDEX_CREATE,
+    args    => $index
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub index_drop {
+  my $self = shift;
+  my $index = shift;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::INDEX_DROP,
+    args    => $index
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub index_list {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::INDEX_LIST,
+  );
+
+  weaken $q->{rdb};
+  return $q;
 }
 
 sub insert {
@@ -47,11 +111,10 @@ sub insert {
   my $data   = shift;
   my $params = shift;
 
-  my $values = Rethinkdb::Util->to_json($data);
-  my $args = {
+  my $args = Rethinkdb::Query->new(
     type => Term::TermType::JSON,
-    args => Rethinkdb::Util->to_term($values),
-  };
+    args => Rethinkdb::Util->to_json($data),
+  );
 
   my $q = Rethinkdb::Query->new(
     rdb     => $self->rdb,
@@ -67,32 +130,13 @@ sub insert {
 
 sub delete {
   my $self = shift;
+  my $optargs = ref $_[0] ? $_[0] : {@_};
 
-  # r.table('marvel').delete().run
   my $q = Rethinkdb::Query->new(
-    rdb   => $self->rdb,
-    query => Query->encode({
-      type  => Query::QueryType::START,
-      token => Rethinkdb::Util::token(),
-      query => {
-        type   => Term::TermType::DELETE,
-        args => [
-          {
-            type  => Term::TermType::TABLE,
-            args => [
-              # {
-              #   type => Term::TermType::DATUM,
-              #   datum => Rethinkdb::Util->to_datum($self->db),
-              # },
-              {
-                type  => Term::TermType::DATUM,
-                datum => Rethinkdb::Util->to_datum($self->name),
-              },
-            ]
-          }
-        ]
-      }
-    })
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::DELETE,
+    optargs => $optargs,
   );
 
   weaken $q->{rdb};
@@ -122,8 +166,9 @@ sub get_all {
   my $self = shift;
 
   # extract values
-  my $values = [@_];
+  my $values = \@_;
   my $params = {};
+
   if( ref $values->[0] eq 'ARRAY' ) {
     ($values, $params) = @{$values};
   }
@@ -132,19 +177,27 @@ sub get_all {
     $params = pop @{$values};
   }
 
-  my $index = $params->{index} || 'id';
+  if( !$params->{index} ) {
+    $params->{index} = 'id';
+  }
 
+# use feature ':5.10';
+# use Data::Dumper;
+# say Dumper $values;
+# say Dumper $params;
+# exit;
   my $q = Rethinkdb::Query->new(
     rdb     => $self->rdb,
     _parent => $self,
     type    => Term::TermType::GET_ALL,
     args    => $values,
-    optargs => $params->{index},
+    optargs => $params,
   );
+
+
 
   weaken $q->{rdb};
   return $q;
-
 }
 
 sub between {
@@ -201,30 +254,10 @@ sub inner_join {
   croak 'inner_join is not implemented';
 
   my $q = Rethinkdb::Query->new(
-    rdb   => $self->rdb,
-    query => Query->encode( {
-        type       => Query::QueryType::START,
-        token      => Rethinkdb::Util::token(),
-        query => {
-          term => {
-            type => Term::TermType::FUNCALL,
-            call => {
-              builtin => {
-                type   => Term::TermType::FILTER,
-                filter => {
-                  predicate => {
-                    arg  => '',
-                    body => {
-                      type => '',
-                    }
-                  }
-                }
-              },
-            }
-          }
-        }
-      }
-    )
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::INNER_JOIN,
+    args    => $predicate,
   );
 
   weaken $q->{rdb};
@@ -264,46 +297,14 @@ sub concat_map {
 }
 
 sub order_by {
-  my $self     = shift;
-  my @keys     = @_;
-  my $order_by = [];
-
-  foreach (@keys) {
-    if ( ref $_ ) {
-      push @{$order_by}, $_;
-    }
-    else {
-      push @{$order_by}, $self->rdb->asc($_);
-    }
-  }
+  my $self = shift;
+  my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
-    rdb   => $self->rdb,
-    query => Query->encode( {
-        type       => Query::QueryType::START,
-        token      => Rethinkdb::Util::token(),
-        query => {
-          term => {
-            type => Term::TermType::FUNCALL,
-            call => {
-              builtin => {
-                type     => Term::TermType::ORDERBY,
-                order_by => $order_by
-              },
-              args => {
-                type  => Term::TermType::TABLE,
-                table => {
-                  table_ref => {
-                    db_name    => $self->db,
-                    table_name => $self->name,
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    )
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::ORDERBY,
+    args    => $args,
   );
 
   weaken $q->{rdb};
@@ -314,69 +315,26 @@ sub skip {
   my $self   = shift;
   my $number = shift;
 
-  croak 'skip is not implemented';
-
   my $q = Rethinkdb::Query->new(
-    rdb   => $self->rdb,
-    query => Query->encode( {
-        type       => Query::QueryType::START,
-        token      => Rethinkdb::Util::token(),
-        query => {
-          term => {
-            type => Term::TermType::FUNCALL,
-            call => {
-              builtin => {
-                type => Term::TermType::SLICE,
-              },
-              args => Rethinkdb::Util->to_datum($number)
-            },
-            table => {
-              table_ref => {
-                db_name    => $self->db,
-                table_name => $self->name,
-              }
-            }
-          }
-        }
-      }
-    )
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::SKIP,
+    args    => $number,
   );
 
   weaken $q->{rdb};
   return $q;
 }
 
-# TODO fix this
 sub limit {
   my $self   = shift;
   my $number = shift;
 
-  croak 'limit is not implemented';
-
   my $q = Rethinkdb::Query->new(
-    rdb   => $self->rdb,
-    query => Query->encode( {
-        type       => Query::QueryType::START,
-        token      => Rethinkdb::Util::token(),
-        query => {
-          term => {
-            type => Term::TermType::FUNCALL,
-            call => {
-              builtin => {
-                type => Term::TermType::SLICE,
-              },
-              args => Rethinkdb::Util->to_datum($number)
-            },
-            table => {
-              table_ref => {
-                db_name    => $self->db,
-                table_name => $self->name,
-              }
-            }
-          }
-        }
-      }
-    )
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::LIMIT,
+    args    => $number,
   );
 
   weaken $q->{rdb};
@@ -385,37 +343,13 @@ sub limit {
 
 sub slice {
   my $self = shift;
-  my ( $lower, $upper ) = @_;
-
-  croak 'slice is not implemented';
+  my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
-    rdb   => $self->rdb,
-    query => Query->encode( {
-        type       => Query::QueryType::START,
-        token      => Rethinkdb::Util::token(),
-        query => {
-          term => {
-            type => Term::TermType::FUNCALL,
-            call => {
-              builtin => {
-                type => Term::TermType::SLICE,
-              },
-              args => [
-                Rethinkdb::Util->to_datum($lower),
-                Rethinkdb::Util->to_datum($upper),
-              ]
-            },
-            table => {
-              table_ref => {
-                db_name    => $self->db,
-                table_name => $self->name,
-              }
-            }
-          }
-        }
-      }
-    )
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::SLICE,
+    args    => $args,
   );
 
   weaken $q->{rdb};
@@ -427,29 +361,10 @@ sub nth {
   my $number = shift;
 
   my $q = Rethinkdb::Query->new(
-    rdb   => $self->rdb,
-    query => Query->encode( {
-        type       => Query::QueryType::START,
-        token      => Rethinkdb::Util::token(),
-        query => {
-          term => {
-            type => Term::TermType::FUNCALL,
-            call => {
-              builtin => {
-                type => Term::TermType::NTH,
-              },
-              args => Rethinkdb::Util->to_datum($number)
-            },
-            table => {
-              table_ref => {
-                db_name    => $self->db,
-                table_name => $self->name,
-              }
-            }
-          }
-        }
-      }
-    )
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::NTH,
+    args    => $number,
   );
 
   weaken $q->{rdb};
@@ -459,40 +374,13 @@ sub nth {
 # TODO: fix this
 sub pluck {
   my $self  = shift;
-  my @attrs = @_;
-
-  croak 'pluck is not implemented';
-
-  # get termtype for each attr
-  my $args = [];
-  foreach (@attrs) {
-    push @{$args}, Rethinkdb::Util::to_term($_);
-  }
+  my $args = @_ ? @_ > 1 ? [@_] : [ @{ $_[0] } ] : [];
 
   my $q = Rethinkdb::Query->new(
-    rdb   => $self->rdb,
-    query => Query->encode( {
-        type       => Query::QueryType::START,
-        token      => Rethinkdb::Util::token(),
-        query => {
-          term => {
-            type => Term::TermType::FUNCALL,
-            call => {
-              builtin => {
-                type  => Term::TermType::PLUCK,
-                attrs => $args
-              },
-            },
-            table => {
-              table_ref => {
-                db_name    => $self->db,
-                table_name => $self->name,
-              }
-            }
-          }
-        }
-      }
-    )
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::PLUCK,
+    args    => $args
   );
 
   weaken $q->{rdb};
@@ -501,40 +389,13 @@ sub pluck {
 
 sub without {
   my $self  = shift;
-  my @attrs = @_;
-
-  croak 'without is not implemented';
-
-  # get termtype for each attr
-  my $args = [];
-  foreach (@attrs) {
-    push @{$args}, Rethinkdb::Util::to_term($_);
-  }
+  my $args = @_ ? @_ > 1 ? [@_] : [ @{ $_[0] } ] : [];
 
   my $q = Rethinkdb::Query->new(
-    rdb   => $self->rdb,
-    query => Query->encode( {
-        type       => Query::QueryType::START,
-        token      => Rethinkdb::Util::token(),
-        query => {
-          term => {
-            type => Term::TermType::FUNCALL,
-            call => {
-              builtin => {
-                type  => Term::TermType::WITHOUT,
-                attrs => $args
-              },
-            },
-            table => {
-              table_ref => {
-                db_name    => $self->db,
-                table_name => $self->name,
-              }
-            }
-          }
-        }
-      }
-    )
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::WITHOUT,
+    args    => $args
   );
 
   weaken $q->{rdb};
@@ -545,28 +406,9 @@ sub count {
   my $self = shift;
 
   my $q = Rethinkdb::Query->new(
-    rdb   => $self->rdb,
-    query => Query->encode( {
-        type       => Query::QueryType::START,
-        token      => Rethinkdb::Util::token(),
-        query => {
-          term => {
-            type => Term::TermType::FUNCALL,
-            call => {
-              builtin => {
-                type => Term::TermType::COUNT,
-              },
-            },
-            table => {
-              table_ref => {
-                db_name    => $self->db,
-                table_name => $self->name,
-              }
-            }
-          }
-        }
-      }
-    )
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::COUNT,
   );
 
   weaken $q->{rdb};
@@ -577,28 +419,9 @@ sub distinct {
   my $self = shift;
 
   my $q = Rethinkdb::Query->new(
-    rdb   => $self->rdb,
-    query => Query->encode( {
-        type       => Query::QueryType::START,
-        token      => Rethinkdb::Util::token(),
-        query => {
-          term => {
-            type => Term::TermType::FUNCALL,
-            call => {
-              builtin => {
-                type => Term::TermType::DISTINCT,
-              },
-            },
-            table => {
-              table_ref => {
-                db_name    => $self->db,
-                table_name => $self->name,
-              }
-            }
-          }
-        }
-      }
-    )
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::DISTINCT,
   );
 
   weaken $q->{rdb};
@@ -607,7 +430,21 @@ sub distinct {
 
 sub union {
   my $self = shift;
-  croak 'union is not implemented';
+  my $args = [@_];
+
+  # croak 'union is not implemented';
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    type    => Term::TermType::UNION,
+    args    => [$self, $args],
+  );
+
+use feature ':5.10';
+use Data::Dumper;
+say Dumper $q;
+  weaken $q->{rdb};
+  return $q;
 }
 
 sub grouped_map_reduce {
@@ -618,6 +455,53 @@ sub grouped_map_reduce {
 sub stream_to_array {
   my $self = shift;
   croak 'stream_to_array is not implemented';
+}
+
+sub with_fields {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::WITH_FIELDS,
+    args    => $args,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub indexes_of {
+  my $self = shift;
+  my ($args) = @_;
+
+  if( ref $args ) {
+    croak 'Unsupported argument to indexes_of';
+  }
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::INDEXES_OF,
+    args    => $args,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub is_empty {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::IS_EMPTY,
+  );
+
+  weaken $q->{rdb};
+  return $q;
 }
 
 1;

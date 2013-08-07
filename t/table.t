@@ -44,24 +44,45 @@ TODO: {
 #
 # table class methods
 #
-
 isa_ok r->db('test')->table('dcuniverse'), 'Rethinkdb::Table', 'Correct class';
 isa_ok r->db('test')->table('dcuniverse')->rdb, 'Rethinkdb', 'Correctly has reference';
 
-# create
+# create table
 isa_ok r->db('test')->table('dcuniverse')->create, 'Rethinkdb::Query', 'Correct class';
 $res = r->db('test')->table('dcuniverse')->create->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 is $res->type, 1, 'Correct status code';
+exit;
 
-# list
+# list tables
 r->db('test')->table->list, 'Rethinkdb::Query', 'Correct class';
 $res = r->db('test')->table->list->run;
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 ok grep { /dcuniverse/ } @{$res->response}, 'Table was listed';
 
-# drop
+# create secondary index
+$res = r->db('test')->table('dcuniverse')->index_create('alias')->run;
+
+isa_ok $res, 'Rethinkdb::Response', 'Correct class';
+is $res->response->{created}, 1, 'Index was created';
+
+# list secondary index
+$res = r->db('test')->table('dcuniverse')->index_list->run;
+
+isa_ok $res, 'Rethinkdb::Response', 'Correct class';
+is_deeply $res->response, ['alias'], 'Indexes were listed';
+
+# drop secondary index
+$res = r->db('test')->table('dcuniverse')->index_drop('alias')->run;
+
+isa_ok $res, 'Rethinkdb::Response', 'Correct class';
+is $res->response->{dropped}, 1, 'Index was dropped';
+
+# create secondary index with function
+# $res = r->db('test')->table('dcuniverse')->index_create('alias', sub { return 1; })->run;
+
+# drop table
 isa_ok r->db('test')->table('dcuniverse')->drop, 'Rethinkdb::Query', 'Correct class';
 $res = r->db('test')->table('dcuniverse')->drop->run;
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';

@@ -34,7 +34,7 @@ is $res->response->[0]->{superhero}, 'Iron Man', 'Table contains correct first e
 # insert multiple entries
 $res = r->table('marvel')->insert([
   { superhero => 'Wolverine', superpower => 'Adamantium' },
-  { superhero => 'Spiderman', superpower => 'Spidy Sense' }
+  { superhero => 'Spider-Man', superpower => 'Spidy Sense' }
 ])->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
@@ -60,7 +60,7 @@ is $res->response->{inserted}, 0, 'Correct number of inserts';
 $res = r->table('marvel')->insert([
   { superhero => 'Iron Man', superpower => 'Arc Reactor' },
   { superhero => 'Wolverine', superpower => 'Adamantium' },
-  { superhero => 'Spiderman', superpower => 'Spidy Sense' }
+  { superhero => 'Spider-Man', superpower => 'Spidy Sense' }
 ])->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';

@@ -23,7 +23,7 @@ sub connect {
     PeerPort => $self->port,
     Reuse    => 1,
     Timeout  => $self->timeout,
-  ) or croak "ERROR: Could not connect to $self->host:$self->port";
+  ) or croak 'ERROR: Could not connect to ' . $self->host . ':' . $self->port;
 
   $self->handle->send( pack 'L<', VersionDummy::Version::V0_2 );
   $self->handle->send( (pack 'L<', length $self->auth_key) . $self->auth_key );
@@ -54,7 +54,7 @@ sub reconnect {
     PeerHost => $self->host,
     PeerPort => $self->port,
     Reuse    => 1,
-  ) or croak "ERROR: Could not reconnect to $self->host:$self->port";
+  ) or croak 'ERROR: Could not reconnect to ' . $self->host . ':' . $self->port;
 
   $self->handle->send( pack 'L<', VersionDummy::Version::V0_2 );
   $self->handle->send( (pack 'L<', length $self->auth_key) . $self->auth_key );

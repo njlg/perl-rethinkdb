@@ -1,15 +1,45 @@
 package Rethinkdb::Util;
 use Rethinkdb::Base -strict;
 
+use Scalar::Util 'blessed';
 use JSON::PP 'encode_json';
 use Carp 'croak';
-use Sys::Hostname 'hostname';
-use Digest::MD5 qw{md5 md5_hex};
+
+use Rethinkdb::Query::Datum;
 
 my $COUNTER = 0;
 
 sub token {
   return $COUNTER++;
+}
+
+sub expr {
+  my $self = shift;
+  my $value = shift;
+
+# use feature ':5.10';
+# use Data::Dumper;
+# say 'expr -----------------';
+# say Dumper $value;
+
+  if( blessed($value) && $value->isa('Rethinkdb::Query') ) {
+    return $value;
+  }
+  elsif( ref $value eq 'ARRAY' ) {
+    return $self->make_array($value);
+  }
+  elsif( ref $value eq 'HASH' ) {
+    return $self->make_obj($value);
+  }
+  # elsif( ref $value eq 'FUNC' ) {
+  #   return $self->make_obj($value);
+  # }
+  else {
+    return Rethinkdb::Query::Datum->new($value);
+  }
+
+  # to croak or not?
+  return;
 }
 
 sub to_json {
@@ -51,12 +81,20 @@ sub to_datum {
     return;
   }
 
+  # if ( ref $value eq 'ARRAY' ) {
+  #   return $self->_to_datum_array($value);
+  # }
+
+  # if ( ref $value eq 'HASH' ) {
+  #   return $self->_to_datum_object($value);
+  # }
+
   if ( ref $value eq 'ARRAY' ) {
-    return $self->_to_datum_array($value);
+    return $self->make_array($value);
   }
 
   if ( ref $value eq 'HASH' ) {
-    return $self->_to_datum_object($value);
+    return $self->make_obj($value);
   }
 
   if ( !ref $value && $value =~ /^\d+$/ ) {
@@ -79,6 +117,30 @@ sub to_datum {
   }
 
   return $hash;
+}
+
+sub make_array {
+  my $self = shift;
+  my $args = @_ ? @_ > 1 ? [@_] : [@{$_[0]}] : [];
+
+  my $obj = Rethinkdb::Query->new(
+    type => Term::TermType::MAKE_ARRAY,
+    args => $args,
+  );
+
+  return $obj;
+}
+
+sub make_obj {
+  my $self    = shift;
+  my $optargs = @_ ? @_ > 1 ? {@_} : {%{$_[0]}} : {};
+
+  my $obj = Rethinkdb::Query->new(
+    type    => Term::TermType::MAKE_OBJ,
+    optargs => $optargs,
+  );
+
+  return $obj;
 }
 
 sub _to_datum_object {
@@ -140,6 +202,7 @@ sub from_datum {
   elsif( $datum->type == Datum::DatumType::R_ARRAY ) {
     my $r_array = $datum->r_array;
     my $array = [];
+
     foreach( @{$r_array} ) {
       push @{$array}, $self->from_datum($_);
     }
@@ -159,4 +222,5 @@ sub from_datum {
 
   croak 'Invalid datum type (' . $datum->type . ')';
 }
+
 1;

@@ -9,75 +9,87 @@ sub create {
   my $self = shift;
   my $name = shift || $self->name;
 
-  $self->type(Term::TermType::DB_CREATE);
+  say "name: $name";
 
-  if( $name ) {
-    $self->_args($name);
-  }
+  my $q = Rethinkdb::Query->new(
+    rdb  => $self->rdb,
+    type => Term::TermType::DB_CREATE,
+    args => $name,
+  );
 
-  return $self;
+  weaken $q->{rdb};
+  return $q;
 }
 
 sub drop {
   my $self = shift;
   my $name = shift || $self->name;
 
-  $self->type(Term::TermType::DB_DROP);
+  my $q = Rethinkdb::Query->new(
+    rdb  => $self->rdb,
+    type => Term::TermType::DB_DROP,
+    args => $name,
+  );
 
-  if( $name ) {
-    $self->_args($name);
-  }
-
-  return $self;
+  weaken $q->{rdb};
+  return $q;
 }
 
 sub list {
   my $self = shift;
 
-  $self->type(Term::TermType::DB_LIST);
+  my $q = Rethinkdb::Query->new(
+    rdb  => $self->rdb,
+    type => Term::TermType::DB_LIST,
+  );
 
-  return $self;
+  weaken $q->{rdb};
+  return $q;
 }
 
 sub table_create {
   my $self   = shift;
-  my $name   = shift;
-  my @params = @_;
+  my $args   = shift;
+  my $optargs = ref $_[0] ? $_[0] : {@_};
 
-  my $t = Rethinkdb::Table->new(
+  my $q = Rethinkdb::Query->new(
     rdb     => $self->rdb,
-    args    => $name,
     _parent => $self,
+    type    => Term::TermType::TABLE_CREATE,
+    args    => $args,
+    optargs => $optargs,
   );
 
-  weaken $t->{rdb};
-  return $t->create(@params);
+  weaken $q->{rdb};
+  return $q;
 }
 
 sub table_drop {
   my $self = shift;
-  my $name = shift;
+  my $args = shift;
 
-  my $t = Rethinkdb::Table->new(
+  my $q = Rethinkdb::Query->new(
     rdb     => $self->rdb,
     _parent => $self,
-    args    => $name,
+    type    => Term::TermType::TABLE_DROP,
+    args    => $args,
   );
 
-  weaken $t->{rdb};
-  return $t->drop;
+  weaken $q->{rdb};
+  return $q;
 }
 
 sub table_list {
   my $self = shift;
 
-  my $t = Rethinkdb::Table->new(
+  my $q = Rethinkdb::Query->new(
     rdb     => $self->rdb,
     _parent => $self,
+    type    => Term::TermType::TABLE_LIST,
   );
 
-  weaken $t->{rdb};
-  return $t->list;
+  weaken $q->{rdb};
+  return $q;
 }
 
 sub table {
@@ -86,9 +98,10 @@ sub table {
 
   my $t = Rethinkdb::Table->new(
     rdb     => $self->rdb,
-    type    => Term::TermType::TABLE,
-    args    => $name,
     _parent => $self,
+    type    => Term::TermType::TABLE,
+    name    => $name,
+    args    => $name,
   );
 
   weaken $t->{rdb};

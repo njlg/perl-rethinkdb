@@ -13,18 +13,9 @@ sub new {
   my $class = shift;
   my $self = bless @_ ? @_ > 1 ? {@_} : { %{ $_[0] } } : {}, ref $class || $class;
 
-  if( $self->args ) {
-    my $_args = $self->args;
-    delete $self->{args};
-    $self->_args($_args);
-  }
-
-
-  if( $self->optargs ) {
-    my $_optargs = $self->optargs;
-    delete $self->{optargs};
-    $self->_optargs($_optargs);
-  }
+  # process args and optargs
+  $self->_args;
+  $self->_optargs;
 
   return $self;
 }
@@ -40,7 +31,7 @@ sub build {
     push @{$q->{args}}, $self->_parent->build;
   }
 
-  if( $self->args ) {
+   if( $self->args ) {
     foreach( @{$self->args} ) {
       if( ref $_ && UNIVERSAL::can($_,'can') && $_->can('build') ) {
         push @{$q->{args}}, $_->build;
@@ -74,41 +65,48 @@ sub build {
 
 sub _args {
   my $self = shift;
-  my $args = [@_];
+  my $args = $self->args;
+  delete $self->{args};
 
-  # getter:
-  if( ! $args ) {
-    return $self->{args};
+  if( $args ) {
+    if( ref $args ne 'ARRAY' ) {
+      $args = [$args];
+      use feature ':5.10';
+      use Data::Dumper;
+      say 'not array?';
+      say Dumper $args;
+    }
+
+    my $expr_args = [];
+
+    foreach( @{$args} ) {
+      push @{$expr_args}, Rethinkdb::Util->expr($_);
+    }
+
+    $self->args($expr_args);
   }
 
-  # setter:
-  foreach( @{$args} ) {
-    if( ref $_ eq 'HASH' && $_->{type} ) {
-      push @{$self->{args}}, $_;
-    }
-    elsif( $_ ) {
-      push @{$self->{args}}, Rethinkdb::Util->to_term($_);
-    }
-  }
-
-  return $self;
+  return;
 }
 
 sub _optargs {
   my $self = shift;
-  my $args = @_ ? @_ > 1 ? {@_} : { %{ $_[0] } } : {};
+  my $optargs = $self->optargs;
+  delete $self->{optargs};
 
-  # getter:
-  if( ! $args ) {
-    return $self->{optargs};
+  if( $optargs ) {
+    if( ref $optargs ) {
+      my $expr_optargs = {};
+
+      foreach( keys %{$optargs} ) {
+        $expr_optargs->{$_} = Rethinkdb::Util->expr($optargs->{$_});
+      }
+
+      $self->optargs($expr_optargs);
+    }
   }
 
-  # setter:
-  foreach( keys %{$args} ) {
-    $self->{optargs}->{$_} = Rethinkdb::Util->to_term($args->{$_});
-  }
-
-  return $self;
+  return;
 }
 
 sub run {
@@ -139,6 +137,362 @@ sub update {
     type    => Term::TermType::UPDATE,
     args    => $args,
     optargs => $optargs,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub replace {
+  my $self = shift;
+  my $args = shift;
+  my $optargs = @_ ? @_ > 1 ? {@_} : { %{ $_[0] } } : {};
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::REPLACE,
+    args    => $args,
+    optargs => $optargs,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub merge {
+  my $self = shift;
+  my $doc  = shift;
+
+  if ( ref $doc ne __PACKAGE__ ) {
+    croak 'merge requires a Rethinkdb::Query';
+  }
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::MERGE,
+    args    => [$self, $doc]
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub has_fields {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::HAS_FIELDS,
+    args    => $args
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+# TODO: replace this with AUTOLOAD or overload %{}
+# to get something like r->table->get()->{attr}->run;
+# or like r->table->get()->attr->run;
+sub attr {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::GET_FIELD,
+    args    => $args
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub append {
+  my $self = shift;
+  # my $args = @_ ? @_ > 1 ? [@_] : [ @{ $_[0] } ] : [];
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::APPEND,
+    args    => $args
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub prepend {
+  my $self = shift;
+  # my $args = @_ ? @_ > 1 ? [@_] : [ @{ $_[0] } ] : [];
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::PREPEND,
+    args    => $args
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub difference {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::DIFFERENCE,
+    args    => [$args],
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub set_insert {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::SET_INSERT,
+    args    => $args,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub set_union {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::SET_UNION,
+    args    => [$args],
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub set_intersection {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::SET_INTERSECTION,
+    args    => [$args],
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub set_difference {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::SET_DIFFERENCE,
+    args    => [$args],
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub pluck {
+  my $self = shift;
+  my $args = @_ ? @_ > 1 ? [@_] : [ @{ $_[0] } ] : [];
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::PLUCK,
+    args    => $args
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub without {
+  my $self = shift;
+  my $args = @_ ? @_ > 1 ? [@_] : [ @{ $_[0] } ] : [];
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::WITHOUT,
+    args    => $args
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub delete {
+  my $self = shift;
+  my $optargs = @_ ? @_ > 1 ? {@_} : { %{ $_[0] } } : {};
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::DELETE,
+    optargs => $optargs,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub insert_at {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::INSERT_AT,
+    args    => $args,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub splice_at {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::SPLICE_AT,
+    args    => $args,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub delete_at {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::DELETE_AT,
+    args    => $args,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub change_at {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::CHANGE_AT,
+    args    => $args,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub keys {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::KEYS,
+    args    => $args,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub with_fields {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    type => Term::TermType::WITH_FIELDS,
+    args => $args,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub slice {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::SLICE,
+    args    => $args,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub indexes_of {
+  my $self = shift;
+  my ($args) = @_;
+
+  if( ref $args ) {
+    croak 'Unsupported argument to indexes_of';
+  }
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::INDEXES_OF,
+    args    => $args,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub is_empty {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::IS_EMPTY,
   );
 
   weaken $q->{rdb};
