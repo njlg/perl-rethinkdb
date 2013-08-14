@@ -21,7 +21,7 @@ sub build {
 
   my $hash = {};
 
-  if ( ! $data ) {
+  if ( ! ref $data && ! $data && $data != '0' ) {
     $hash = {
       type  => Datum::DatumType::R_NULL,
     };

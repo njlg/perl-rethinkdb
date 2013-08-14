@@ -21,9 +21,17 @@ r->table('marvel')->insert([
 r->db('test')->table('loadouts')->create(primary_key => 'kit')->run;
 r->table('loadouts')->insert({kit => 'alienInvasionKit', equipment => ['alienHelm', 'alienArmour', 'alienBoots']})->run;
 
+my $res;
+
+# row
+# $res = r->row->attr('age')->gt(5)->run;
+# exit;
+
+$res = r->table('marvel')->filter(r->row->attr('age')->gt(5))->run;
+exit;
 
 # replace one document
-my $res = r->table('marvel')->get('Iron Man')->replace({ superhero => 'Iron Man', age => 30 })->run;
+$res = r->table('marvel')->get('Iron Man')->replace({ superhero => 'Iron Man', age => 30 })->run;
 
 isa_ok $res, 'Rethinkdb::Response';
 is $res->type, 1, 'Correct status code';

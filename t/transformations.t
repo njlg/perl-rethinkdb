@@ -37,7 +37,7 @@ eval {
     return $hero->{combatPower}->add($hero->{compassionPower}.mult(2));
   })->run;
 };
-unlike $@, qr/is not implemented/;
+like $@, qr/is not implemented/;
 
 # with_fields
 $res = r->table('marvel')->with_fields('superhero', 'age')->run;
@@ -54,7 +54,7 @@ eval {
     return $hero->{defeatedMonsters};
   })->run;
 };
-unlike $@, qr/is not implemented/;
+like $@, qr/is not implemented/;
 
 # order_by
 my $order1 = ['Ant-Man', 'Captain America', 'Hawk-Eye', 'Hulk', 'Iron Man', 'Spider-Man', 'Thor', 'Wasp', 'Wolverine'];
@@ -119,7 +119,7 @@ eval {
     r->row('superpowers')->contains('invisibility')
   )->run;
 };
-unlike $@, qr/is not implemented/;
+like $@, qr/is not implemented/;
 
 # is_empty
 $res = r->table('marvel')->is_empty->run;
@@ -128,8 +128,16 @@ is $res->type, 1, 'Correct response type';
 is $res->response, 0, 'Correct response';
 
 # union
-r->table('marvel')->union(r->table('dc'))->run;
-exit;
+$res = r->table('marvel')->union(r->table('dc'))->run;
+
+is $res->type, 1, 'Correct response type';
+is scalar @{$res->response}, 17, 'Correct response';
+
+# sample
+$res = r->table('marvel')->sample(3)->run;
+
+is $res->type, 2, 'Correct response type';
+is scalar @{$res->response}, 3, 'Correct response';
 
 # clean up
 r->db('test')->drop->run;

@@ -13,28 +13,54 @@ sub token {
   return $COUNTER++;
 }
 
+sub wrap_func {
+  my $self = shift;
+  my $arg  = shift;
+  my $val  = $self->expr($arg);
+
+  use feature ':5.10';
+  use Data::Dumper;
+  say Dumper $val;
+
+  if( blessed $val && $val->type eq Term::TermType::IMPLICIT_VAR ) {
+    say 'making func';
+    return Rethink::Query->new(
+      type => Term::TermType::FUNC,
+      args => sub ($) { $val; }
+    );
+  }
+  say 'making func NOT!';
+
+  return $val;
+}
+
 sub expr {
   my $self = shift;
   my $value = shift;
 
-# use feature ':5.10';
 # use Data::Dumper;
-# say 'expr -----------------';
+# say 'EXPR -----------------';
 # say Dumper $value;
+# say ref $value;
 
-  if( blessed($value) && $value->isa('Rethinkdb::Query') ) {
+  if( blessed($value) && $value->can('build') ) {
+    # say "\t building";
     return $value;
   }
   elsif( ref $value eq 'ARRAY' ) {
+    # say "\t array";
     return $self->make_array($value);
   }
   elsif( ref $value eq 'HASH' ) {
+    # say "\t hash";
     return $self->make_obj($value);
   }
-  # elsif( ref $value eq 'FUNC' ) {
-  #   return $self->make_obj($value);
-  # }
+  elsif( ref $value eq 'CODE' ) {
+    return $self->make_func($value);
+  }
   else {
+    # say "\t datum????????";
+    # say Dumper $value;
     return Rethinkdb::Query::Datum->new($value);
   }
 
@@ -143,6 +169,38 @@ sub make_obj {
   return $obj;
 }
 
+sub make_func {
+  my $self = shift;
+  my $func = shift;
+
+  my $params = [];
+  my $param_length = length prototype $func;
+
+  foreach( 1 .. $param_length ) {
+    push @{$params}, Rethinkdb::Query->new(
+      type => Term::TermType::VAR,
+      args => $_,
+    );
+  }
+
+  # use feature ':5.10';
+  # use Data::Dumper;
+  # $Data::Dumper::Deparse = 1;
+  # say Dumper $func;
+  # say Dumper $args;
+
+  # my $body = $self->expr($func->(@{$params}));
+  my $body = $func->(@{$params});
+  my $args = $self->make_array([1 .. $param_length]);
+
+  my $obj = Rethinkdb::Query->new(
+    type => Term::TermType::FUNC,
+    args => [$args, $body],
+  );
+
+  return $obj;
+}
+
 sub _to_datum_object {
   my $self   = shift;
   my $values = shift;
@@ -191,7 +249,12 @@ sub from_datum {
     return undef;
   }
   elsif( $datum->type == Datum::DatumType::R_BOOL ) {
-    return $datum->r_bool;
+    if( $datum->r_bool ) {
+      return Rethinkdb::_True->new;
+    }
+    else {
+      return Rethinkdb::_False->new;
+    }
   }
   elsif( $datum->type == Datum::DatumType::R_NUM ) {
     return $datum->r_num;

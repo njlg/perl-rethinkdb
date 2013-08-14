@@ -226,19 +226,13 @@ sub filter {
   my $predicate = shift;
   # my $predicate = @_ ? @_ > 1 ? {@_} : {%{$_[0]}} : {};
 
-  if ( !ref $predicate ) {
-    $predicate = { $predicate, @_ };
-  }
-
-  if ( ref $predicate ne 'HASH' ) {
-    croak 'Unsupported predicated passed to filter.';
-  }
+  my $args = Rethinkdb::Util->wrap_func($predicate);
 
   my $q = Rethinkdb::Query->new(
     rdb     => $self->rdb,
     _parent => $self,
     type    => Term::TermType::FILTER,
-    args    => $predicate,
+    args    => $args,
   );
 
   weaken $q->{rdb};
@@ -272,20 +266,55 @@ sub outer_join {
   croak 'outer_join is not implemented';
 }
 
-# TODO
 sub eq_join {
   my $self = shift;
-  my ( $table, $predicate ) = @_;
+  my ($left, $table, $optargs) = @_;
 
-  croak 'eq_join is not implemented';
+  if( ! $optargs ) {
+    $optargs = { index => 'id' };
+  }
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::EQ_JOIN,
+    args    => [$left, $table],
+  );
+
+  weaken $q->{rdb};
+  return $q;
 }
 
-# TODO
 sub map {
   my $self = shift;
-  my ( $table, $predicate ) = @_;
+  my ( $args ) = @_;
 
-  croak 'map is not implemented';
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::MAP,
+    args    => $args,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub reduce {
+  my $self = shift;
+  my ( $function ) = @_;
+
+  croak 'reduce is not implemented';
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::REDUCE,
+    args    => $function,
+  );
+
+  weaken $q->{rdb};
+  return $q;
 }
 
 # TODO
@@ -404,11 +433,13 @@ sub without {
 
 sub count {
   my $self = shift;
+  my $args = shift;
 
   my $q = Rethinkdb::Query->new(
     rdb     => $self->rdb,
     _parent => $self,
     type    => Term::TermType::COUNT,
+    args    => $args
   );
 
   weaken $q->{rdb};
@@ -430,9 +461,7 @@ sub distinct {
 
 sub union {
   my $self = shift;
-  my $args = [@_];
-
-  # croak 'union is not implemented';
+  my $args = shift;
 
   my $q = Rethinkdb::Query->new(
     rdb     => $self->rdb,
@@ -440,9 +469,21 @@ sub union {
     args    => [$self, $args],
   );
 
-use feature ':5.10';
-use Data::Dumper;
-say Dumper $q;
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub sample {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::SAMPLE,
+    args    => $args,
+  );
+
   weaken $q->{rdb};
   return $q;
 }
@@ -498,6 +539,42 @@ sub is_empty {
     rdb     => $self->rdb,
     _parent => $self,
     type    => Term::TermType::IS_EMPTY,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub group_by {
+  my $self = shift;
+  my $args = [@_];
+
+  my $reductor;
+  if( ref $args->[$#{$args}] ) {
+    $reductor = pop @{$args};
+    $args = [$args, $reductor];
+  }
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::GROUPBY,
+    args    => $args
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub contains {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::CONTAINS,
+    args    => $args
   );
 
   weaken $q->{rdb};

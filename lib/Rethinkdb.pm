@@ -173,10 +173,15 @@ sub table {
   return $t;
 }
 
-# TODO: fix this
 sub row {
   my $self = shift;
-  return $self;
+
+  my $q = Rethinkdb::Query->new(
+    rdb  => $self,
+    type => Term::TermType::IMPLICIT_VAR,
+  );
+
+  return $q;
 }
 
 sub asc {
@@ -225,6 +230,54 @@ sub expr {
   return Rethinkdb::Util->expr($value);
 }
 
+sub count {
+  my $self  = shift;
+
+  return { COUNT => 1 };
+}
+
+sub sum {
+  my $self = shift;
+  my $attr = shift;
+
+  return { SUM => $attr };
+}
+
+sub avg {
+  my $self = shift;
+  my $attr = shift;
+
+  return { AVG => $attr };
+}
+
+# TODO: figure out why I have to switch the arguments here
+sub do {
+  my $self = shift;
+  my ($one, $two) = @_;
+
+  my $q = Rethinkdb::Query->new(
+    rdb  => $self,
+    type => Term::TermType::FUNCALL,
+    args => [$two, $one],
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub branch {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    rdb  => $self,
+    type => Term::TermType::BRANCH,
+    args => $args,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
 
 sub true  { Rethinkdb::_True->new; }
 sub false { Rethinkdb::_False->new; }

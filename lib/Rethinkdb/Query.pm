@@ -71,10 +71,6 @@ sub _args {
   if( $args ) {
     if( ref $args ne 'ARRAY' ) {
       $args = [$args];
-      use feature ':5.10';
-      use Data::Dumper;
-      say 'not array?';
-      say Dumper $args;
     }
 
     my $expr_args = [];
@@ -493,6 +489,315 @@ sub is_empty {
     rdb     => $self->rdb,
     _parent => $self,
     type    => Term::TermType::IS_EMPTY,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub sample {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::SAMPLE,
+    args    => $args,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub zip {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::ZIP,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub distinct {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::DISTINCT,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub contains {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::CONTAINS,
+    args    => $args
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub match {
+  my $self = shift;
+  my ($expr) = @_;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::MATCH,
+    args    => $expr
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub nth {
+  my $self   = shift;
+  my $number = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::NTH,
+    args    => $number,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub add {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::ADD,
+    args    => $args,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub sub {
+  my $self = shift;
+  my ($args) = @_;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::SUB,
+    args    => $args,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub mul {
+  my $self = shift;
+  my ($args) = @_;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::MUL,
+    args    => $args,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub div {
+  my $self = shift;
+  my ($args) = @_;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::DIV,
+    args    => $args,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub mod {
+  my $self = shift;
+  my ($args) = @_;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::MOD,
+    args    => $args,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub and {
+  my $self = shift;
+  my ($args) = @_;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    type    => Term::TermType::ALL,
+    args    => [$self, $args],
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub or {
+  my $self = shift;
+  my ($args) = @_;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    type    => Term::TermType::ANY,
+    args    => [$self, $args],
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub eq {
+  my $self = shift;
+  my ($args) = @_;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::EQ,
+    args    => $args,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub ne {
+  my $self = shift;
+  my ($args) = @_;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::NE,
+    args    => $args,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub gt {
+  my $self = shift;
+  my ($args) = @_;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::GT,
+    args    => $args,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub ge {
+  my $self = shift;
+  my ($args) = @_;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::GE,
+    args    => $args,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub lt {
+  my $self = shift;
+  my ($args) = @_;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::LT,
+    args    => $args,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub le {
+  my $self = shift;
+  my ($args) = @_;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::LE,
+    args    => $args,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub not {
+  my $self = shift;
+  my ($args) = @_;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::NOT,
+    args    => $args,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub map {
+  my $self = shift;
+  my ($args) = @_;
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self->rdb,
+    _parent => $self,
+    type    => Term::TermType::MAP,
+    args    => $args,
   );
 
   weaken $q->{rdb};
