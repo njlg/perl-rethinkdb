@@ -3,16 +3,53 @@ use Test::More;
 use Rethinkdb;
 
 # setup
-r->connect->repl;
+my $conn = r->connect->repl;
 r->db('test')->drop->run;
 r->db('test')->create->run;
 r->db('test')->table('marvel')->create(primary_key => 'superhero')->run;
-r->db('test')->table('marvel')->index_create('superpower')->run;
-r->db('test')->table('marvel')->index_create('user_id')->run;
 r->table('marvel')->insert([
-  { user_id => 1, superhero => 'Iron Man', superpower => 'Arc Reactor', active => 1, age => 35 },
-  { user_id => 8, superhero => 'Wolverine', superpower => 'Adamantium', active => 0, age => 35 },
-  { user_id => 9, superhero => 'Spider-Man', superpower => 'Spidy Sense', active => 0, age => 20 }
+  {
+    user_id => 1,
+    superhero => 'Iron Man',
+    superpower => 'Arc Reactor',
+    active => 1,
+    age => 35,
+    victories => 2,
+    battles => 3,
+    villainDefeated => 'Mandarin',
+    outfits => 12,
+  },
+  {
+    user_id => 8,
+    superhero => 'Wolverine',
+    superpower => 'Adamantium',
+    age => 35,
+    victories => 12,
+    battles => 3,
+    villainDefeated => 'Sabretooth',
+    outfits => 2,
+  },
+  {
+    user_id => 9,
+    superhero => 'Spider-Man',
+    superpower => 'Spidy Sense',
+    age => 20,
+    victories => 24,
+    battles => 3,
+    villainDefeated => 'Green Goblin'
+  }
+])->run;
+r->db('test')->table('villains')->create(primary_key => 'name')->run;
+r->table('villains')->insert([
+  {
+    name => 'Mandarin',
+  },
+  {
+    name => 'Sabretooth',
+  },
+  {
+    name => 'Green Goblin'
+  }
 ])->run;
 
 # do
@@ -25,52 +62,101 @@ is $res->type, 1, 'Correct response type';
 is $res->response, 'Arc Reactor', 'Correct response';
 
 # branch
-r->table('marvel')->map(r->branch(r->row->attr('victories')->gt(100),
-  r->row->attr('name')->add(' is a superhero'),
-  r->row->attr('name')->add(' is a hero'))
+r->table('marvel')->map(
+  r->branch(
+    # r->row->attr('victories')->gt(100),
+    # sub { shift->attr('victories')->gt(1); },
+    r->true,
+    sub { shift->attr('superhero')->add(' is a superhero'); },
+    sub { shift->attr('superhero')->add(' is a hero'); }
+  )
 )->run;
 
-exit;
+# for_each
+$res = r->table('marvel')->for_each(sub {
+  my $hero = shift;
+  return r->table('villains')->get($hero->attr('villainDefeated'))->delete;
+})->run;
 
-eval {
-  r->let({'ironman' => r->table('marvel')->get('IronMan')}, r->letvar('ironman')->{'name'})->run;
-  r->let({'ironman' => r->table('marvel')->get('IronMan')}, r->letvar('ironman')->{'name'})->run;
-  r->let({'ironman' => r->table('marvel')->get('IronMan'), 'thor' => r->table('marvel')->get('Thor')},
-    r->branch(
-      r->letvar('ironman')->{'manliness'}->gt(r->letvar('thor')->{'manliness'}),
-      r->letvar('ironman'),
-      r->letvar('thor')
-    )
-  )->run;
-};
-like $@, qr/is not implemented/;
+is $res->type, 1, 'Correct response type';
+is $res->response->{deleted}, 3, 'Correct response';
 
-eval {
-  r->table('marvel')->for_each(sub {
-    my $hero = shift;
-    return r->table('villains')->get($hero->{villainDefeated})->delete();
-  })->run;
-};
-fail 'for_each is not implemented';
-
-eval {
-  r->let({'ironman' => r->table('marvel')->get('IronMan')},
-   r->branch(r->letvar('ironman')->{'victories'} < r->letVar('ironman')->{'battles'},
+# error
+$res = r->table('marvel')->get('Iron Man')->do(sub {
+  my $ironman = shift;
+  r->branch(
+    $ironman->attr('victories')->lt($ironman->attr('battles')),
     r->error('impossible code path'),
-    r->letvar('ironman')
-  ))->run;
-};
-like $@, qr/is not implemented/;
+    $ironman
+  );
+})->run;
 
-eval {
-  r->expr({'a' => 'b'})->merge({'b' => [1,2,3]})->run;
-};
-fail 'expr -> merge is not implemented';
+is $res->type, 18, 'Correct response type';
+is $res->response->[0], 'impossible code path', 'Correct response';
 
-eval {
-  r->js("'str1' + 'str2'")->run;
-};
-like $@, qr/is not implemented/;
+# default
+$res = r->table('marvel')->map(sub {
+  my $stuff = shift;
+  $stuff->attr('outfits')->default(0)->add($stuff->attr('active')->default(0));
+})->run;
+
+is $res->type, 2, 'Correct response type';
+is_deeply $res->response, ['0', '2', '13'], 'Correct response';
+
+# expr
+$res = r->expr({'a' => 'b'})->merge({'b' => [1, 2, 3]})->run($conn);
+
+is $res->type, 1, 'Correct response type';
+is_deeply $res->response, {'a' => 'b', 'b' => ['1', '2', '3']}, 'Correct response';
+
+# js
+$res = r->js("'str1' + 'str2'")->run;
+
+is $res->type, 1, 'Correct response type';
+is $res->response, 'str1str2', 'Correct response';
+
+# coerce_to
+$res = r->table('marvel')->coerce_to('array')->run;
+
+is $res->type, 1, 'Correct response type';
+isa_ok $res->response, 'ARRAY', 'Correct response';
+
+$res = r->expr([['name', 'Ironman'], ['victories', 2000]])->coerce_to('object')->run($conn);
+
+is $res->type, 1, 'Correct response type';
+isa_ok $res->response, 'HASH', 'Correct response';
+
+$res = r->expr(1)->coerce_to('string')->run($conn);
+
+is $res->type, 1, 'Correct response type';
+is $res->response, '1', 'Correct response';
+
+# type_of
+$res = r->expr("foo")->type_of->run($conn);
+
+is $res->type, 1, 'Correct response type';
+is $res->response, 'STRING', 'Correct response';
+
+# info
+$res = r->table('marvel')->info->run($conn);
+
+is $res->type, 1, 'Correct response type';
+is_deeply $res->response, {
+  primary_key => 'superhero',
+  db => {
+    name => 'test',
+    type => 'DB'
+  },
+  name => 'marvel',
+  type => 'TABLE',
+  indexes => []
+}, 'Correct response';
+
+# json
+$res = r->json("[1,2,3]")->run($conn);
+
+is $res->type, 1, 'Correct response type';
+is_deeply $res->response, ['1', '2', '3'], 'Correct response';
 
 # clean up
 r->db('test')->drop->run;

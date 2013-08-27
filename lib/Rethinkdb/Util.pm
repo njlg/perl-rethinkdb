@@ -13,23 +13,37 @@ sub token {
   return $COUNTER++;
 }
 
+sub _wrap_func {
+  my $node = shift;
+
+  if( ! (blessed $node && $node->isa('Rethinkdb::Query')) ) {
+    return;
+  }
+
+  if( blessed $node && $node->type && $node->type eq Term::TermType::IMPLICIT_VAR ) {
+    return 1;
+  }
+
+  if( $node->args ) {
+    foreach( @{$node->args} ) {
+      if( _wrap_func($_) ) {
+        return 1;
+      }
+    }
+  }
+
+  return;
+}
+
 sub wrap_func {
   my $self = shift;
   my $arg  = shift;
+
   my $val  = $self->expr($arg);
 
-  use feature ':5.10';
-  use Data::Dumper;
-  say Dumper $val;
-
-  if( blessed $val && $val->type eq Term::TermType::IMPLICIT_VAR ) {
-    say 'making func';
-    return Rethink::Query->new(
-      type => Term::TermType::FUNC,
-      args => sub ($) { $val; }
-    );
+  if( _wrap_func $val ) {
+    return $self->make_func(sub ($) { $val; });
   }
-  say 'making func NOT!';
 
   return $val;
 }
@@ -38,29 +52,19 @@ sub expr {
   my $self = shift;
   my $value = shift;
 
-# use Data::Dumper;
-# say 'EXPR -----------------';
-# say Dumper $value;
-# say ref $value;
-
   if( blessed($value) && $value->can('build') ) {
-    # say "\t building";
     return $value;
   }
   elsif( ref $value eq 'ARRAY' ) {
-    # say "\t array";
     return $self->make_array($value);
   }
   elsif( ref $value eq 'HASH' ) {
-    # say "\t hash";
     return $self->make_obj($value);
   }
   elsif( ref $value eq 'CODE' ) {
     return $self->make_func($value);
   }
   else {
-    # say "\t datum????????";
-    # say Dumper $value;
     return Rethinkdb::Query::Datum->new($value);
   }
 
@@ -175,6 +179,7 @@ sub make_func {
 
   my $params = [];
   my $param_length = length prototype $func;
+  $param_length ||= 1;
 
   foreach( 1 .. $param_length ) {
     push @{$params}, Rethinkdb::Query->new(
@@ -183,13 +188,6 @@ sub make_func {
     );
   }
 
-  # use feature ':5.10';
-  # use Data::Dumper;
-  # $Data::Dumper::Deparse = 1;
-  # say Dumper $func;
-  # say Dumper $args;
-
-  # my $body = $self->expr($func->(@{$params}));
   my $body = $func->(@{$params});
   my $args = $self->make_array([1 .. $param_length]);
 

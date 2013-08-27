@@ -1,7 +1,22 @@
 # perl-rethinkdb
 
-A Pure Perl RethinkDB Driver
+A Pure-Perl RethinkDB Driver
 
-# notes
+# Notes
 
-This is still in alpha stage. The implementation is not 100% complete. This version is compatible with RethinkDB 1.3. However, since RethinkDB switched to 1.4 (and with it a new ReQL) I am going to stop working on this version and switch to working on a 1.4 compatible version.
+* This is still in alpha stage
+* This version is compatible with RethinkDB 1.8
+* The implementation is close to 100% complete, but is missing the new date &amp; time features
+* For now, see tests in `t/*.t` for examples
+
+# Todo
+
+* Implement date &amp; time features
+* Double check all method parameters match the official drivers
+* Add sugar syntax for `attr` (e.g. `$doc->{attr}`), `slice` (e.g. `$doc->[3..6]`), and `nth` (e.g. `$doc->[3]`)
+* Performance testing and fixes
+* Submit to [CPAN](http://www.cpan.org/)
+* Look into non-blocking IO
+* Organize code
+* Document source code
+* Document in general

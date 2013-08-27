@@ -82,7 +82,7 @@ sub db_drop {
   my $q = Rethinkdb::Query->new(
     rdb  => $self,
     type => Term::TermType::DB_DROP,
-    args => $args,
+    args => $args
   );
 
   weaken $q->{rdb};
@@ -181,6 +181,7 @@ sub row {
     type => Term::TermType::IMPLICIT_VAR,
   );
 
+  weaken $q->{rdb};
   return $q;
 }
 
@@ -208,19 +209,18 @@ sub desc {
   return $q;
 }
 
-sub let {
-  my $self = shift;
-  croak 'let is not implemented';
-}
-
-sub letvar {
-  my $self = shift;
-  croak 'letvar is not implemented';
-}
-
 sub js {
   my $self = shift;
-  croak 'js is not implemented';
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    rdb  => $self,
+    type => Term::TermType::JAVASCRIPT,
+    args => $args,
+  );
+
+  weaken $q->{rdb};
+  return $q;
 }
 
 sub expr {
@@ -228,6 +228,20 @@ sub expr {
   my $value = shift;
 
   return Rethinkdb::Util->expr($value);
+}
+
+sub json {
+  my $self  = shift;
+  my $value = shift;
+
+  my $q = Rethinkdb::Query->new(
+    rdb  => $self,
+    type => Term::TermType::JSON,
+    args => $value,
+  );
+
+  weaken $q->{rdb};
+  return $q;
 }
 
 sub count {
@@ -250,7 +264,7 @@ sub avg {
   return { AVG => $attr };
 }
 
-# TODO: figure out why I have to switch the arguments here
+# TODO: figure out why the arguments have to be reversed here
 sub do {
   my $self = shift;
   my ($one, $two) = @_;
@@ -267,15 +281,31 @@ sub do {
 
 sub branch {
   my $self = shift;
-  my $args = [@_];
+  my ($predicate, $true, $false) = @_;
+
+  $predicate = Rethinkdb::Util->wrap_func($predicate);
+  $true = Rethinkdb::Util->wrap_func($true);
+  $false = Rethinkdb::Util->wrap_func($false);
 
   my $q = Rethinkdb::Query->new(
     rdb  => $self,
     type => Term::TermType::BRANCH,
-    args => $args,
+    args => [$predicate, $true, $false],
   );
 
   weaken $q->{rdb};
+  return $q;
+}
+
+sub error {
+  my $self = shift;
+  my ($message) = @_;
+
+  my $q = Rethinkdb::Query->new(
+    type => Term::TermType::ERROR,
+    args => $message,
+  );
+
   return $q;
 }
 

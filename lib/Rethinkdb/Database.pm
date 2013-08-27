@@ -3,13 +3,11 @@ use Rethinkdb::Base 'Rethinkdb::Query';
 
 use Scalar::Util 'weaken';
 
-has [qw{rdb name}];
+has [qw{ rdb name }];
 
 sub create {
   my $self = shift;
   my $name = shift || $self->name;
-
-  say "name: $name";
 
   my $q = Rethinkdb::Query->new(
     rdb  => $self->rdb,
@@ -53,14 +51,12 @@ sub table_create {
   my $optargs = ref $_[0] ? $_[0] : {@_};
 
   my $q = Rethinkdb::Query->new(
-    rdb     => $self->rdb,
     _parent => $self,
     type    => Term::TermType::TABLE_CREATE,
     args    => $args,
     optargs => $optargs,
   );
 
-  weaken $q->{rdb};
   return $q;
 }
 
@@ -69,13 +65,11 @@ sub table_drop {
   my $args = shift;
 
   my $q = Rethinkdb::Query->new(
-    rdb     => $self->rdb,
     _parent => $self,
     type    => Term::TermType::TABLE_DROP,
     args    => $args,
   );
 
-  weaken $q->{rdb};
   return $q;
 }
 
@@ -83,12 +77,10 @@ sub table_list {
   my $self = shift;
 
   my $q = Rethinkdb::Query->new(
-    rdb     => $self->rdb,
     _parent => $self,
     type    => Term::TermType::TABLE_LIST,
   );
 
-  weaken $q->{rdb};
   return $q;
 }
 
@@ -97,14 +89,12 @@ sub table {
   my $name = shift;
 
   my $t = Rethinkdb::Table->new(
-    rdb     => $self->rdb,
     _parent => $self,
     type    => Term::TermType::TABLE,
     name    => $name,
     args    => $name,
   );
 
-  weaken $t->{rdb};
   return $t;
 }
 

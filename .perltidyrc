@@ -3,16 +3,16 @@
 -bt=1     # Medium brace tightness
 -sbt=1    # Medium square bracket tightness
 -l=0      # let the lines be as long as they want
--et=4     # use tabs not spaces
+#-et=4     # use tabs not spaces
 -ole=unix # files need to be unixy
 #-ntqw     # or --trim-qw provide the default behavior of trimming spaces around multi-line qw quotes and indenting them appropriately.
 #-tqw      # provide the default behavior of trimming spaces around multi-line qw quotes and indenting them appropriately.
--boc      # break at old comma breakpoints
--bbb      # not sure yet
+#-boc      # break at old comma breakpoints
+#-bbb=0      # not sure yet
 -blbs=1   # put two spaces before each sub
 -mbl=2    # not more than two consecutive blank lines
 -nbbc     # no blank lines before comments
--wbb="% + - * / x != == >= <= =~ < > | & **= += *= &= <<= &&= -= /= |= + >>= ||= .= %= ^= x=" # Break before all operators
+#-wbb="% + - * / x != == >= <= =~ < > | & **= += *= &= <<= &&= -= /= |= + >>= ||= .= %= ^= x=" # Break before all operators
 -isbc    # Don't indent comments without leading space
 
 -otr     # Don't place a break between a comma and an opening token

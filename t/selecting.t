@@ -67,7 +67,23 @@ $res = r->table('marvel')->between(2, 7, 'user_id')->run;
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 is $res->type, 2, 'Correct status code';
 isa_ok $res->response, 'ARRAY', 'Correct response type';
-is scalar @{$res->response}, 6, 'Correct number of documents returned';
+is scalar @{$res->response}, 5, 'Correct number of documents returned';
+
+# Select a couple items with correct key, with parameters
+$res = r->table('marvel')->between(2, 7, 'user_id', 'open', 'closed')->run;
+
+isa_ok $res, 'Rethinkdb::Response', 'Correct class';
+is $res->type, 2, 'Correct status code';
+isa_ok $res->response, 'ARRAY', 'Correct response type';
+is scalar @{$res->response}, 5, 'Correct number of documents returned';
+
+# Select a couple items with correct key, with parameter hash
+$res = r->table('marvel')->between(2, 7, { index =>'user_id', left_bound => 'open', right_bound => 'closed' })->run;
+
+isa_ok $res, 'Rethinkdb::Response', 'Correct class';
+is $res->type, 2, 'Correct status code';
+isa_ok $res->response, 'ARRAY', 'Correct response type';
+is scalar @{$res->response}, 5, 'Correct number of documents returned';
 
 # Filter results
 $res = r->table('marvel')->filter({active => 1})->run;
@@ -86,18 +102,51 @@ isa_ok $res->response, 'ARRAY', 'Correct response type';
 is scalar @{$res->response}, 1, 'Correct number of documents returned';
 is $res->response->[0]->{superhero}, 'Ant-Man', 'Correct document returned';
 
-# TODO: implement EXPR predicate
-#$res = r->table('marvel')->filter(r->row('age')->gt(25))->run;
+# Filter with EXPR predicate
+# $res = r->table('marvel')->filter(r->true)->run;
+$res = r->table('marvel')->filter(r->row->attr('age')->gt(100))->run;
 
-# TODO: implement CODE predicate
-eval {
-  r->table('marvel')->filter(sub {
-    my $hero = shift;
-    return $hero->{abilities}->contains('super-strength');
-  })->run;
-};
-like $@, qr/Unsupported predicated passed to filter/;
+is $res->type, 2, 'Correct status code';
+is_deeply $res->response, [
+  {
+    active => '1',
+    superhero => 'Captain America',
+    user_id => '3',
+    age => '135',
+    superpower => 'Super Strength'
+  },
+  {
+    active => '1',
+    superhero => 'Thor',
+    user_id => '4',
+    age => '1035',
+    superpower => 'God-like powers'
+  }
+], 'Correct response type';
 
+# Filter with CODE predicate
+$res = r->table('marvel')->filter(sub {
+  my $hero = shift;
+  return $hero->attr('age')->gt(100);
+})->run;
+
+is $res->type, 2, 'Correct status code';
+is_deeply $res->response, [
+  {
+    active => '1',
+    superhero => 'Captain America',
+    user_id => '3',
+    age => '135',
+    superpower => 'Super Strength'
+  },
+  {
+    active => '1',
+    superhero => 'Thor',
+    user_id => '4',
+    age => '1035',
+    superpower => 'God-like powers'
+  }
+], 'Correct response type';
 
 # clean up
 r->db('test')->drop->run;

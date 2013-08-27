@@ -16,7 +16,7 @@ has ['rdb', 'handle'];
 
 
 sub connect {
-  my $self     = shift;
+  my $self = shift;
 
   $self->{handle} = IO::Socket::INET->new(
     PeerHost => $self->host,
@@ -96,15 +96,6 @@ sub _send {
   my $self = shift;
   my $query = shift;
 
-my $debug = 1;
-use feature ':5.10';
-use Data::Dumper;
-$Data::Dumper::Indent = 1;
-if( $debug ) {
-  say 'SENDING: ';
-  say Dumper $query;
-}
-
   my $serial = Query->encode($query);
 
   my $length = pack 'L<', length $serial;
@@ -123,11 +114,6 @@ if( $debug ) {
 
   # put data in response
   my $res = Rethinkdb::Response->init($res_data);
-
-if( $debug ) {
-  say 'RECEIVED: ';
-  say Dumper $res;
-}
 
   return $res;
 }

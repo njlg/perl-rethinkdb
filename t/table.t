@@ -53,7 +53,6 @@ $res = r->db('test')->table('dcuniverse')->create->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 is $res->type, 1, 'Correct status code';
-exit;
 
 # list tables
 r->db('test')->table->list, 'Rethinkdb::Query', 'Correct class';

@@ -24,10 +24,10 @@ $res = r->table('marvel')->group_by('enemiesVanquished', r->count)->run;
 
 is $res->type, 1, 'Correct response type';
 is_deeply $res->response, [
-  { group => [ '20' ], reduction => '1' },
-  { group => [ '35' ], reduction => '6' },
-  { group => [ '135' ], reduction => '1' },
-  { group => [ '1035' ], reduction => '1' }
+  { group => { enemiesVanquished => '20' }, reduction => '1' },
+  { group => { enemiesVanquished => '35' }, reduction => '6' },
+  { group => { enemiesVanquished => '135' }, reduction => '1' },
+  { group => { enemiesVanquished => '1035' }, reduction => '1' }
 ], 'Correct result';
 
 # r->sum
@@ -35,20 +35,19 @@ $res = r->table('marvel')->group_by('race', r->sum('enemiesVanquished'))->run;
 
 is $res->type, 1, 'Correct response type';
 is_deeply $res->response, [
-  { group => ['God'], reduction => '1035' },
-  { group => ['Hulkman'], reduction => '35' },
-  { group => ['Human'], reduction => '330' }
+  { group => { race => 'God' }, reduction => '1035' },
+  { group => { race => 'Hulkman' }, reduction => '35' },
+  { group => { race => 'Human' }, reduction => '330' }
 ], 'Correct result';
 
-
 # r->avg
-r->table('marvel')->group_by('race', r->avg('enemiesVanquished'))->run;
+$res = r->table('marvel')->group_by('race', r->avg('enemiesVanquished'))->run;
 
 is $res->type, 1, 'Correct response type';
 is_deeply $res->response, [
-  { group => ['God'], reduction => '1035' },
-  { group => ['Hulkman'], reduction => '35' },
-  { group => ['Human'], reduction => '47.1428571428571' }
+  { group => { race => 'God' }, reduction => '1035' },
+  { group => { race => 'Hulkman' }, reduction => '35' },
+  { group => { race => 'Human' }, reduction => '47.1428571428571' }
 ], 'Correct result';
 
 # clean up
