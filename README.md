@@ -14,6 +14,7 @@ A Pure-Perl RethinkDB Driver
 * Implement date &amp; time features
 * Double check all method parameters match the official drivers
 * Add sugar syntax for `attr` (e.g. `$doc->{attr}`), `slice` (e.g. `$doc->[3..6]`), and `nth` (e.g. `$doc->[3]`)
+* Add sugar syntax for as many operators as possible (e.g. `+`, `-`, `/`, `*`)
 * Performance testing and fixes
 * Submit to [CPAN](http://www.cpan.org/)
 * Look into non-blocking IO
