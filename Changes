@@ -1,0 +1,8 @@
+
+0.02  2013-08-27
+  - Compatible with RethinkDB 1.8
+  - All tests passing
+
+0.01  2013-03-19
+  - Initial code
+  - Compatible with RethinkDB 1.3
