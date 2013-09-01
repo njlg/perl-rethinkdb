@@ -1,0 +1,10 @@
+
+<!-- saved from url=(0054)https://raw.github.com/kraih/mojo/master/MANIFEST.SKIP -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><style type="text/css"></style></head><body><pre style="word-wrap: break-word; white-space: pre-wrap;">^\.(?!perltidyrc)
+.*\.old$
+\.tar\.gz$
+^Makefile$
+^MYMETA\.
+^blib
+^pm_to_blib
+</pre></body></html>
