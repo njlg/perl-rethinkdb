@@ -309,6 +309,281 @@ sub error {
   return $q;
 }
 
+sub now {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    type => Term::TermType::NOW,
+  );
+
+  return $q;
+}
+
+sub time {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    type => Term::TermType::TIME,
+    args => $args
+  );
+
+  return $q;
+}
+
+sub epoch_time {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    type => Term::TermType::EPOCH_TIME,
+    args => $args
+  );
+
+  return $q;
+}
+
+sub iso8601 {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    type => Term::TermType::ISO8601,
+    args => $args
+  );
+
+  return $q;
+}
+
+sub monday {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    type => Term::TermType::MONDAY,
+    args => $args
+  );
+
+  return $q;
+}
+
+sub tuesday {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    type => Term::TermType::TUESDAY,
+    args => $args
+  );
+
+  return $q;
+}
+
+sub wednesday {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    type => Term::TermType::WEDNESDAY,
+    args => $args
+  );
+
+  return $q;
+}
+
+sub thursday {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    type => Term::TermType::THURSDAY,
+    args => $args
+  );
+
+  return $q;
+}
+
+sub friday {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    type => Term::TermType::FRIDAY,
+    args => $args
+  );
+
+  return $q;
+}
+
+sub saturday {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    type => Term::TermType::SATURDAY,
+    args => $args
+  );
+
+  return $q;
+}
+
+sub sunday {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    type => Term::TermType::SUNDAY,
+    args => $args
+  );
+
+  return $q;
+}
+
+sub january {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    type => Term::TermType::JANUARY,
+    args => $args
+  );
+
+  return $q;
+}
+
+sub february {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    type => Term::TermType::FEBRUARY,
+    args => $args
+  );
+
+  return $q;
+}
+
+sub march {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    type => Term::TermType::MARCH,
+    args => $args
+  );
+
+  return $q;
+}
+
+sub april {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    type => Term::TermType::APRIL,
+    args => $args
+  );
+
+  return $q;
+}
+
+sub may {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    type => Term::TermType::MAY,
+    args => $args
+  );
+
+  return $q;
+}
+
+sub june {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    type => Term::TermType::JUNE,
+    args => $args
+  );
+
+  return $q;
+}
+
+sub july {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    type => Term::TermType::JULY,
+    args => $args
+  );
+
+  return $q;
+}
+
+sub august {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    type => Term::TermType::AUGUST,
+    args => $args
+  );
+
+  return $q;
+}
+
+sub september {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    type => Term::TermType::SEPTEMBER,
+    args => $args
+  );
+
+  return $q;
+}
+
+sub october {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    type => Term::TermType::OCTOBER,
+    args => $args
+  );
+
+  return $q;
+}
+
+sub november {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    type => Term::TermType::NOVEMBER,
+    args => $args
+  );
+
+  return $q;
+}
+
+sub december {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    type => Term::TermType::DECEMBER,
+    args => $args
+  );
+
+  return $q;
+}
+
+
 sub true  { Rethinkdb::_True->new; }
 sub false { Rethinkdb::_False->new; }
 

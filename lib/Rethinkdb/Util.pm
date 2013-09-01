@@ -72,6 +72,52 @@ sub expr {
   return;
 }
 
+# try to make expr mostly JSON
+sub expr_json {
+  my $self = shift;
+  my $value = shift;
+
+  if( blessed($value) && $value->can('build') ) {
+    return $value;
+  }
+
+  use feature ':5.10';
+  use Data::Dumper;
+
+  my $retval;
+  eval {
+    $retval = encode_json $value;
+  };
+
+  # say Dumper $@;
+  # say Dumper $retval;
+
+  if( ! $@ && $retval ) {
+    return Rethinkdb::Query->new(
+      type => Term::TermType::JSON,
+      args => $retval,
+    );
+  }
+  elsif( ref $value eq 'ARRAY' ) {
+    return $self->make_array($value);
+  }
+  elsif( ref $value eq 'ARRAY' ) {
+    return $self->make_array($value);
+  }
+  elsif( ref $value eq 'HASH' ) {
+    return $self->make_obj($value);
+  }
+  elsif( ref $value eq 'CODE' ) {
+    return $self->make_func($value);
+  }
+  else {
+    return Rethinkdb::Query::Datum->new($value);
+  }
+
+  # to croak or not?
+  return;
+}
+
 sub to_json {
   my $self  = shift;
   my $value = shift;

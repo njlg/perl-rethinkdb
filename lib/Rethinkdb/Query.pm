@@ -730,8 +730,6 @@ sub filter {
   my $self = shift;
   my $args = shift;
 
-  say 'filter @ query';
-
   my $q = Rethinkdb::Query->new(
     _parent => $self,
     type    => Term::TermType::FILTER,
@@ -1021,6 +1019,182 @@ sub group_by {
     _parent => $self,
     type    => Term::TermType::GROUPBY,
     args    => $args
+  );
+
+  return $q;
+}
+
+#
+# time functions
+#
+
+sub to_iso8601 {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => Term::TermType::TO_ISO8601,
+  );
+
+  return $q;
+}
+
+sub to_epoch_time {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => Term::TermType::TO_EPOCH_TIME,
+  );
+
+  return $q;
+}
+
+sub during {
+  my $self = shift;
+  my $start   = shift;
+  my $end     = shift;
+  my $optargs = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => Term::TermType::DURING,
+    args    => [$start, $end],
+    optargs => $optargs,
+  );
+
+  return $q;
+}
+
+sub date {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => Term::TermType::DATE,
+  );
+
+  return $q;
+}
+
+sub time_of_day {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => Term::TermType::TIME_OF_DAY,
+  );
+
+  return $q;
+}
+
+sub timezone {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => Term::TermType::TIMEZONE,
+  );
+
+  return $q;
+}
+
+sub year {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => Term::TermType::YEAR,
+  );
+
+  return $q;
+}
+
+sub month {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => Term::TermType::MONTH,
+  );
+
+  return $q;
+}
+
+sub day {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => Term::TermType::DAY,
+  );
+
+  return $q;
+}
+
+sub day_of_week {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => Term::TermType::DAY_OF_WEEK,
+  );
+
+  return $q;
+}
+
+sub day_of_year {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => Term::TermType::DAY_OF_YEAR,
+  );
+
+  return $q;
+}
+
+sub hours {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => Term::TermType::HOURS,
+  );
+
+  return $q;
+}
+
+sub minutes {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => Term::TermType::MINUTES,
+  );
+
+  return $q;
+}
+
+sub seconds {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => Term::TermType::SECONDS,
+  );
+
+  return $q;
+}
+
+sub in_timezone {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => Term::TermType::IN_TIMEZONE,
+    args    => $args,
   );
 
   return $q;

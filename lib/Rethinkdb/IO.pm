@@ -96,6 +96,14 @@ sub _send {
   my $self = shift;
   my $query = shift;
 
+if( $ENV{RDB_DEBUG} ) {
+  use feature ':5.10';
+  use Data::Dumper;
+  $Data::Dumper::Indent = 1;
+  say 'SENDING:';
+  say Dumper $query;
+}
+
   my $serial = Query->encode($query);
 
   my $length = pack 'L<', length $serial;
@@ -114,6 +122,11 @@ sub _send {
 
   # put data in response
   my $res = Rethinkdb::Response->init($res_data);
+
+if( $ENV{RDB_DEBUG} ) {
+  say 'RECEIVED:';
+  say Dumper $res;
+}
 
   return $res;
 }

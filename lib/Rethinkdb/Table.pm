@@ -94,18 +94,18 @@ sub index_list {
 
 sub insert {
   my $self   = shift;
-  my $data   = shift;
+  my $args   = shift;
   my $params = shift;
 
-  my $args = Rethinkdb::Query->new(
-    type => Term::TermType::JSON,
-    args => Rethinkdb::Util->to_json($data),
-  );
+  # my $args = Rethinkdb::Query->new(
+  #   type => Term::TermType::JSON,
+  #   args => Rethinkdb::Util->to_json($data),
+  # );
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
     type    => Term::TermType::INSERT,
-    args    => $args,
+    args    => Rethinkdb::Util->expr_json($args),
     optargs => $params,
   );
 
