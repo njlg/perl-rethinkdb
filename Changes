@@ -2,6 +2,8 @@
 0.03  2013-09-01
   - Date & time features added with tests
   - Tidying code with new .perltidyrc
+  - Added LINCESE file
+  - Added Makefile.PL and MANIFEST.SKIP for building
 
 0.02  2013-08-27
   - Compatible with RethinkDB 1.8
