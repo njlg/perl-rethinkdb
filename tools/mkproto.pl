@@ -7,8 +7,6 @@ use Google::ProtocolBuffers;
 use strict;
 use warnings;
 
-Google::ProtocolBuffers->parsefile('external/ql2.proto', {
-  generate_code => 'lib/Rethinkdb/Protocol.pm',
-  create_accessors => 1
-});
+Google::ProtocolBuffers->parsefile( 'external/ql2.proto',
+  { generate_code => 'lib/Rethinkdb/Protocol.pm', create_accessors => 1 } );
 

@@ -5,10 +5,8 @@ use utf8;
 use strict;
 use warnings;
 
-# use Carp::Always;
 use Data::Dumper;
 $Data::Dumper::Indent = 1;
-# $Data::Dumper::Sortkeys = 1;
 
 use lib qw'../google-protocolbuffers-perl/lib lib';
 use Rethinkdb::Protocol;
@@ -25,7 +23,3 @@ $out =~ s/bless\( //g;
 $out =~ s/, '[^']+' \)//g;
 
 say $out;
-
-#my $filter = $q->read_query->term->call->builtin->filter;
-# my $filter = $q->read_query->term->call->builtin->filter->predicate->body->call->args->[0]->call;
-# say Dumper $filter;

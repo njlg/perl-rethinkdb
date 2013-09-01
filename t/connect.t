@@ -13,29 +13,29 @@ my $conn = r->connect;
 isa_ok $conn, 'Rethinkdb::IO';
 
 # connect default values
-is $conn->host, 'localhost';
-is $conn->port, 28015;
+is $conn->host,       'localhost';
+is $conn->port,       28015;
 is $conn->default_db, 'test';
-is $conn->auth_key, '';
-is $conn->timeout, 20;
+is $conn->auth_key,   '';
+is $conn->timeout,    20;
 
 # other values for connect
 TODO: {
   todo_skip 'Need to make testable', 9;
 
   $r = r->connect('wiggle');
-  isnt $r->host, 'localhost';
-  is $r->port, 28015;
+  isnt $r->host,     'localhost';
+  is $r->port,       28015;
   is $r->default_db, 'test';
 
-  $r = r->connect('wiggle', 48015);
-  isnt $r->host, 'localhost';
-  isnt $r->port, 28015;
+  $r = r->connect( 'wiggle', 48015 );
+  isnt $r->host,     'localhost';
+  isnt $r->port,     28015;
   is $r->default_db, 'test';
 
-  $r = r->connect('wiggle', 48015, 'best');
-  isnt $r->host, 'localhost';
-  isnt $r->port, 28015;
+  $r = r->connect( 'wiggle', 48015, 'best' );
+  isnt $r->host,       'localhost';
+  isnt $r->port,       28015;
   isnt $r->default_db, 'test';
 }
 
@@ -48,14 +48,14 @@ isa_ok r->io, 'Rethinkdb::IO';
 
 # close connection
 $conn = r->connect;
-isa_ok $conn->close, 'Rethinkdb::IO';
+isa_ok $conn->close,  'Rethinkdb::IO';
 isa_ok $conn->handle, 'IO::Socket::INET';
 is $conn->handle->peerport, undef;
 is $conn->handle->peerhost, undef;
 
 # reconnect
 isa_ok $conn->reconnect, 'Rethinkdb::IO';
-isa_ok $conn->handle, 'IO::Socket::INET';
+isa_ok $conn->handle,    'IO::Socket::INET';
 is $conn->handle->peerport, 28015;
 is $conn->handle->peerhost, '127.0.0.1';
 

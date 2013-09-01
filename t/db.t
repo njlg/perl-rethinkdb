@@ -31,7 +31,7 @@ is $res->type, 1, 'Correct status code';
 
 # run list and double check the drop
 $res = r->db_list->run;
-ok !grep { /superheroes/ } @{$res->response}, 'Db is no longer listed';
+ok !grep {/superheroes/} @{ $res->response }, 'Db is no longer listed';
 
 #
 # db class methods
@@ -49,7 +49,7 @@ $res = r->db->list->run;
 
 isa_ok $res, 'Rethinkdb::Response';
 is $res->type, 1, 'Correct status code';
-ok grep { /superheroes/ } @{$res->response}, 'Db was created and listed';
+ok grep {/superheroes/} @{ $res->response }, 'Db was created and listed';
 
 # drop the database
 isa_ok r->db('superheroes')->drop, 'Rethinkdb::Query', 'correct class';
@@ -59,6 +59,6 @@ is $res->type, 1, 'Correct status code';
 
 # double check the drop
 $res = r->db->list->run;
-ok !grep { /superheroes/ } @{$res->response}, 'Db is no longer listed';
+ok !grep {/superheroes/} @{ $res->response }, 'Db is no longer listed';
 
 done_testing();

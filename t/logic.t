@@ -12,8 +12,9 @@ is $res->response, 4, 'Addition: Mathematical response is okay';
 $res = r->expr('Foo')->add('bar')->run($conn);
 is $res->response, 'Foobar', 'Addition: String concatenation response is okay';
 
-$res = r->expr(['foo', 'bar'])->add(['buzz'])->run($conn);
-is_deeply $res->response, ['foo', 'bar', 'buzz'], 'Addition: Array concatenation response is okay';
+$res = r->expr( [ 'foo', 'bar' ] )->add( ['buzz'] )->run($conn);
+is_deeply $res->response, [ 'foo', 'bar', 'buzz' ],
+  'Addition: Array concatenation response is okay';
 
 # sub
 $res = r->expr(4)->sub(2)->run($conn);
@@ -23,12 +24,16 @@ is $res->response, 2, 'Subtraction response is okay';
 $res = r->expr(2)->mul(2)->run($conn);
 is $res->response, 4, 'Multiplication: Mathematical response is okay';
 
-$res = r->expr(['This', 'is', 'the', 'song', 'that', 'never', 'ends.'])->mul(4)->run($conn);
-is_deeply $res->response, [
-    'This', 'is', 'the', 'song', 'that', 'never', 'ends.',
-    'This', 'is', 'the', 'song', 'that', 'never', 'ends.',
-    'This', 'is', 'the', 'song', 'that', 'never', 'ends.',
-    'This', 'is', 'the', 'song', 'that', 'never', 'ends.'], 'Multiplication: Periodic  response is okay';
+$res = r->expr( [ 'This', 'is', 'the', 'song', 'that', 'never', 'ends.' ] )
+  ->mul(4)->run($conn);
+is_deeply $res->response,
+  [
+  'This', 'is',   'the',   'song',  'that',  'never', 'ends.', 'This',
+  'is',   'the',  'song',  'that',  'never', 'ends.', 'This',  'is',
+  'the',  'song', 'that',  'never', 'ends.', 'This',  'is',    'the',
+  'song', 'that', 'never', 'ends.'
+  ],
+  'Multiplication: Periodic  response is okay';
 
 # div
 $res = r->expr(2)->div(2)->run($conn);
@@ -63,15 +68,15 @@ $res = r->expr(2)->le(2)->run($conn);
 is $res->response, r->true, 'LE response is okay';
 
 # and
-$res = r->expr(r->true)->and(r->false)->run($conn);
+$res = r->expr( r->true )->and( r->false )->run($conn);
 is $res->response, r->false, 'AND response is okay';
 
 # or
-$res = r->expr(r->true)->or(r->false)->run($conn);
+$res = r->expr( r->true )->or( r->false )->run($conn);
 is $res->response, r->true, 'OR response is okay';
 
 # not
-$res = r->expr(r->true)->not->run($conn);
+$res = r->expr( r->true )->not->run($conn);
 is $res->response, r->false, 'NOT response is okay';
 
 done_testing();

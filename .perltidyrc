@@ -1,20 +1,20 @@
--nolq     # Don't outdent long quoted strings
--pt=1     # Medium parenthesis tightness
--bt=1     # Medium brace tightness
--sbt=1    # Medium square bracket tightness
--l=0      # let the lines be as long as they want
-#-et=4     # use tabs not spaces
+-pbp      # Start with Perl Best Practices
+-w        # Show all warnings
+-iob      # Ignore old breakpoints
+#-l=0      # Allow lines to be as long as they want
+-l=79     # Allow lines to be as long as they want
+-mbl=2    # No more than 2 blank lines
+-i=2      # Indentation is 2 columns
+-ci=2     # Continuation indentation is 2 columns
+-vt=0     # Less vertical tightness
+-pt=1     # High parenthesis tightness
+-bt=1     # High brace tightness
+-sbt=1    # High square bracket tightness
+-isbc     # Don't indent comments without leading space
 -ole=unix # files need to be unixy
-#-ntqw     # or --trim-qw provide the default behavior of trimming spaces around multi-line qw quotes and indenting them appropriately.
-#-tqw      # provide the default behavior of trimming spaces around multi-line qw quotes and indenting them appropriately.
-#-boc      # break at old comma breakpoints
-#-bbb=0      # not sure yet
--blbs=1   # put two spaces before each sub
--mbl=2    # not more than two consecutive blank lines
--nbbc     # no blank lines before comments
-#-wbb="% + - * / x != == >= <= =~ < > | & **= += *= &= <<= &&= -= /= |= + >>= ||= .= %= ^= x=" # Break before all operators
--isbc    # Don't indent comments without leading space
 
--otr     # Don't place a break between a comma and an opening token
--sot     # Stack opening tokens when possible to avoid lines with isolated opening tokens
--sct     # Stack closing tokens when possible to avoid lines with isolated opening tokens
+-bbb      # breaks before major blocks
+-blbs=1   # put two spaces before each sub
+
+#-sct     # Stack closing tokens when possible to avoid lines with isolated opening tokens
+#-sot     # Stack opening tokens when possible to avoid lines with isolated opening tokens

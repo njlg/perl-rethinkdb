@@ -16,17 +16,20 @@ sub token {
 sub _wrap_func {
   my $node = shift;
 
-  if( ! (blessed $node && $node->isa('Rethinkdb::Query')) ) {
+  if ( !( blessed $node && $node->isa('Rethinkdb::Query') ) ) {
     return;
   }
 
-  if( blessed $node && $node->type && $node->type eq Term::TermType::IMPLICIT_VAR ) {
+  if ( blessed $node
+    && $node->type
+    && $node->type eq Term::TermType::IMPLICIT_VAR )
+  {
     return 1;
   }
 
-  if( $node->args ) {
-    foreach( @{$node->args} ) {
-      if( _wrap_func($_) ) {
+  if ( $node->args ) {
+    foreach ( @{ $node->args } ) {
+      if ( _wrap_func($_) ) {
         return 1;
       }
     }
@@ -39,29 +42,29 @@ sub wrap_func {
   my $self = shift;
   my $arg  = shift;
 
-  my $val  = $self->expr($arg);
+  my $val = $self->expr($arg);
 
-  if( _wrap_func $val ) {
-    return $self->make_func(sub ($) { $val; });
+  if ( _wrap_func $val ) {
+    return $self->make_func( sub ($) { $val; } );
   }
 
   return $val;
 }
 
 sub expr {
-  my $self = shift;
+  my $self  = shift;
   my $value = shift;
 
-  if( blessed($value) && $value->can('build') ) {
+  if ( blessed($value) && $value->can('build') ) {
     return $value;
   }
-  elsif( ref $value eq 'ARRAY' ) {
+  elsif ( ref $value eq 'ARRAY' ) {
     return $self->make_array($value);
   }
-  elsif( ref $value eq 'HASH' ) {
+  elsif ( ref $value eq 'HASH' ) {
     return $self->make_obj($value);
   }
-  elsif( ref $value eq 'CODE' ) {
+  elsif ( ref $value eq 'CODE' ) {
     return $self->make_func($value);
   }
   else {
@@ -74,10 +77,10 @@ sub expr {
 
 # try to make expr mostly JSON
 sub expr_json {
-  my $self = shift;
+  my $self  = shift;
   my $value = shift;
 
-  if( blessed($value) && $value->can('build') ) {
+  if ( blessed($value) && $value->can('build') ) {
     return $value;
   }
 
@@ -85,29 +88,25 @@ sub expr_json {
   use Data::Dumper;
 
   my $retval;
-  eval {
-    $retval = encode_json $value;
-  };
+  eval { $retval = encode_json $value; };
 
   # say Dumper $@;
   # say Dumper $retval;
 
-  if( ! $@ && $retval ) {
-    return Rethinkdb::Query->new(
-      type => Term::TermType::JSON,
-      args => $retval,
-    );
+  if ( !$@ && $retval ) {
+    return Rethinkdb::Query->new( type => Term::TermType::JSON,
+      args => $retval, );
   }
-  elsif( ref $value eq 'ARRAY' ) {
+  elsif ( ref $value eq 'ARRAY' ) {
     return $self->make_array($value);
   }
-  elsif( ref $value eq 'ARRAY' ) {
+  elsif ( ref $value eq 'ARRAY' ) {
     return $self->make_array($value);
   }
-  elsif( ref $value eq 'HASH' ) {
+  elsif ( ref $value eq 'HASH' ) {
     return $self->make_obj($value);
   }
-  elsif( ref $value eq 'CODE' ) {
+  elsif ( ref $value eq 'CODE' ) {
     return $self->make_func($value);
   }
   else {
@@ -122,7 +121,7 @@ sub to_json {
   my $self  = shift;
   my $value = shift;
 
-  if( ! $value ) {
+  if ( !$value ) {
     return;
   }
 
@@ -135,15 +134,12 @@ sub to_term {
   my $self  = shift;
   my $value = shift;
 
-  if( ! $value ) {
+  if ( !$value ) {
     return;
   }
 
-  my $datum  = $self->to_datum($value);
-  my $term = {
-    type  => Term::TermType::DATUM,
-    datum => $datum
-  };
+  my $datum = $self->to_datum($value);
+  my $term = { type => Term::TermType::DATUM, datum => $datum };
 
   return $term;
 }
@@ -153,7 +149,7 @@ sub to_datum {
   my $value = shift;
   my $hash  = {};
 
-  if( ! $value ) {
+  if ( !$value ) {
     return;
   }
 
@@ -174,22 +170,15 @@ sub to_datum {
   }
 
   if ( !ref $value && $value =~ /^\d+$/ ) {
-    $hash = {
-      type  => Datum::DatumType::R_NUM,
-      r_num => int $value
-    };
+    $hash = { type => Datum::DatumType::R_NUM, r_num => int $value };
   }
   elsif ( !ref $value ) {
-    $hash = {
-      type  => Datum::DatumType::R_STR,
-      r_str => $value
-    };
+    $hash = { type => Datum::DatumType::R_STR, r_str => $value };
   }
-  elsif ( ref $value eq 'Rethinkdb::_True' || ref $value eq 'Rethinkdb::_False' ) {
-    $hash = {
-      type   => Datum::DatumType::R_BOOL,
-      r_bool => $value == 1
-    };
+  elsif ( ref $value eq 'Rethinkdb::_True'
+    || ref $value eq 'Rethinkdb::_False' )
+  {
+    $hash = { type => Datum::DatumType::R_BOOL, r_bool => $value == 1 };
   }
 
   return $hash;
@@ -197,7 +186,7 @@ sub to_datum {
 
 sub make_array {
   my $self = shift;
-  my $args = @_ ? @_ > 1 ? [@_] : [@{$_[0]}] : [];
+  my $args = @_ ? @_ > 1 ? [@_] : [ @{ $_[0] } ] : [];
 
   my $obj = Rethinkdb::Query->new(
     type => Term::TermType::MAKE_ARRAY,
@@ -208,8 +197,8 @@ sub make_array {
 }
 
 sub make_obj {
-  my $self    = shift;
-  my $optargs = @_ ? @_ > 1 ? {@_} : {%{$_[0]}} : {};
+  my $self = shift;
+  my $optargs = @_ ? @_ > 1 ? {@_} : { %{ $_[0] } } : {};
 
   my $obj = Rethinkdb::Query->new(
     type    => Term::TermType::MAKE_OBJ,
@@ -223,23 +212,21 @@ sub make_func {
   my $self = shift;
   my $func = shift;
 
-  my $params = [];
+  my $params       = [];
   my $param_length = length prototype $func;
   $param_length ||= 1;
 
-  foreach( 1 .. $param_length ) {
-    push @{$params}, Rethinkdb::Query->new(
-      type => Term::TermType::VAR,
-      args => $_,
-    );
+  foreach ( 1 .. $param_length ) {
+    push @{$params},
+      Rethinkdb::Query->new( type => Term::TermType::VAR, args => $_, );
   }
 
-  my $body = $func->(@{$params});
-  my $args = $self->make_array([1 .. $param_length]);
+  my $body = $func->( @{$params} );
+  my $args = $self->make_array( [ 1 .. $param_length ] );
 
   my $obj = Rethinkdb::Query->new(
     type => Term::TermType::FUNC,
-    args => [$args, $body],
+    args => [ $args, $body ],
   );
 
   return $obj;
@@ -251,19 +238,17 @@ sub _to_datum_object {
 
   my $object = [];
   foreach ( keys %{$values} ) {
-    push @{$object}, {
-      key  => $_,
+    push @{$object},
+      {
+      key => $_,
       val => {
-        type => Term::TermType::DATUM,
+        type  => Term::TermType::DATUM,
         datum => Rethinkdb::Util->to_datum( $values->{$_} )
       }
-    };
+      };
   }
 
-  my $expr = {
-    type     => Datum::DatumType::R_OBJECT,
-    r_object => $object
-  };
+  my $expr = { type => Datum::DatumType::R_OBJECT, r_object => $object };
 
   return $expr;
 }
@@ -277,51 +262,48 @@ sub _to_datum_array {
     push @{$list}, Rethinkdb::Util->to_datum($_);
   }
 
-  my $expr = {
-    type    => Datum::DatumType::R_ARRAY,
-    r_array => $list
-  };
+  my $expr = { type => Datum::DatumType::R_ARRAY, r_array => $list };
 
   return $expr;
 }
 
 sub from_datum {
-  my $self = shift;
+  my $self  = shift;
   my $datum = shift;
 
-  if( $datum->type == Datum::DatumType::R_NULL ) {
+  if ( $datum->type == Datum::DatumType::R_NULL ) {
     return undef;
   }
-  elsif( $datum->type == Datum::DatumType::R_BOOL ) {
-    if( $datum->r_bool ) {
+  elsif ( $datum->type == Datum::DatumType::R_BOOL ) {
+    if ( $datum->r_bool ) {
       return Rethinkdb::_True->new;
     }
     else {
       return Rethinkdb::_False->new;
     }
   }
-  elsif( $datum->type == Datum::DatumType::R_NUM ) {
+  elsif ( $datum->type == Datum::DatumType::R_NUM ) {
     return $datum->r_num;
   }
-  elsif( $datum->type == Datum::DatumType::R_STR ) {
+  elsif ( $datum->type == Datum::DatumType::R_STR ) {
     return $datum->r_str;
   }
-  elsif( $datum->type == Datum::DatumType::R_ARRAY ) {
+  elsif ( $datum->type == Datum::DatumType::R_ARRAY ) {
     my $r_array = $datum->r_array;
-    my $array = [];
+    my $array   = [];
 
-    foreach( @{$r_array} ) {
+    foreach ( @{$r_array} ) {
       push @{$array}, $self->from_datum($_);
     }
 
     return $array;
   }
-  elsif( $datum->type == Datum::DatumType::R_OBJECT ) {
+  elsif ( $datum->type == Datum::DatumType::R_OBJECT ) {
     my $r_object = $datum->r_object;
-    my $object = {};
+    my $object   = {};
 
-    foreach( @{$r_object} ) {
-      $object->{$_->key} = $self->from_datum($_->val);
+    foreach ( @{$r_object} ) {
+      $object->{ $_->key } = $self->from_datum( $_->val );
     }
 
     return $object;

@@ -2,15 +2,14 @@ use Test::More;
 
 use Rethinkdb;
 
-use lib '../';
-use Carp::Always;
-
 # setup
 my $conn = r->connect->repl;
 r->db('test')->drop->run;
 r->db('test')->create->run;
 r->db('test')->table('marvel')->create( primary_key => 'superhero' )->run;
-r->table('marvel')->insert( [ {
+r->table('marvel')->insert(
+  [
+    {
       user_id    => 1,
       superhero  => 'Iron Man',
       superpower => 'Arc Reactor',
@@ -91,33 +90,35 @@ r->table('marvel')->insert( [ {
       villians   => { count => 2 },
       birthdate  => r->iso8601('1986-11-04T08:55:03-08:00'),
     },
-  ] )->run;
+  ]
+)->run;
 
 my $res;
 
 # now
-$res = r->table('marvel')->insert( {
-    superhero => 'Bob',
-    joined    => r->now,
-  } )->run;
+$res = r->table('marvel')->insert( { superhero => 'Bob', joined => r->now, } )
+  ->run;
 
 is $res->type, 1, 'Correct response type';
 is $res->response->{inserted}, 1, 'Correct response';
 
 # time
-$res = r->table('marvel')->get('Bob')->update( { birthdate1 => r->time( 1986, 11, 3, 'Z' ) } )->run;
+$res = r->table('marvel')->get('Bob')
+  ->update( { birthdate1 => r->time( 1986, 11, 3, 'Z' ) } )->run;
 
 is $res->type, 1, 'Correct response type';
 is $res->response->{replaced}, 1, 'Correct response';
 
 # epoch_time
-$res = r->table('marvel')->get('Bob')->update( { birthdate2 => r->epoch_time(531360000) } )->run;
+$res = r->table('marvel')->get('Bob')
+  ->update( { birthdate2 => r->epoch_time(531360000) } )->run;
 
 is $res->type, 1, 'Correct response type';
 is $res->response->{replaced}, 1, 'Correct response';
 
 # iso8601
-$res = r->table('marvel')->get('Bob')->update( { birthdate => r->iso8601('1986-11-03T08:30:00-07:00') } )->run;
+$res = r->table('marvel')->get('Bob')
+  ->update( { birthdate => r->iso8601('1986-11-03T08:30:00-07:00') } )->run;
 
 is $res->type, 1, 'Correct response type';
 is $res->response->{replaced}, 1, 'Correct response';
@@ -125,7 +126,7 @@ is $res->response->{replaced}, 1, 'Correct response';
 # in_timezone
 $res = r->now->in_timezone('-08:00')->hours->run($conn);
 
-is $res->type,     1,    'Correct response type';
+is $res->type,     1, 'Correct response type';
 is $res->response, 9, 'Correct response';
 
 # timezone
@@ -133,126 +134,149 @@ $res = r->table("marvel")->filter(
   sub {
     my $hero = shift;
     $hero->attr('birthdate')->timezone->eq('-07:00');
-  } )->run;
+  }
+)->run;
 
 is $res->type, 2, 'Correct response type';
 is scalar @{ $res->response }, 1, 'Correct response';
 is $res->response->[0]->{superhero}, 'Bob', 'Correct response';
 
 # during
-$res = r->table('marvel')->filter( r->row->attr('birthdate')->during( r->time( 1986, 12, 1, 'Z' ), r->time( 1986, 12, 10, 'Z' ) ) )->run;
+$res
+  = r->table('marvel')
+  ->filter( r->row->attr('birthdate')
+    ->during( r->time( 1986, 12, 1, 'Z' ), r->time( 1986, 12, 10, 'Z' ) ) )
+  ->run;
 
 is $res->type, 2, 'Correct response type';
 is scalar @{ $res->response }, 2, 'Correct response';
 
-$res = r->table('marvel')->filter( r->row->attr('birthdate')->during( r->time( 1986, 12, 1, 'Z' ), r->time( 1986, 12, 10, 'Z' ), { left_bound => "open", right_bound => "closed" } ) )->run;
+$res = r->table('marvel')->filter(
+  r->row->attr('birthdate')->during(
+    r->time( 1986, 12, 1,  'Z' ),
+    r->time( 1986, 12, 10, 'Z' ),
+    { left_bound => "open", right_bound => "closed" }
+  )
+)->run;
 
 is $res->type, 2, 'Correct response type';
 is scalar @{ $res->response }, 2, 'Correct response';
 
 # date
-$res = r->table('marvel')->filter( sub {
-  my $hero = shift;
-  $hero->attr('birthdate')->date->eq( r->now->date );
-})->run;
+$res = r->table('marvel')->filter(
+  sub {
+    my $hero = shift;
+    $hero->attr('birthdate')->date->eq( r->now->date );
+  }
+)->run;
 
 is $res->type, 2, 'Correct response type';
 is_deeply $res->response, [], 'Correct response';
 
 # time_of_day
-$res = r->table('marvel')->filter( sub {
-  my $hero = shift;
-  $hero->attr('birthdate')->time_of_day->le( 12*60*60 );
-})->run;
+$res = r->table('marvel')->filter(
+  sub {
+    my $hero = shift;
+    $hero->attr('birthdate')->time_of_day->le( 12 * 60 * 60 );
+  }
+)->run;
 
 is $res->type, 2, 'Correct response type';
 is_deeply $res->response, [], 'Correct response';
 
 # year
-$res = r->table('marvel')->filter( sub {
-  my $hero = shift;
-  $hero->attr('birthdate')->year->eq( 1986 );
-})->run;
+$res = r->table('marvel')->filter(
+  sub {
+    my $hero = shift;
+    $hero->attr('birthdate')->year->eq(1986);
+  }
+)->run;
 
 is $res->type, 2, 'Correct response type';
-is scalar @{$res->response}, 10, 'Correct response';
+is scalar @{ $res->response }, 10, 'Correct response';
 
 # month
-$res = r->table('marvel')->filter( sub {
-  my $hero = shift;
-  $hero->attr('birthdate')->month->eq( 12 );
-})->run;
+$res = r->table('marvel')->filter(
+  sub {
+    my $hero = shift;
+    $hero->attr('birthdate')->month->eq(12);
+  }
+)->run;
 
 is $res->type, 2, 'Correct response type';
-is scalar @{$res->response}, 2, 'Correct response';
+is scalar @{ $res->response }, 2, 'Correct response';
 
 # month with December constant
-$res = r->table('marvel')->filter( sub {
-  my $hero = shift;
-  $hero->attr('birthdate')->month->eq( r->december );
-})->run;
+$res = r->table('marvel')->filter(
+  sub {
+    my $hero = shift;
+    $hero->attr('birthdate')->month->eq( r->december );
+  }
+)->run;
 
 is $res->type, 2, 'Correct response type';
-is scalar @{$res->response}, 2, 'Correct response';
+is scalar @{ $res->response }, 2, 'Correct response';
 
 # day
-$res = r->table('marvel')->filter( sub {
-  my $hero = shift;
-  $hero->attr('birthdate')->day->eq( 4 );
-})->run;
+$res = r->table('marvel')->filter(
+  sub {
+    my $hero = shift;
+    $hero->attr('birthdate')->day->eq(4);
+  }
+)->run;
 
 is $res->type, 2, 'Correct response type';
-is scalar @{$res->response}, 2, 'Correct response';
+is scalar @{ $res->response }, 2, 'Correct response';
 
 # day_of_week
-$res = r->table('marvel')->filter( sub {
-  my $hero = shift;
-  $hero->attr('birthdate')->day_of_week->eq( 2 );
-})->run;
+$res = r->table('marvel')->filter(
+  sub {
+    my $hero = shift;
+    $hero->attr('birthdate')->day_of_week->eq(2);
+  }
+)->run;
 
 is $res->type, 2, 'Correct response type';
-is scalar @{$res->response}, 3, 'Correct response';
+is scalar @{ $res->response }, 3, 'Correct response';
 
 # day_of_week with Tuesday constant
-$res = r->table('marvel')->filter( sub {
-  my $hero = shift;
-  $hero->attr('birthdate')->day_of_week->eq( r->tuesday );
-})->run;
+$res = r->table('marvel')->filter(
+  sub {
+    my $hero = shift;
+    $hero->attr('birthdate')->day_of_week->eq( r->tuesday );
+  }
+)->run;
 
 is $res->type, 2, 'Correct response type';
-is scalar @{$res->response}, 3, 'Correct response';
+is scalar @{ $res->response }, 3, 'Correct response';
 
 # day_of_year
-$res = r->table('marvel')->filter(
-  r->row->attr('birthdate')->day_of_year->eq(308)
-)->run;
+$res = r->table('marvel')
+  ->filter( r->row->attr('birthdate')->day_of_year->eq(308) )->run;
 
 is $res->type, 2, 'Correct response type';
-is scalar @{$res->response}, 2, 'Correct response';
+is scalar @{ $res->response }, 2, 'Correct response';
 
 # hours
-$res = r->table('marvel')->filter(
-  r->row->attr('birthdate')->hours->lt(7)
-)->run;
+$res
+  = r->table('marvel')->filter( r->row->attr('birthdate')->hours->lt(7) )->run;
 
 is $res->type, 2, 'Correct response type';
-is scalar @{$res->response}, 1, 'Correct response';
+is scalar @{ $res->response }, 1, 'Correct response';
 
 # minutes
-$res = r->table('marvel')->filter(
-  r->row->attr('birthdate')->minutes->lt(10)
-)->run;
+$res = r->table('marvel')->filter( r->row->attr('birthdate')->minutes->lt(10) )
+  ->run;
 
 is $res->type, 2, 'Correct response type';
-is scalar @{$res->response}, 3, 'Correct response';
+is scalar @{ $res->response }, 3, 'Correct response';
 
 # seconds
-$res = r->table('marvel')->filter(
-  r->row->attr('birthdate')->seconds->gt(1)
-)->run;
+$res = r->table('marvel')->filter( r->row->attr('birthdate')->seconds->gt(1) )
+  ->run;
 
 is $res->type, 2, 'Correct response type';
-is scalar @{$res->response}, 2, 'Correct response';
+is scalar @{ $res->response }, 2, 'Correct response';
 
 # to_iso8601
 $res = r->time( 1986, 11, 3, 'Z' )->to_iso8601->run($conn);
@@ -263,7 +287,7 @@ is $res->response, '1986-11-03T00:00:00+00:00', 'Correct response';
 # to_epoch_time
 $res = r->time( 1986, 11, 3, 'Z' )->to_epoch_time->run($conn);
 
-is $res->type, 1, 'Correct response type';
+is $res->type,     1,           'Correct response type';
 is $res->response, '531360000', 'Correct response';
 
 # clean up

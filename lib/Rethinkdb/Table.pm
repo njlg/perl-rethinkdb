@@ -55,7 +55,7 @@ sub index_create {
   my $index = shift;
   my $func  = shift;
 
-  if( $func ) {
+  if ($func) {
     carp 'table->index_create does not accept functions yet';
   }
 
@@ -69,7 +69,7 @@ sub index_create {
 }
 
 sub index_drop {
-  my $self = shift;
+  my $self  = shift;
   my $index = shift;
 
   my $q = Rethinkdb::Query->new(
@@ -129,7 +129,7 @@ sub delete {
 # TODO: key can be other things besides string
 sub get {
   my $self = shift;
-  my ( $key ) = @_;
+  my ($key) = @_;
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
@@ -148,15 +148,15 @@ sub get_all {
   my $values = \@_;
   my $params = {};
 
-  if( ref $values->[0] eq 'ARRAY' ) {
-    ($values, $params) = @{$values};
+  if ( ref $values->[0] eq 'ARRAY' ) {
+    ( $values, $params ) = @{$values};
   }
 
-  if( ref $values->[$#{$values}] eq 'HASH' ) {
+  if ( ref $values->[ $#{$values} ] eq 'HASH' ) {
     $params = pop @{$values};
   }
 
-  if( !$params->{index} ) {
+  if ( !$params->{index} ) {
     $params->{index} = 'id';
   }
 

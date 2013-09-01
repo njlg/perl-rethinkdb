@@ -12,7 +12,7 @@ has port       => 28015;
 has default_db => 'test';
 has auth_key   => '';
 has timeout    => 20;
-has ['rdb', 'handle'];
+has [ 'rdb', 'handle' ];
 
 
 sub connect {
@@ -23,18 +23,19 @@ sub connect {
     PeerPort => $self->port,
     Reuse    => 1,
     Timeout  => $self->timeout,
-  ) or croak 'ERROR: Could not connect to ' . $self->host . ':' . $self->port;
+    )
+    or croak 'ERROR: Could not connect to ' . $self->host . ':' . $self->port;
 
   $self->handle->send( pack 'L<', VersionDummy::Version::V0_2 );
-  $self->handle->send( (pack 'L<', length $self->auth_key) . $self->auth_key );
+  $self->handle->send(
+    ( pack 'L<', length $self->auth_key ) . $self->auth_key );
 
   my $response;
   my $char = '';
   do {
-    $self->handle->recv($char, 1);
+    $self->handle->recv( $char, 1 );
     $response .= $char;
-  }
-  while( $char ne "\0" );
+  } while ( $char ne "\0" );
 
   return $self;
 }
@@ -54,10 +55,14 @@ sub reconnect {
     PeerHost => $self->host,
     PeerPort => $self->port,
     Reuse    => 1,
-  ) or croak 'ERROR: Could not reconnect to ' . $self->host . ':' . $self->port;
+    )
+    or croak 'ERROR: Could not reconnect to '
+    . $self->host . ':'
+    . $self->port;
 
   $self->handle->send( pack 'L<', VersionDummy::Version::V0_2 );
-  $self->handle->send( (pack 'L<', length $self->auth_key) . $self->auth_key );
+  $self->handle->send(
+    ( pack 'L<', length $self->auth_key ) . $self->auth_key );
 
   return $self;
 }
@@ -81,7 +86,7 @@ sub use {
 
 sub _start {
   my $self = shift;
-  my ($query, $args) = @_;
+  my ( $query, $args ) = @_;
 
   my $q = {
     type  => Query::QueryType::START,
@@ -93,16 +98,16 @@ sub _start {
 }
 
 sub _send {
-  my $self = shift;
+  my $self  = shift;
   my $query = shift;
 
-if( $ENV{RDB_DEBUG} ) {
-  use feature ':5.10';
-  use Data::Dumper;
-  $Data::Dumper::Indent = 1;
-  say 'SENDING:';
-  say Dumper $query;
-}
+  if ( $ENV{RDB_DEBUG} ) {
+    use feature ':5.10';
+    use Data::Dumper;
+    $Data::Dumper::Indent = 1;
+    say 'SENDING:';
+    say Dumper $query;
+  }
 
   my $serial = Query->encode($query);
 
@@ -123,10 +128,10 @@ if( $ENV{RDB_DEBUG} ) {
   # put data in response
   my $res = Rethinkdb::Response->init($res_data);
 
-if( $ENV{RDB_DEBUG} ) {
-  say 'RECEIVED:';
-  say Dumper $res;
-}
+  if ( $ENV{RDB_DEBUG} ) {
+    say 'RECEIVED:';
+    say Dumper $res;
+  }
 
   return $res;
 }

@@ -46,8 +46,8 @@ sub list {
 }
 
 sub table_create {
-  my $self   = shift;
-  my $args   = shift;
+  my $self    = shift;
+  my $args    = shift;
   my $optargs = ref $_[0] ? $_[0] : {@_};
 
   my $q = Rethinkdb::Query->new(

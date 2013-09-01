@@ -11,9 +11,10 @@ has [qw{rdb args optargs type _parent}];
 
 sub new {
   my $class = shift;
-  my $self = bless @_ ? @_ > 1 ? {@_} : { %{ $_[0] } } : {}, ref $class || $class;
+  my $self = bless @_ ? @_ > 1 ? {@_} : { %{ $_[0] } } : {},
+    ref $class || $class;
 
-  if( $self->_parent && $self->_parent->rdb ) {
+  if ( $self->_parent && $self->_parent->rdb ) {
     my $rdb = $self->_parent->rdb;
     delete $self->_parent->{rdb};
     $self->rdb($rdb);
@@ -32,35 +33,30 @@ sub new {
 sub build {
   my $self = shift;
 
-  my $q = {
-    type => $self->type
-  };
+  my $q = { type => $self->type };
 
-   if( $self->args ) {
-    foreach( @{$self->args} ) {
-      if( ref $_ && UNIVERSAL::can($_,'can') && $_->can('build') ) {
-        push @{$q->{args}}, $_->build;
+  if ( $self->args ) {
+    foreach ( @{ $self->args } ) {
+      if ( ref $_ && UNIVERSAL::can( $_, 'can' ) && $_->can('build') ) {
+        push @{ $q->{args} }, $_->build;
       }
       else {
-        push @{$q->{args}}, $_;
+        push @{ $q->{args} }, $_;
       }
     }
   }
 
-  if( $self->optargs ) {
-    foreach( keys %{$self->optargs} ) {
+  if ( $self->optargs ) {
+    foreach ( keys %{ $self->optargs } ) {
       my $value = $self->{optargs}->{$_};
-      if( ref $value && UNIVERSAL::can($value,'can') && $value->can('build') ) {
-        push @{$q->{optargs}}, {
-          key => $_,
-          val => $value->build
-        };
+      if ( ref $value
+        && UNIVERSAL::can( $value, 'can' )
+        && $value->can('build') )
+      {
+        push @{ $q->{optargs} }, { key => $_, val => $value->build };
       }
       else {
-        push @{$q->{optargs}}, {
-          key => $_,
-          val => $value
-        }
+        push @{ $q->{optargs} }, { key => $_, val => $value };
       }
     }
   }
@@ -74,42 +70,42 @@ sub _args {
   my $parent = $self->_parent;
   delete $self->{args};
 
-  if( defined $args ) {
+  if ( defined $args ) {
 
-    if( ref $args ne 'ARRAY' ) {
+    if ( ref $args ne 'ARRAY' ) {
       $args = [$args];
     }
 
     my $expr_args = [];
 
-    if( $parent ) {
+    if ($parent) {
       push @{$expr_args}, $parent;
     }
 
-    foreach( @{$args} ) {
+    foreach ( @{$args} ) {
       push @{$expr_args}, Rethinkdb::Util->expr($_);
     }
 
     $self->args($expr_args);
   }
-  elsif( defined $parent ) {
-    $self->args([$parent]);
+  elsif ( defined $parent ) {
+    $self->args( [$parent] );
   }
 
   return;
 }
 
 sub _optargs {
-  my $self = shift;
+  my $self    = shift;
   my $optargs = $self->optargs;
   delete $self->{optargs};
 
-  if( $optargs ) {
-    if( ref $optargs ) {
+  if ($optargs) {
+    if ( ref $optargs ) {
       my $expr_optargs = {};
 
-      foreach( keys %{$optargs} ) {
-        $expr_optargs->{$_} = Rethinkdb::Util->expr($optargs->{$_});
+      foreach ( keys %{$optargs} ) {
+        $expr_optargs->{$_} = Rethinkdb::Util->expr( $optargs->{$_} );
       }
 
       $self->optargs($expr_optargs);
@@ -121,11 +117,11 @@ sub _optargs {
 
 sub run {
   my $self = shift;
-  my ($connection, $args) = @_;
+  my ( $connection, $args ) = @_;
 
-  if( ref $connection ne 'Rethinkdb::IO' ) {
+  if ( ref $connection ne 'Rethinkdb::IO' ) {
     $args = $connection;
-    if( $self->rdb && $self->rdb->io ) {
+    if ( $self->rdb && $self->rdb->io ) {
       $connection = $self->rdb->io;
     }
     else {
@@ -133,7 +129,7 @@ sub run {
     }
   }
 
-  return $connection->_start($self, $args);
+  return $connection->_start( $self, $args );
 }
 
 sub update {
@@ -152,8 +148,8 @@ sub update {
 }
 
 sub replace {
-  my $self = shift;
-  my $args = shift;
+  my $self    = shift;
+  my $args    = shift;
   my $optargs = @_ ? @_ > 1 ? {@_} : { %{ $_[0] } } : {};
 
   my $q = Rethinkdb::Query->new(
@@ -210,6 +206,7 @@ sub attr {
 
 sub append {
   my $self = shift;
+
   # my $args = @_ ? @_ > 1 ? [@_] : [ @{ $_[0] } ] : [];
   my $args = shift;
 
@@ -224,6 +221,7 @@ sub append {
 
 sub prepend {
   my $self = shift;
+
   # my $args = @_ ? @_ > 1 ? [@_] : [ @{ $_[0] } ] : [];
   my $args = shift;
 
@@ -475,10 +473,8 @@ sub sample {
 sub zip {
   my $self = shift;
 
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => Term::TermType::ZIP,
-  );
+  my $q
+    = Rethinkdb::Query->new( _parent => $self, type => Term::TermType::ZIP, );
 
   return $q;
 }
@@ -705,10 +701,8 @@ sub le {
 sub not {
   my $self = shift;
 
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => Term::TermType::NOT,
-  );
+  my $q
+    = Rethinkdb::Query->new( _parent => $self, type => Term::TermType::NOT, );
 
   return $q;
 }
@@ -745,10 +739,11 @@ sub do {
   my ($args) = @_;
 
   my $q = Rethinkdb::Query->new(
+
     # _parent => $self,
     rdb  => $self->rdb,
     type => Term::TermType::FUNCALL,
-    args => [$args, $self],
+    args => [ $args, $self ],
   );
 
   return $q;
@@ -796,10 +791,9 @@ sub coerce_to {
 sub type_of {
   my $self = shift;
 
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => Term::TermType::TYPEOF,
-  );
+  my $q
+    = Rethinkdb::Query->new( _parent => $self, type => Term::TermType::TYPEOF,
+    );
 
   return $q;
 }
@@ -807,10 +801,8 @@ sub type_of {
 sub info {
   my $self = shift;
 
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => Term::TermType::INFO,
-  );
+  my $q
+    = Rethinkdb::Query->new( _parent => $self, type => Term::TermType::INFO, );
 
   return $q;
 }
@@ -846,17 +838,17 @@ sub between {
   my ( $lower, $upper, $index, $left_bound, $right_bound ) = @_;
 
   my $optargs = {};
-  if( ref $index ) {
+  if ( ref $index ) {
     $optargs = $index;
   }
   else {
     $optargs->{index} = $index || 'id';
 
-    if( $left_bound ) {
+    if ($left_bound) {
       $optargs->{left_bound} = $left_bound;
     }
 
-    if( $right_bound ) {
+    if ($right_bound) {
       $optargs->{right_bound} = $right_bound;
     }
   }
@@ -864,7 +856,7 @@ sub between {
   my $q = Rethinkdb::Query->new(
     _parent => $self,
     type    => Term::TermType::BETWEEN,
-    args    => [$lower, $upper],
+    args    => [ $lower, $upper ],
     optargs => $optargs,
   );
 
@@ -878,7 +870,7 @@ sub inner_join {
   my $q = Rethinkdb::Query->new(
     _parent => $self,
     type    => Term::TermType::INNER_JOIN,
-    args    => [$table, $predicate],
+    args    => [ $table, $predicate ],
   );
 
   return $q;
@@ -891,7 +883,7 @@ sub outer_join {
   my $q = Rethinkdb::Query->new(
     _parent => $self,
     type    => Term::TermType::OUTER_JOIN,
-    args    => [$table, $predicate],
+    args    => [ $table, $predicate ],
   );
 
   return $q;
@@ -899,7 +891,7 @@ sub outer_join {
 
 sub eq_join {
   my $self = shift;
-  my ($left, $table, $optargs) = @_;
+  my ( $left, $table, $optargs ) = @_;
 
   # if( ! $optargs ) {
   #   $optargs = { index => 'id' };
@@ -908,7 +900,7 @@ sub eq_join {
   my $q = Rethinkdb::Query->new(
     _parent => $self,
     type    => Term::TermType::EQ_JOIN,
-    args    => [$left, $table],
+    args    => [ $left, $table ],
     optargs => $optargs,
   );
 
@@ -917,10 +909,10 @@ sub eq_join {
 
 sub reduce {
   my $self = shift;
-  my ($function, $base) = @_;
+  my ( $function, $base ) = @_;
 
   my $optargs = {};
-  if( $base ) {
+  if ($base) {
     $optargs->{base} = $base;
   }
 
@@ -988,17 +980,17 @@ sub union {
 
 sub grouped_map_reduce {
   my $self = shift;
-  my ($grouping, $reduction, $mapping, $base) = @_;
+  my ( $grouping, $reduction, $mapping, $base ) = @_;
 
   my $optargs = {};
-  if( $base ) {
+  if ($base) {
     $optargs->{base} = $base;
   }
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
     type    => Term::TermType::GROUPED_MAP_REDUCE,
-    args    => [$grouping, $reduction, $mapping],
+    args    => [ $grouping, $reduction, $mapping ],
     optargs => $optargs,
   );
 
@@ -1010,9 +1002,9 @@ sub group_by {
   my $args = [@_];
 
   my $reductor;
-  if( ref $args->[$#{$args}] ) {
+  if ( ref $args->[ $#{$args} ] ) {
     $reductor = pop @{$args};
-    $args = [$args, $reductor];
+    $args = [ $args, $reductor ];
   }
 
   my $q = Rethinkdb::Query->new(
@@ -1051,7 +1043,7 @@ sub to_epoch_time {
 }
 
 sub during {
-  my $self = shift;
+  my $self    = shift;
   my $start   = shift;
   my $end     = shift;
   my $optargs = shift;
@@ -1059,7 +1051,7 @@ sub during {
   my $q = Rethinkdb::Query->new(
     _parent => $self,
     type    => Term::TermType::DURING,
-    args    => [$start, $end],
+    args    => [ $start, $end ],
     optargs => $optargs,
   );
 
@@ -1069,10 +1061,8 @@ sub during {
 sub date {
   my $self = shift;
 
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => Term::TermType::DATE,
-  );
+  my $q
+    = Rethinkdb::Query->new( _parent => $self, type => Term::TermType::DATE, );
 
   return $q;
 }
@@ -1102,10 +1092,8 @@ sub timezone {
 sub year {
   my $self = shift;
 
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => Term::TermType::YEAR,
-  );
+  my $q
+    = Rethinkdb::Query->new( _parent => $self, type => Term::TermType::YEAR, );
 
   return $q;
 }
@@ -1113,10 +1101,9 @@ sub year {
 sub month {
   my $self = shift;
 
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => Term::TermType::MONTH,
-  );
+  my $q
+    = Rethinkdb::Query->new( _parent => $self, type => Term::TermType::MONTH,
+    );
 
   return $q;
 }
@@ -1124,10 +1111,8 @@ sub month {
 sub day {
   my $self = shift;
 
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => Term::TermType::DAY,
-  );
+  my $q
+    = Rethinkdb::Query->new( _parent => $self, type => Term::TermType::DAY, );
 
   return $q;
 }
@@ -1157,10 +1142,9 @@ sub day_of_year {
 sub hours {
   my $self = shift;
 
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => Term::TermType::HOURS,
-  );
+  my $q
+    = Rethinkdb::Query->new( _parent => $self, type => Term::TermType::HOURS,
+    );
 
   return $q;
 }
