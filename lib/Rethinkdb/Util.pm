@@ -1,7 +1,7 @@
 package Rethinkdb::Util;
 use Rethinkdb::Base -strict;
 
-use Scalar::Util 'blessed';
+use Scalar::Util qw{ blessed looks_like_number };
 use JSON::PP 'encode_json';
 use Carp 'croak';
 
@@ -153,24 +153,14 @@ sub to_datum {
     return;
   }
 
-  # if ( ref $value eq 'ARRAY' ) {
-  #   return $self->_to_datum_array($value);
-  # }
-
-  # if ( ref $value eq 'HASH' ) {
-  #   return $self->_to_datum_object($value);
-  # }
-
   if ( ref $value eq 'ARRAY' ) {
     return $self->make_array($value);
   }
-
-  if ( ref $value eq 'HASH' ) {
+  elsif ( ref $value eq 'HASH' ) {
     return $self->make_obj($value);
   }
-
-  if ( !ref $value && $value =~ /^\d+$/ ) {
-    $hash = { type => Datum::DatumType::R_NUM, r_num => int $value };
+  elsif ( looks_like_number $value ) {
+    $hash = { type => Datum::DatumType::R_NUM, r_num => $value };
   }
   elsif ( !ref $value ) {
     $hash = { type => Datum::DatumType::R_STR, r_str => $value };

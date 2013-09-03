@@ -2,6 +2,7 @@ package Rethinkdb::Query::Datum;
 use Rethinkdb::Base 'Rethinkdb::Query';
 
 use Carp 'croak';
+use Scalar::Util 'looks_like_number';
 use Rethinkdb::Protocol;
 
 has 'data';
@@ -24,8 +25,8 @@ sub build {
   if ( !ref $data && !$data && $data != '0' ) {
     $hash = { type => Datum::DatumType::R_NULL, };
   }
-  elsif ( !ref $data && $data =~ /^\d+$/ ) {
-    $hash = { type => Datum::DatumType::R_NUM, r_num => int $data };
+  elsif ( looks_like_number $data ) {
+    $hash = { type => Datum::DatumType::R_NUM, r_num => $data };
   }
   elsif ( !ref $data ) {
     $hash = { type => Datum::DatumType::R_STR, r_str => $data };
@@ -35,7 +36,7 @@ sub build {
     $hash = { type => Datum::DatumType::R_BOOL, r_bool => $data == 1 };
   }
   else {
-    croak "Got crazy Datum: $data";
+    croak "Got unknown Datum: $data";
   }
 
   return { type => Term::TermType::DATUM, datum => $hash, };
