@@ -92,7 +92,7 @@ r->table('marvel')->insert(
 )->run;
 
 # TODO: how to really test for this
-$res  = r->db('test')->table( 'marvel', 1 )->run;
+$res  = r->db('test')->table( 'marvel', 1)->run;
 $res2 = r->db('test')->table( 'marvel', r->true )->run;
 
 # everything should be the same but the tokens

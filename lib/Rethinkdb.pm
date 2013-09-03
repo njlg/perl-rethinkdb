@@ -5,10 +5,10 @@ use Carp 'croak';
 use Scalar::Util 'weaken';
 
 use Rethinkdb::IO;
-use Rethinkdb::Database;
-use Rethinkdb::Query;
-use Rethinkdb::Table;
 use Rethinkdb::Protocol;
+use Rethinkdb::Query::Database;
+use Rethinkdb::Query::Table;
+use Rethinkdb::Query;
 use Rethinkdb::Util;
 
 our $VERSION = '0.03';
@@ -101,7 +101,7 @@ sub db {
   my $self = shift;
   my $name = shift;
 
-  my $db = Rethinkdb::Database->new(
+  my $db = Rethinkdb::Query::Database->new(
     rdb  => $self,
     type => Term::TermType::DB,
     name => $name,
@@ -154,14 +154,21 @@ sub table_list {
 }
 
 sub table {
-  my $self = shift;
-  my $name = shift;
+  my $self     = shift;
+  my $name     = shift;
+  my $outdated = shift;
 
-  my $t = Rethinkdb::Table->new(
-    rdb  => $self,
-    type => Term::TermType::TABLE,
-    name => $name,
-    args => $name,
+  my $optargs = {};
+  if( $outdated ) {
+    $optargs = { use_outdated => 1 };
+  }
+
+  my $t = Rethinkdb::Query::Table->new(
+    rdb     => $self,
+    type    => Term::TermType::TABLE,
+    name    => $name,
+    args    => $name,
+    optargs => $optargs,
   );
 
   weaken $t->{rdb};
@@ -200,13 +207,20 @@ sub desc {
 }
 
 sub js {
-  my $self = shift;
-  my $args = shift;
+  my $self    = shift;
+  my $args    = shift;
+  my $timeout = shift;
+
+  my $optargs = {};
+  if( $timeout ) {
+    $optargs = { timeout => $timeout };
+  }
 
   my $q = Rethinkdb::Query->new(
-    rdb  => $self,
-    type => Term::TermType::JAVASCRIPT,
-    args => $args,
+    rdb     => $self,
+    type    => Term::TermType::JAVASCRIPT,
+    args    => $args,
+    optargs => $optargs,
   );
 
   weaken $q->{rdb};
@@ -549,3 +563,270 @@ use overload
 sub new { bless {}, $_[0] }
 
 1;
+
+=encoding utf8
+
+=head1 NAME
+
+Rethinkdb - Pure Perl RethinkDB Driver
+
+=head1 SYNOPSIS
+
+  package MyApp;
+  use Rethinkdb;
+
+  r->connect->repl;
+  r->table('agents')->get('007')->update(
+    r->branch(
+      r->row->attr('in_centrifuge'),
+      {'expectation': 'death'},
+      {}
+    )
+  )->run;
+
+=head1 DESCRIPTION
+
+Rethinkdb enables Perl programs to interact with RethinkDB in a easy-to-use
+way. This particular driver is based on the official Python, Javascript, and
+Ruby drivers.
+
+To learn more about RethinkDB take a look at the L<official documentation|http://rethinkdb.com/api/>.
+
+=head1 ATTRIBUTES
+
+L<Rethinkdb> implements the following attributes.
+
+=head2 io
+
+  my $io = r->io;
+  r->io(Rethinkdb::IO->new);
+
+The C<io> attribute returns the current L<Rethinkdb::IO> instance that
+L<Rethinkdb> is currently set to use. If C<io> is not set by the time C<run>
+is called, then an error will occur.
+
+=head1 METHODS
+
+L<Rethinkdb> inherits all methods from L<Rethinkdb::Base> and implements the
+following methods.
+
+=head2 r
+
+  my $r = r;
+  my $conn = r->connect;
+
+C<r> is a factory method to begin a new Rethink DB query. The C<r> sub is
+exported in the importer's namespace so that it can be used as short-hand;
+similar to what the official drivers provide. In addition, to creating a
+new instance, if a L<Rethinkdb::IO> connection has been repl-ized, then that
+connection will be set via L<io> in the new instance.
+
+=head2 connect
+
+  my $conn1 = r->connect;
+  my $conn2 = r->connect('localhost', 28015, 'test', 'auth_key', 20);
+
+Create a new connection to a RethinkDB shard. Creating a connection tries to
+contact the RethinkDB shard immediately and will fail if the connection fails.
+
+=head2 db_create
+
+  r->db_create('test')->run;
+
+Create a database. A RethinkDB database is a collection of tables, similar to
+relational databases.
+
+=head2 db_drop
+
+  r->db_drop('test')->run;
+
+Drop a database. The database, all its tables, and corresponding data will be deleted.
+
+=head2 db_list
+
+  r->db_list->run;
+
+List all database names in the system.
+
+=head2 db
+
+  r->db('irl')->table('marvel')->run;
+
+Reference a database.
+
+=head2 table_create
+
+  r->table_create('marvel')->run;
+  r->table_create('marvel', {
+    primary_key => 'superhero',
+    durability  => 'soft',
+    cache_size  => 512,
+    datacenter  => 'obscurus',
+  })->run;
+
+Create a table. A RethinkDB table is a collection of JSON documents.
+
+The second argument contains optional arguments:
+
+=over 4
+
+=item primary_key (string)
+
+The name of the primary key. The default primary key is id.
+
+=item durability (string)
+
+If set to 'soft', this enables soft durability on this table: writes will be acknowledged by the server immediately and flushed to disk in the background. Default is 'hard' (acknowledgement of writes happens after data has been written to disk).
+
+=item cache_size (number)
+
+Set the cache size (in MB) to be used by the table. Default is 1024MB.
+
+=item datacenter (string)
+
+The name of the datacenter this table should be assigned to.
+
+=back
+
+=head2 table_drop
+
+  r->table_drop('marvel')->run;
+
+Drop a table. The table and all its data will be deleted.
+
+=head2 table_list
+
+  r->table_list->run;
+
+List all table names in a database.
+
+=head2 table
+
+  r->table('marvel')->run;
+  r->table('marvel', 1)->run;
+  r->table('marvel')->get('Iron Man')->run;
+  r->table('marvel', r->true)->get('Iron Man')->run;
+
+Select all documents in a table. This command can be chained with other
+commands to do further processing on the data.
+
+The second argument specifies whether using outdated results is okay or not.
+By default the results will be accurate.
+
+=head2 row
+
+  r->table('users')->filter(r->row->attr('age')->lt(5))->run;
+  r->table('users')->filter(
+    r->row->attr('embedded_doc')->attr('child')->gt(5)
+  )->run;
+  r->expr([1, 2, 3])->map(r->row->add(1))->run;
+  r->table('users')->filter(sub {
+    my $row = shift;
+    $row->attr('name')->eq(r->table('prizes')->get('winner'));
+  })->run;
+
+Returns the currently visited document.
+
+=head2 asc
+
+  r->table('marvel')->order_by(r->asc('enemies_vanquished'))->run;
+
+Specifies that a column should be ordered in ascending order.
+
+=head2 desc
+
+  r->table('marvel')->order_by(r->desc('enemies_vanquished'))->run;
+
+Specifies that a column should be ordered in descending order.
+
+=head2 js
+
+  r->js("'str1' + 'str2'")->run($conn);
+  r->table('marvel')->filter(
+    r->js('(function (row) { return row->magazines > 5; })')
+  )->run($conn);
+  r->js('while(true) {}', 1.3)->run($conn);
+
+Create a javascript expression.
+
+=head2 expr
+
+=head2 json
+
+=head2 count
+
+=head2 sum
+
+=head2 avg
+
+=head2 do
+
+=head2 branch
+
+=head2 error
+
+=head2 now
+
+=head2 time
+
+=head2 epoch_time
+
+=head2 iso8601
+
+=head2 monday
+
+=head2 tuesday
+
+=head2 wednesday
+
+=head2 thursday
+
+=head2 friday
+
+=head2 saturday
+
+=head2 sunday
+
+=head2 january
+
+=head2 february
+
+=head2 march
+
+=head2 april
+
+=head2 may
+
+=head2 june
+
+=head2 july
+
+=head2 august
+
+=head2 september
+
+=head2 october
+
+=head2 november
+
+=head2 december
+
+=head2 true
+
+=head2 false
+
+=head1 AUTHOR
+
+Nathan Levin-Greenhaw, C<njlg@cpan.org>.
+
+=head1 COPYRIGHT AND LICENSE
+
+Unless otherwise noted:
+
+Copyright (C) 2013, Nathan Levin-Greenhaw
+
+This program is free software, you can redistribute it and/or modify it under
+the terms of the Artistic License version 2.0.
+
+=cut
+

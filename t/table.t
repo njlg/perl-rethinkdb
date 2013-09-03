@@ -47,7 +47,7 @@ TODO: {
 #
 # table class methods
 #
-isa_ok r->db('test')->table('dcuniverse'), 'Rethinkdb::Table', 'Correct class';
+isa_ok r->db('test')->table('dcuniverse'), 'Rethinkdb::Query::Table', 'Correct class';
 isa_ok r->db('test')->table('dcuniverse')->rdb, 'Rethinkdb',
   'Correctly has reference';
 

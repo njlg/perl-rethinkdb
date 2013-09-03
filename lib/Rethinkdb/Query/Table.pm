@@ -1,4 +1,4 @@
-package Rethinkdb::Table;
+package Rethinkdb::Query::Table;
 use Rethinkdb::Base 'Rethinkdb::Query';
 
 use Carp qw'croak carp';

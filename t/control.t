@@ -121,6 +121,8 @@ $res = r->js("'str1' + 'str2'")->run;
 is $res->type,     1,          'Correct response type';
 is $res->response, 'str1str2', 'Correct response';
 
+$res = r->js('while(true) {}', 1.3)->run($conn);
+
 # coerce_to
 $res = r->table('marvel')->coerce_to('array')->run;
 

@@ -1,4 +1,4 @@
-package Rethinkdb::Database;
+package Rethinkdb::Query::Database;
 use Rethinkdb::Base 'Rethinkdb::Query';
 
 use Scalar::Util 'weaken';
@@ -87,12 +87,19 @@ sub table_list {
 sub table {
   my $self = shift;
   my $name = shift;
+  my $outdated = shift;
 
-  my $t = Rethinkdb::Table->new(
+  my $optargs = {};
+  if( $outdated ) {
+    $optargs = { use_outdated => 1 };
+  }
+
+  my $t = Rethinkdb::Query::Table->new(
     _parent => $self,
     type    => Term::TermType::TABLE,
     name    => $name,
     args    => $name,
+    optargs => $optargs,
   );
 
   return $t;

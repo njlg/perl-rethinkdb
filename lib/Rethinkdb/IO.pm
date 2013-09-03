@@ -105,8 +105,8 @@ sub _send {
     use feature ':5.10';
     use Data::Dumper;
     $Data::Dumper::Indent = 1;
-    say 'SENDING:';
-    say Dumper $query;
+    say {*STDERR} 'SENDING:';
+    say {*STDERR} Dumper $query;
   }
 
   my $serial = Query->encode($query);
@@ -129,8 +129,8 @@ sub _send {
   my $res = Rethinkdb::Response->init($res_data);
 
   if ( $ENV{RDB_DEBUG} ) {
-    say 'RECEIVED:';
-    say Dumper $res;
+    say {*STDERR} 'RECEIVED:';
+    say {*STDERR} Dumper $res;
   }
 
   return $res;

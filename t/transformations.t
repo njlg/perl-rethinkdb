@@ -22,7 +22,7 @@ r->table('marvel')->insert(
       superhero  => 'Hulk',
       superpower => 'Smash',
       active     => 1,
-      age        => 35,
+      age        => 38,
       monsters   => ['Werewolf']
     },
     {
@@ -46,7 +46,7 @@ r->table('marvel')->insert(
       superhero  => 'Hawk-Eye',
       superpower => 'Bow-n-arrow',
       active     => 0,
-      age        => 35,
+      age        => 32,
       monsters   => ['Werehound']
     },
     {
@@ -54,7 +54,7 @@ r->table('marvel')->insert(
       superhero  => 'Wasp',
       superpower => 'Bio-lasers',
       active     => 0,
-      age        => 35,
+      age        => 29,
       monsters   => ['Wereelephant']
     },
     {
@@ -62,7 +62,7 @@ r->table('marvel')->insert(
       superhero  => 'Ant-Man',
       superpower => 'Size',
       active     => 1,
-      age        => 35,
+      age        => 34,
       monsters   => ['Werebear']
     },
     {
@@ -70,7 +70,7 @@ r->table('marvel')->insert(
       superhero  => 'Wolverine',
       superpower => 'Adamantium',
       active     => 0,
-      age        => 35,
+      age        => 40,
       monsters   => ['Werehampster']
     },
     {
@@ -157,8 +157,8 @@ $res = r->table('marvel')->map(
 )->run;
 
 is $res->type, 2, 'Correct response type';
-is_deeply $res->response,
-  [ '273', '49', '78', '75', '72', '77', '71', '2074', '76' ],
+is_deeply [ sort @{ $res->response } ],
+  ['2074', '273', '49', '64', '69', '71', '75', '78', '88'],
   'Correct number of documents';
 
 # with_fields - Takes a sequence of objects and a list of fields.
@@ -179,55 +179,54 @@ $res = r->table('marvel')->concat_map(
 )->run;
 
 is $res->type, 2, 'Correct response type';
-is_deeply $res->response,
+is_deeply [ sort @{ $res->response } ],
   [
-  'Werecat',   'Werepig',  'Werechicken', 'Werehampster',
-  'Werehound', 'Werewolf', 'Werebear',    'Wererabit',
-  'Weredog',   'Wereelephant'
+  'Werebear',     'Werecat',      'Werechicken', 'Weredog',
+  'Wereelephant', 'Werehampster', 'Werehound',   'Werepig',
+  'Wererabit',    'Werewolf',
   ],
   'Correct document fields';
 
 # order_by
-my $order1 = [
-  'Ant-Man',  'Captain America', 'Hawk-Eye', 'Hulk',
-  'Iron Man', 'Spider-Man',      'Thor',     'Wasp',
-  'Wolverine'
-];
-my $order2 = [
-  'Spider-Man',      'Wolverine', 'Hawk-Eye', 'Wasp',
-  'Captain America', 'Hulk',      'Ant-Man',  'Iron Man',
-  'Thor'
-];
-my $order3 = [
-  'Captain America', 'Hulk',       'Ant-Man',   'Iron Man',
-  'Thor',            'Spider-Man', 'Wolverine', 'Hawk-Eye',
-  'Wasp'
-];
-
 $res = r->table('marvel')->order_by('superhero')->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 is $res->type,         2,       'Correct response type';
 isa_ok $res->response, 'ARRAY', 'Correct response type';
 is scalar @{ $res->response }, 9, 'Correct number of documents returned';
-is_deeply [ map { $_->{superhero} } @{ $res->response } ], $order1,
-  'Correct order';
+is_deeply [ map { $_->{superhero} } @{ $res->response } ], [
+  'Ant-Man',  'Captain America', 'Hawk-Eye', 'Hulk',
+  'Iron Man', 'Spider-Man',      'Thor',     'Wasp',
+  'Wolverine'
+], 'Correct order';
+
+my $order = [
+  'Spider-Man',
+  'Wasp',
+  'Hawk-Eye',
+  'Ant-Man',
+  'Iron Man',
+  'Hulk',
+  'Wolverine',
+  'Captain America',
+  'Thor'
+];
 
 # order by two attributes
-$res = r->table('marvel')->order_by( 'active', 'superhero' )->run;
+$res = r->table('marvel')->order_by( 'age', 'superhero' )->run;
 
-is_deeply [ map { $_->{superhero} } @{ $res->response } ], $order2,
+is_deeply [ map { $_->{superhero} } @{ $res->response } ], $order,
   'Correct order';
 
 # order with asc/desc
-$res = r->table('marvel')->order_by( r->desc('active'), r->asc('superhero') )
+$res = r->table('marvel')->order_by( r->desc('age'), r->asc('superhero') )
   ->run;
 
-is_deeply [ map { $_->{superhero} } @{ $res->response } ], $order3,
+is_deeply [ map { $_->{superhero} } @{ $res->response } ], [reverse @{$order}],
   'Correct order';
 
 # skip
-$res = r->table('marvel')->skip(8)->run;
+$res = r->table('marvel')->order_by('superhero')->skip(7)->run;
 
 is $res->type, 2, 'Correct response type';
 is $res->response->[0]->{superhero}, 'Wasp', 'Correct response';

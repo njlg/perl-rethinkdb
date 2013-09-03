@@ -36,7 +36,7 @@ ok !grep {/superheroes/} @{ $res->response }, 'Db is no longer listed';
 #
 # db class methods
 #
-isa_ok r->db('superheroes'), 'Rethinkdb::Database', 'correct class';
+isa_ok r->db('superheroes'), 'Rethinkdb::Query::Database', 'correct class';
 isa_ok r->db('superheroes')->create, 'Rethinkdb::Query', 'correct class';
 $res = r->db('superheroes')->create->run;
 
