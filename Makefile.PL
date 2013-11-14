@@ -24,3 +24,4 @@ WriteMakefile(
   PREREQ_PM => { 'Google::ProtocolBuffers' => '0.08' },
   test      => { TESTS       => 't/*.t' }
 );
+
