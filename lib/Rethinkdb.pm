@@ -159,7 +159,7 @@ sub table {
   my $outdated = shift;
 
   my $optargs = {};
-  if( $outdated ) {
+  if ($outdated) {
     $optargs = { use_outdated => 1 };
   }
 
@@ -212,7 +212,7 @@ sub js {
   my $timeout = shift;
 
   my $optargs = {};
-  if( $timeout ) {
+  if ($timeout) {
     $optargs = { timeout => $timeout };
   }
 
@@ -287,9 +287,9 @@ sub branch {
   my $self = shift;
   my ( $predicate, $true, $false ) = @_;
 
-  $predicate = Rethinkdb::Util->wrap_func($predicate);
-  $true      = Rethinkdb::Util->wrap_func($true);
-  $false     = Rethinkdb::Util->wrap_func($false);
+  # $predicate = Rethinkdb::Util->wrap_func($predicate);
+  # $true      = Rethinkdb::Util->wrap_func($true);
+  # $false     = Rethinkdb::Util->wrap_func($false);
 
   my $q = Rethinkdb::Query->new(
     rdb  => $self,
@@ -743,7 +743,7 @@ Specifies that a column should be ordered in descending order.
 
   r->js("'str1' + 'str2'")->run($conn);
   r->table('marvel')->filter(
-    r->js('(function (row) { return row->magazines > 5; })')
+    r->js('(function (row) { return row.age > 90; })')
   )->run($conn);
   r->js('while(true) {}', 1.3)->run($conn);
 
@@ -751,17 +751,62 @@ Create a javascript expression.
 
 =head2 expr
 
+  r->expr({a => 'b'})->merge({b => [1,2,3]})->run($conn);
+
+Construct a RQL JSON object from a native object.
+
 =head2 json
+
+  r->json("[1,2,3]")->run($conn);
+
+Parse a JSON string on the server.
 
 =head2 count
 
+  r->table('marvel')->group_by('strength', r->count)->run;
+
+Count the total size of the group. This is one of the standard aggregator
+object to be used in conjunction with L<Rethinkdb::Query::group_by>.
+
 =head2 sum
+
+  r->table('marvel')->group_by('strength', r->sum('enemiesVanquished'))->run;
+
+Compute the sum of the given field in the group. This is one of the standard
+aggregator object to be used in conjunction with L<Rethinkdb::Query::group_by>.
+
 
 =head2 avg
 
+  r->table('marvel')->group_by('strength', r->avg('agility'))->run;
+
+Compute the average value of the given attribute for the group. This is one
+of the standard aggregator object to be used in conjunction with
+L<Rethinkdb::Query::group_by>.
+
 =head2 do
 
+  r->do(r->table('marvel')->get('IronMan'), sub {
+    my $ironman = shift;
+    return $ironman->attr('name');
+  })->run;
+
+Evaluate the expr in the context of one or more value bindings. The type of
+the result is the type of the value returned from expr.
+
 =head2 branch
+
+  r->table('marvel')->map(
+    r->branch(
+      r->row->attr('victories')->lt(100),
+      r->row->attr('name')->add(' is a superhero'),
+      r->row->attr('name')->add(' is a hero')
+    )
+  )->run;
+
+Evaluate one of two control paths based on the value of an expression. C<branch>
+is effectively an C<if> renamed due to language constraints. The type of the
+result is determined by the type of the branch that gets executed.
 
 =head2 error
 
@@ -824,6 +869,9 @@ Nathan Levin-Greenhaw, C<njlg@cpan.org>.
 Unless otherwise noted:
 
 Copyright (C) 2013, Nathan Levin-Greenhaw
+
+A lot of the above documentation above was taken from the L<official documentation|http://rethinkdb.com/api/>.
+Copyright (C) 2010-2013 RethinkDB.
 
 This program is free software, you can redistribute it and/or modify it under
 the terms of the Artistic License version 2.0.

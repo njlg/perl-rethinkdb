@@ -148,7 +148,7 @@ r->table('dc')->insert(
 
 my $res;
 
-# map - Transform each element of the sequence by applying the given mapping function.
+# map
 $res = r->table('marvel')->map(
   sub {
     my $hero = shift;
@@ -158,10 +158,10 @@ $res = r->table('marvel')->map(
 
 is $res->type, 2, 'Correct response type';
 is_deeply [ sort @{ $res->response } ],
-  ['2074', '273', '49', '64', '69', '71', '75', '78', '88'],
+  [ '2074', '273', '49', '64', '69', '71', '75', '78', '88' ],
   'Correct number of documents';
 
-# with_fields - Takes a sequence of objects and a list of fields.
+# with_fields
 $res = r->table('marvel')->with_fields( 'superhero', 'age' )->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
@@ -170,7 +170,7 @@ is scalar @{ $res->response }, 9, 'Correct number of documents';
 is_deeply [ keys %{ $res->response->[0] } ], [ 'superhero', 'age' ],
   'Correct document fields';
 
-# concat_map - Flattens a sequence of arrays returned by the mappingFunction into a single sequence.
+# concat_map
 $res = r->table('marvel')->concat_map(
   sub {
     my $hero = shift;
@@ -194,21 +194,17 @@ isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 is $res->type,         2,       'Correct response type';
 isa_ok $res->response, 'ARRAY', 'Correct response type';
 is scalar @{ $res->response }, 9, 'Correct number of documents returned';
-is_deeply [ map { $_->{superhero} } @{ $res->response } ], [
+is_deeply [ map { $_->{superhero} } @{ $res->response } ],
+  [
   'Ant-Man',  'Captain America', 'Hawk-Eye', 'Hulk',
   'Iron Man', 'Spider-Man',      'Thor',     'Wasp',
   'Wolverine'
-], 'Correct order';
+  ],
+  'Correct order';
 
 my $order = [
-  'Spider-Man',
-  'Wasp',
-  'Hawk-Eye',
-  'Ant-Man',
-  'Iron Man',
-  'Hulk',
-  'Wolverine',
-  'Captain America',
+  'Spider-Man', 'Wasp', 'Hawk-Eye',  'Ant-Man',
+  'Iron Man',   'Hulk', 'Wolverine', 'Captain America',
   'Thor'
 ];
 
@@ -219,11 +215,11 @@ is_deeply [ map { $_->{superhero} } @{ $res->response } ], $order,
   'Correct order';
 
 # order with asc/desc
-$res = r->table('marvel')->order_by( r->desc('age'), r->asc('superhero') )
-  ->run;
+$res
+  = r->table('marvel')->order_by( r->desc('age'), r->asc('superhero') )->run;
 
-is_deeply [ map { $_->{superhero} } @{ $res->response } ], [reverse @{$order}],
-  'Correct order';
+is_deeply [ map { $_->{superhero} } @{ $res->response } ],
+  [ reverse @{$order} ], 'Correct order';
 
 # skip
 $res = r->table('marvel')->order_by('superhero')->skip(7)->run;

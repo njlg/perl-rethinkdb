@@ -24,7 +24,7 @@ r->table('marvel')->insert(
       user_id         => 8,
       superhero       => 'Wolverine',
       superpower      => 'Adamantium',
-      age             => 35,
+      age             => 40,
       victories       => 12,
       battles         => 3,
       villainDefeated => 'Sabretooth',
@@ -67,11 +67,13 @@ r->table('marvel')->map(
   r->branch(
 
     # r->row->attr('victories')->gt(100),
-    # sub { shift->attr('victories')->gt(1); },
-    r->true, sub { shift->attr('superhero')->add(' is a superhero'); },
+    sub { shift->attr('victories')->gt(1); },
+    # r->true,
+    sub { shift->attr('superhero')->add(' is a superhero'); },
     sub { shift->attr('superhero')->add(' is a hero'); }
   )
 )->run;
+exit;
 
 # for_each
 $res = r->table('marvel')->for_each(
@@ -121,7 +123,21 @@ $res = r->js("'str1' + 'str2'")->run;
 is $res->type,     1,          'Correct response type';
 is $res->response, 'str1str2', 'Correct response';
 
-$res = r->js('while(true) {}', 1.3)->run($conn);
+# js with function
+$res = r->table('marvel')
+  ->filter( r->js('(function (row) { return row.age > 30; })') )->run($conn);
+
+is $res->type, 2, 'Correct response type';
+is_deeply [ map { $_->{superhero} } @{ $res->response } ],
+  [ 'Wolverine', 'Iron Man' ], 'Correct response';
+
+# js with timeout
+$res = r->js( 'while(true) {}', 1.3 )->run($conn);
+
+is $res->type, 18, 'Correct response type';
+is $res->response->[0],
+  'JavaScript query `while(true) {}` timed out after 1.300 seconds.',
+  'Correct response';
 
 # coerce_to
 $res = r->table('marvel')->coerce_to('array')->run;
@@ -129,7 +145,7 @@ $res = r->table('marvel')->coerce_to('array')->run;
 is $res->type,         1,       'Correct response type';
 isa_ok $res->response, 'ARRAY', 'Correct response';
 
-$res = r->expr( [ [ 'name', 'Ironman' ], [ 'victories', 2000 ] ] )
+$res = r->expr( [ [ 'name', 'Iron Man' ], [ 'victories', 2000 ] ] )
   ->coerce_to('object')->run($conn);
 
 is $res->type,         1,      'Correct response type';

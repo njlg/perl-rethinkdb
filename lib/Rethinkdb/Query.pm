@@ -1185,3 +1185,29 @@ sub in_timezone {
 }
 
 1;
+
+=head1 METHODS
+
+blah blah
+
+=head2 count
+
+  r->table('marvel')->count->add(r->table('dc')->count)->run;
+
+  r->table('marvel')->concat_map(
+    sub {
+      my $row = shift;
+      $row->attr('dc_buddies');
+    }
+  )->count('Batman')->run;
+
+  r->table('marvel')->count(
+    sub {
+      my $hero = shift;
+      $hero->attr('dc_buddies')->contains('Batman');
+    }
+  )->run;
+
+Count the number of elements in the sequence. With a single argument, count
+the number of elements equal to it. If the argument is a function, it is
+equivalent to calling filter before count.

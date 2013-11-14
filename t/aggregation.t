@@ -177,10 +177,25 @@ is $res->type,     1,   'Correct response type';
 is $res->response, '9', 'Correct number of documents';
 
 # count (with parameter)
-r->table('marvel')->count('extra')->run;
+$res = r->table('marvel')->concat_map(
+  sub {
+    my $row = shift;
+    $row->attr('dc_buddies');
+  }
+)->count('Batman')->run;
 
 is $res->type,     1,   'Correct response type';
-is $res->response, '9', 'Correct number of documents';
+is $res->response, '4', 'Correct number of documents';
+
+$res = r->table('marvel')->count(
+  sub {
+    my $hero = shift;
+    $hero->attr('dc_buddies')->contains('Batman');
+  }
+)->run;
+
+is $res->type,     1,   'Correct response type';
+is $res->response, '4', 'Correct number of documents';
 
 # distinct (on table)
 $res = r->table('marvel')->distinct->run;
