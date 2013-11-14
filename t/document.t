@@ -2,9 +2,6 @@ use Test::More;
 
 use Rethinkdb;
 
-use lib '../';
-use Carp::Always;
-
 # setup
 my $conn = r->connect->repl;
 r->db('test')->drop->run;
