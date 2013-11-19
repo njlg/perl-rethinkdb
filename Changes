@@ -1,3 +1,6 @@
+0.04  2013-11-19
+  - Updating tests to be more reliable (e.g. not relying on order that RethinkDB
+    returns results)
 
 0.03  2013-09-01
   - Date & time features added with tests
