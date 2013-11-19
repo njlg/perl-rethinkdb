@@ -157,8 +157,8 @@ $res = r->table('marvel')->map(
 )->run;
 
 is $res->type, 2, 'Correct response type';
-is_deeply $res->response,
-  [ '273', '49', '78', '75', '72', '77', '71', '2074', '76' ],
+is_deeply [ sort { $a <=> $b } @{ $res->response } ],
+  [ '49', '71', '72', '75', '76', '77', '78', '273', '2074' ],
   'Correct number of documents';
 
 # with_fields - Takes a sequence of objects and a list of fields.
@@ -179,58 +179,59 @@ $res = r->table('marvel')->concat_map(
 )->run;
 
 is $res->type, 2, 'Correct response type';
-is_deeply $res->response,
+is_deeply [ sort @{ $res->response } ],
   [
-  'Werecat',   'Werepig',  'Werechicken', 'Werehampster',
-  'Werehound', 'Werewolf', 'Werebear',    'Wererabit',
-  'Weredog',   'Wereelephant'
+  'Werebear',     'Werecat',      'Werechicken', 'Weredog',
+  'Wereelephant', 'Werehampster', 'Werehound',   'Werepig',
+  'Wererabit',    'Werewolf'
   ],
   'Correct document fields';
 
 # order_by
-my $order1 = [
-  'Ant-Man',  'Captain America', 'Hawk-Eye', 'Hulk',
-  'Iron Man', 'Spider-Man',      'Thor',     'Wasp',
-  'Wolverine'
-];
-my $order2 = [
-  'Spider-Man',      'Wolverine', 'Hawk-Eye', 'Wasp',
-  'Captain America', 'Hulk',      'Ant-Man',  'Iron Man',
-  'Thor'
-];
-my $order3 = [
-  'Captain America', 'Hulk',       'Ant-Man',   'Iron Man',
-  'Thor',            'Spider-Man', 'Wolverine', 'Hawk-Eye',
-  'Wasp'
-];
-
 $res = r->table('marvel')->order_by('superhero')->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 is $res->type,         2,       'Correct response type';
 isa_ok $res->response, 'ARRAY', 'Correct response type';
 is scalar @{ $res->response }, 9, 'Correct number of documents returned';
-is_deeply [ map { $_->{superhero} } @{ $res->response } ], $order1,
+is_deeply [ map { $_->{superhero} } @{ $res->response } ],
+  [
+  'Ant-Man',  'Captain America', 'Hawk-Eye', 'Hulk',
+  'Iron Man', 'Spider-Man',      'Thor',     'Wasp',
+  'Wolverine'
+  ],
   'Correct order';
 
 # order by two attributes
 $res = r->table('marvel')->order_by( 'active', 'superhero' )->run;
 
-is_deeply [ map { $_->{superhero} } @{ $res->response } ], $order2,
+is_deeply [ map { $_->{superhero} } @{ $res->response } ],
+  [
+  'Hawk-Eye', 'Spider-Man',      'Wasp', 'Wolverine',
+  'Ant-Man',  'Captain America', 'Hulk', 'Iron Man',
+  'Thor'
+  ],
   'Correct order';
+
 
 # order with asc/desc
 $res = r->table('marvel')->order_by( r->desc('active'), r->asc('superhero') )
   ->run;
 
-is_deeply [ map { $_->{superhero} } @{ $res->response } ], $order3,
+is_deeply [ map { $_->{superhero} } @{ $res->response } ],
+  [
+  'Ant-Man', 'Captain America', 'Hulk',       'Iron Man',
+  'Thor',    'Hawk-Eye',        'Spider-Man', 'Wasp',
+  'Wolverine'
+  ],
   'Correct order';
 
 # skip
-$res = r->table('marvel')->skip(8)->run;
+$res = r->table('marvel')->order_by('user_id')->skip(5)->run;
 
 is $res->type, 2, 'Correct response type';
 is $res->response->[0]->{superhero}, 'Wasp', 'Correct response';
+is $res->response->[3]->{superhero}, 'Spider-Man', 'Correct response';
 
 # limit
 $res = r->table('marvel')->limit(2)->run;

@@ -127,7 +127,13 @@ is $res->response->{replaced}, 1, 'Correct response';
 $res = r->now->in_timezone('-08:00')->hours->run($conn);
 
 is $res->type,     1, 'Correct response type';
-is $res->response, 9, 'Correct response';
+# what sort of test could we do here?
+# is $res->response, 9, 'Correct response';
+
+$res = r->iso8601('1986-11-03T08:30:00-07:00')->in_timezone('-08:00')->hours->run($conn);
+
+is $res->type,     1, 'Correct response type';
+is $res->response, 7, 'Correct response';
 
 # timezone
 $res = r->table("marvel")->filter(

@@ -173,7 +173,7 @@ is $res->response->[0]->{superhero}, 'Ant-Man', 'Correct document returned';
 $res = r->table('marvel')->filter( r->row->attr('age')->gt(100) )->run;
 
 is $res->type, 2, 'Correct status code';
-is_deeply $res->response,
+is_deeply [sort { $a->{user_id} cmp $b->{user_id} } @{$res->response}],
   [
   {
     active     => '1',
@@ -198,7 +198,7 @@ $res = r->table('marvel')->filter(
     my $hero = shift;
     return $hero->attr('age')->gt(100);
   }
-)->run;
+)->order_by('user_id')->run;
 
 is $res->type, 2, 'Correct status code';
 is_deeply $res->response,

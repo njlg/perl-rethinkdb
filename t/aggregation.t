@@ -15,7 +15,7 @@ r->table('marvel')->insert(
       superpower => 'Arc Reactor',
       active     => 1,
       age        => 35,
-      strength   => 35,
+      strength   => 100,
       dc_buddies => [ 'Superman', 'Batman' ],
     },
     {
@@ -24,7 +24,7 @@ r->table('marvel')->insert(
       superpower => 'Smash',
       active     => 1,
       age        => 35,
-      strength   => 35,
+      strength   => 200,
       dc_buddies => [ 'Superman', 'Flash' ],
     },
     {
@@ -60,7 +60,7 @@ r->table('marvel')->insert(
       superpower => 'Bio-lasers',
       active     => 0,
       age        => 35,
-      strength   => 35,
+      strength   => 30,
       dc_buddies => [ 'Superman', 'Batman' ],
     },
     {
@@ -69,7 +69,7 @@ r->table('marvel')->insert(
       superpower => 'Size',
       active     => 1,
       age        => 35,
-      strength   => 35,
+      strength   => 45,
       dc_buddies => [ 'Green Lantern', 'Aquaman' ],
       extra      => 1,
     },
@@ -79,7 +79,7 @@ r->table('marvel')->insert(
       superpower => 'Adamantium',
       active     => 0,
       age        => 35,
-      strength   => 35,
+      strength   => 75,
       dc_buddies => [ 'Hawkman', 'Batman' ],
       extra      => 1,
     },
@@ -219,10 +219,7 @@ is_deeply $res->response,
     group     => '20',
     reduction => { superhero => 'Spider-Man', strength => '20' }
   },
-  {
-    group     => '35',
-    reduction => { superhero => 'Wolverine', strength => '35' }
-  },
+  { group => '35', reduction => { superhero => 'Hulk', strength => '200' } },
   {
     group     => '135',
     reduction => { superhero => 'Captain America', strength => '135' }
@@ -231,8 +228,7 @@ is_deeply $res->response,
     group     => '1035',
     reduction => { superhero => 'Thor', strength => '1035' }
   }
-  ],
-  'Correct response';
+  ], 'Correct response';
 
 # group_by
 $res = r->table('marvel')->group_by( 'age', r->avg('strength') )->run;
@@ -241,7 +237,7 @@ is $res->type, 1, 'Correct response type';
 is_deeply $res->response,
   [
   { group => { age => '20' },   reduction => '20' },
-  { group => { age => '35' },   reduction => '35' },
+  { group => { age => '35' },   reduction => '80.8333333333333' },
   { group => { age => '135' },  reduction => '135' },
   { group => { age => '1035' }, reduction => '1035' }
   ],
@@ -250,6 +246,9 @@ is_deeply $res->response,
 # contains
 $res = r->table('marvel')->get('Iron Man')->attr('dc_buddies')
   ->contains('Superman')->run;
+
+is $res->type, 1, 'Correct response type';
+is $res->response, r->true, 'Correct response value';
 
 # clean up
 r->db('test')->drop->run;

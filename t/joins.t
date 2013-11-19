@@ -187,9 +187,9 @@ $res = r->table('marvel')->inner_join(
 
 is $res->type, 2, 'Correct response type';
 is scalar @{ $res->response }, 20, 'Correct response';
-is $res->response->[0]->{left}->{superhero}, 'Captain America',
-  'Correct response';
-is $res->response->[0]->{right}->{name}, 'Superman', 'Correct response';
+foreach( @{$res->response} ) {
+  ok $_->{left}->{strength} < $_->{right}->{strength}, 'Correct response',
+}
 
 # outer_join
 $res = r->table('marvel')->outer_join(
@@ -202,9 +202,11 @@ $res = r->table('marvel')->outer_join(
 
 is $res->type, 2, 'Correct response type';
 is scalar @{ $res->response }, 22, 'Correct response';
-is $res->response->[0]->{left}->{superhero}, 'Captain America',
-  'Correct response';
-is $res->response->[0]->{right}->{name}, 'Superman', 'Correct response';
+foreach( @{$res->response} ) {
+  if( $_->{right} ) {
+    ok $_->{left}->{strength} < $_->{right}->{strength}, 'Correct response';
+  }
+}
 
 # eq_join
 $res = r->table('marvel')->eq_join( 'dc_partner', r->table('dc') )->run;
