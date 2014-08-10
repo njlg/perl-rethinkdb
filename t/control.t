@@ -73,7 +73,6 @@ r->table('marvel')->map(
     sub { shift->attr('superhero')->add(' is a hero'); }
   )
 )->run;
-exit;
 
 # for_each
 $res = r->table('marvel')->for_each(

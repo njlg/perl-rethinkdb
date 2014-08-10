@@ -36,7 +36,7 @@ r->table('marvel')->insert(
       superpower => 'Super Strength',
       active     => 1,
       age        => 135,
-      strength   => 135,
+      strength   => 136,
       dc_partner => 12,
       dc_buddy   => 'Batman',
     },
@@ -202,9 +202,9 @@ $res = r->table('marvel')->outer_join(
 
 is $res->type, 2, 'Correct response type';
 is scalar @{ $res->response }, 22, 'Correct response';
-is $res->response->[0]->{left}->{superhero}, 'Captain America',
+is $res->response->[1]->{left}->{superhero}, 'Captain America',
   'Correct response';
-is $res->response->[0]->{right}->{name}, 'Superman', 'Correct response';
+is $res->response->[1]->{right}->{name}, 'Superman', 'Correct response';
 
 # eq_join
 $res = r->table('marvel')->eq_join( 'dc_partner', r->table('dc') )->run;

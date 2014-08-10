@@ -15,7 +15,7 @@ r->table('marvel')->insert(
       superpower => 'Arc Reactor',
       active     => 1,
       age        => 35,
-      strength   => 35,
+      strength   => 1000,
       dc_buddies => [ 'Superman', 'Batman' ],
     },
     {
@@ -24,7 +24,7 @@ r->table('marvel')->insert(
       superpower => 'Smash',
       active     => 1,
       age        => 35,
-      strength   => 35,
+      strength   => 2012,
       dc_buddies => [ 'Superman', 'Flash' ],
     },
     {
@@ -33,7 +33,7 @@ r->table('marvel')->insert(
       superpower => 'Super Strength',
       active     => 1,
       age        => 135,
-      strength   => 135,
+      strength   => 1035,
       dc_buddies => [ 'Superman', 'Green Lantern' ],
     },
     {
@@ -42,7 +42,7 @@ r->table('marvel')->insert(
       superpower => 'God-like powers',
       active     => 1,
       age        => 1035,
-      strength   => 1035,
+      strength   => 2035,
       dc_buddies => [ 'Flash', 'Batman' ],
     },
     {
@@ -51,7 +51,7 @@ r->table('marvel')->insert(
       superpower => 'Bow-n-arrow',
       active     => 0,
       age        => 35,
-      strength   => 35,
+      strength   => 10,
       dc_buddies => [ 'Aquaman', 'Wonder Women' ],
     },
     {
@@ -60,7 +60,7 @@ r->table('marvel')->insert(
       superpower => 'Bio-lasers',
       active     => 0,
       age        => 35,
-      strength   => 35,
+      strength   => 52,
       dc_buddies => [ 'Superman', 'Batman' ],
     },
     {
@@ -69,7 +69,7 @@ r->table('marvel')->insert(
       superpower => 'Size',
       active     => 1,
       age        => 35,
-      strength   => 35,
+      strength   => 50,
       dc_buddies => [ 'Green Lantern', 'Aquaman' ],
       extra      => 1,
     },
@@ -79,7 +79,7 @@ r->table('marvel')->insert(
       superpower => 'Adamantium',
       active     => 0,
       age        => 35,
-      strength   => 35,
+      strength   => 135,
       dc_buddies => [ 'Hawkman', 'Batman' ],
       extra      => 1,
     },
@@ -89,7 +89,7 @@ r->table('marvel')->insert(
       superpower => 'Spidy Sense',
       active     => 0,
       age        => 20,
-      strength   => 20,
+      strength   => 200,
       dc_buddies => [ 'Wonder Women', 'Martian Manhunter' ],
       extra      => 1,
     }
@@ -163,12 +163,11 @@ $res = r->table('marvel')->map( r->row->attr('age') )->reduce(
   sub ($$) {
     my ( $acc, $val ) = @_;
     $acc->add($val);
-  },
-  12
-)->run;
+  }
+)->default(0)->run;
 
 is $res->type,     1,      'Correct response type';
-is $res->response, '1412', 'Correct number of documents';
+is $res->response, '1400', 'Correct number of documents';
 
 # count
 $res = r->table('marvel')->count->run;
@@ -209,57 +208,17 @@ $res = r->expr( [ 1, 1, 1, 1, 1, 2, 3 ] )->distinct->run($conn);
 is $res->type, 1, 'Correct response type';
 is scalar @{ $res->response }, 3, 'Correct number of documents';
 
-# grouped_map_reduce
-$res = r->table('marvel')->grouped_map_reduce(
-  sub {
-    my $hero = shift;
-    return $hero->attr('age');
-  },
-  sub {
-    my $hero = shift;
-    return $hero->pluck( 'superhero', 'strength' );
-  },
-  sub ($$) {
-    my ( $acc, $hero ) = @_;
-    return r->branch( $acc->attr('strength')->lt( $hero->attr('strength') ),
-      $hero, $acc );
-  },
-  { superhero => 'none', strength => 0 }
-)->run;
-
-is $res->type, 1, 'Correct response type';
-is_deeply $res->response,
-  [
-  {
-    group     => '20',
-    reduction => { superhero => 'Spider-Man', strength => '20' }
-  },
-  {
-    group     => '35',
-    reduction => { superhero => 'Wolverine', strength => '35' }
-  },
-  {
-    group     => '135',
-    reduction => { superhero => 'Captain America', strength => '135' }
-  },
-  {
-    group     => '1035',
-    reduction => { superhero => 'Thor', strength => '1035' }
-  }
-  ],
-  'Correct response';
-
 # group_by
-$res = r->table('marvel')->group_by( 'age', r->avg('strength') )->run;
+$res = r->table('marvel')->group('age')->avg('strength')->run;
 
 is $res->type, 1, 'Correct response type';
 is_deeply $res->response,
-  [
-  { group => { age => '20' },   reduction => '20' },
-  { group => { age => '35' },   reduction => '35' },
-  { group => { age => '135' },  reduction => '135' },
-  { group => { age => '1035' }, reduction => '1035' }
-  ],
+  {
+  '1035' => '2035',
+  '35'   => '543.166666666667',
+  '135'  => '1035',
+  '20'   => '200',
+  },
   'Correct response';
 
 # contains

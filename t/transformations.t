@@ -89,7 +89,7 @@ r->table('dc')->insert(
   [
     {
       user_id    => 10,
-      superhero  => 'Superman',
+      superhero  => '271',
       superpower => 'Alien',
       active     => 1,
       age        => 35
@@ -191,7 +191,7 @@ is_deeply [ sort @{ $res->response } ],
 $res = r->table('marvel')->order_by('superhero')->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
-is $res->type,         2,       'Correct response type';
+is $res->type,         1,       'Correct response type';
 isa_ok $res->response, 'ARRAY', 'Correct response type';
 is scalar @{ $res->response }, 9, 'Correct number of documents returned';
 is_deeply [ map { $_->{superhero} } @{ $res->response } ],
@@ -224,7 +224,7 @@ is_deeply [ map { $_->{superhero} } @{ $res->response } ],
 # skip
 $res = r->table('marvel')->order_by('superhero')->skip(7)->run;
 
-is $res->type, 2, 'Correct response type';
+is $res->type, 1, 'Correct response type';
 is $res->response->[0]->{superhero}, 'Wasp', 'Correct response';
 
 # limit
@@ -273,7 +273,7 @@ is scalar @{ $res->response }, 17, 'Correct response';
 # sample
 $res = r->table('marvel')->sample(3)->run;
 
-is $res->type, 2, 'Correct response type';
+is $res->type, 1, 'Correct response type';
 is scalar @{ $res->response }, 3, 'Correct response';
 
 # clean up

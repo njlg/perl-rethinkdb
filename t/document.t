@@ -117,7 +117,7 @@ $res = r->table('marvel')->filter(
   sub ($) {
     my $doc = shift;
     return $doc->attr('superhero')->eq
-      ( r->table('prizes')->get('winner')->attr('name') );
+      ( r->table('prizes')->nth(0)->attr('name') );
   }
 )->run;
 

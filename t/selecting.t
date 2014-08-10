@@ -92,7 +92,7 @@ r->table('marvel')->insert(
 )->run;
 
 # TODO: how to really test for this
-$res  = r->db('test')->table( 'marvel', 1)->run;
+$res  = r->db('test')->table( 'marvel', 1 )->run;
 $res2 = r->db('test')->table( 'marvel', r->true )->run;
 
 # everything should be the same but the tokens
@@ -121,7 +121,7 @@ $res = r->table('marvel')->between( 2, 7 )->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 is $res->type, 18, 'Correct status code';
-is $res->response->[0], 'Index `id` was not found.';
+is $res->response->[0], 'Index `id` was not found on table `test.marvel`.';
 
 # Select a couple items with correct key
 $res = r->table('marvel')->between( 2, 7, 'user_id' )->run;
