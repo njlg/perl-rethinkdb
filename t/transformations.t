@@ -157,6 +157,7 @@ $res = r->table('marvel')->map(
 )->run;
 
 is $res->type, 2, 'Correct response type';
+
 is_deeply [ sort @{ $res->response } ],
   [ '2074', '273', '49', '64', '69', '71', '75', '78', '88' ],
   'Correct number of documents';
@@ -226,6 +227,7 @@ $res = r->table('marvel')->order_by('superhero')->skip(7)->run;
 
 is $res->type, 1, 'Correct response type';
 is $res->response->[0]->{superhero}, 'Wasp', 'Correct response';
+is $res->response->[1]->{superhero}, 'Wolverine', 'Correct response';
 
 # limit
 $res = r->table('marvel')->limit(2)->run;

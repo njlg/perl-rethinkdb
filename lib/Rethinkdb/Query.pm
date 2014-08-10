@@ -302,7 +302,7 @@ sub set_difference {
 
 sub pluck {
   my $self = shift;
-  my $args = @_ ? @_ > 1 ? [@_] : [ @{ $_[0] } ] : [];
+  my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
@@ -786,7 +786,7 @@ sub info {
 
 sub order_by {
   my $self = shift;
-  my $args = shift;
+  my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,

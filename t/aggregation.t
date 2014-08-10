@@ -225,6 +225,9 @@ is_deeply $res->response,
 $res = r->table('marvel')->get('Iron Man')->attr('dc_buddies')
   ->contains('Superman')->run;
 
+is $res->type, 1, 'Correct response type';
+is $res->response, r->true, 'Correct response value';
+
 # clean up
 r->db('test')->drop->run;
 

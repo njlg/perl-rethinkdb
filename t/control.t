@@ -107,7 +107,8 @@ $res = r->table('marvel')->map(
 )->run;
 
 is $res->type, 2, 'Correct response type';
-is_deeply $res->response, [ '0', '2', '13' ], 'Correct response';
+is_deeply [ sort { $a <=> $b } @{ $res->response } ], [ '0', '2', '13' ],
+  'Correct response';
 
 # expr
 $res = r->expr( { 'a' => 'b' } )->merge( { 'b' => [ 1, 2, 3 ] } )->run($conn);
