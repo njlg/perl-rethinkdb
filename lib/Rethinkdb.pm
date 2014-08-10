@@ -15,6 +15,7 @@ our $VERSION = '0.03';
 
 # this is set only when connect->repl()
 has 'io';
+has 'term' => sub { Rethinkdb::Protocol->new->term; };
 
 sub import {
   my $class   = shift;
@@ -30,6 +31,7 @@ sub r {
 
   if ($package::_rdb_io) {
     $self = __PACKAGE__->new( io => $package::_rdb_io );
+    $self->io->rdb($self);
   }
   else {
     $self = __PACKAGE__->new;
@@ -65,7 +67,7 @@ sub db_create {
 
   my $q = Rethinkdb::Query->new(
     rdb  => $self,
-    type => Term::TermType::DB_CREATE,
+    type => $self->term->termType->db_create,
     args => $args,
   );
 
@@ -79,7 +81,7 @@ sub db_drop {
 
   my $q = Rethinkdb::Query->new(
     rdb  => $self,
-    type => Term::TermType::DB_DROP,
+    type => $self->term->termType->db_drop,
     args => $args
   );
 
@@ -90,8 +92,10 @@ sub db_drop {
 sub db_list {
   my $self = shift;
 
-  my $q
-    = Rethinkdb::Query->new( rdb => $self, type => Term::TermType::DB_LIST, );
+  my $q = Rethinkdb::Query->new(
+    rdb  => $self,
+    type => $self->term->termType->db_list,
+  );
 
   weaken $q->{rdb};
   return $q;
@@ -103,7 +107,7 @@ sub db {
 
   my $db = Rethinkdb::Query::Database->new(
     rdb  => $self,
-    type => Term::TermType::DB,
+    type => $self->term->termType->db,
     name => $name,
     args => $name,
   );
@@ -119,7 +123,7 @@ sub table_create {
 
   my $q = Rethinkdb::Query->new(
     rdb     => $self,
-    type    => Term::TermType::TABLE_CREATE,
+    type    => $self->term->termType->table_create,
     args    => $args,
     optargs => $optargs,
   );
@@ -134,7 +138,7 @@ sub table_drop {
 
   my $q = Rethinkdb::Query->new(
     rdb  => $self,
-    type => Term::TermType::TABLE_DROP,
+    type => $self->term->termType->table_drop,
     args => $args,
   );
 
@@ -145,9 +149,10 @@ sub table_drop {
 sub table_list {
   my $self = shift;
 
-  my $q
-    = Rethinkdb::Query->new( rdb => $self, type => Term::TermType::TABLE_LIST,
-    );
+  my $q = Rethinkdb::Query->new(
+    rdb  => $self,
+    type => $self->term->termType->table_list,
+  );
 
   weaken $q->{rdb};
   return $q;
@@ -165,7 +170,7 @@ sub table {
 
   my $t = Rethinkdb::Query::Table->new(
     rdb     => $self,
-    type    => Term::TermType::TABLE,
+    type    => $self->term->termType->table,
     name    => $name,
     args    => $name,
     optargs => $optargs,
@@ -180,7 +185,7 @@ sub row {
 
   my $q = Rethinkdb::Query->new(
     rdb  => $self,
-    type => Term::TermType::IMPLICIT_VAR,
+    type => $self->term->termType->implicit_var,
   );
 
   weaken $q->{rdb};
@@ -191,7 +196,10 @@ sub asc {
   my $self = shift;
   my $name = shift;
 
-  my $q = Rethinkdb::Query->new( type => Term::TermType::ASC, args => $name, );
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->asc,
+    args => $name,
+  );
 
   return $q;
 }
@@ -200,8 +208,10 @@ sub desc {
   my $self = shift;
   my $name = shift;
 
-  my $q
-    = Rethinkdb::Query->new( type => Term::TermType::DESC, args => $name, );
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->desc,
+    args => $name,
+  );
 
   return $q;
 }
@@ -218,7 +228,7 @@ sub js {
 
   my $q = Rethinkdb::Query->new(
     rdb     => $self,
-    type    => Term::TermType::JAVASCRIPT,
+    type    => $self->term->termType->javascript,
     args    => $args,
     optargs => $optargs,
   );
@@ -240,32 +250,12 @@ sub json {
 
   my $q = Rethinkdb::Query->new(
     rdb  => $self,
-    type => Term::TermType::JSON,
+    type => $self->term->termType->json,
     args => $value,
   );
 
   weaken $q->{rdb};
   return $q;
-}
-
-sub count {
-  my $self = shift;
-
-  return { COUNT => 1 };
-}
-
-sub sum {
-  my $self = shift;
-  my $attr = shift;
-
-  return { SUM => $attr };
-}
-
-sub avg {
-  my $self = shift;
-  my $attr = shift;
-
-  return { AVG => $attr };
 }
 
 # TODO: figure out why the arguments have to be reversed here
@@ -275,7 +265,7 @@ sub do {
 
   my $q = Rethinkdb::Query->new(
     rdb  => $self,
-    type => Term::TermType::FUNCALL,
+    type => $self->term->termType->funcall,
     args => [ $two, $one ],
   );
 
@@ -293,7 +283,7 @@ sub branch {
 
   my $q = Rethinkdb::Query->new(
     rdb  => $self,
-    type => Term::TermType::BRANCH,
+    type => $self->term->termType->branch,
     args => [ $predicate, $true, $false ],
   );
 
@@ -305,9 +295,10 @@ sub error {
   my $self = shift;
   my ($message) = @_;
 
-  my $q
-    = Rethinkdb::Query->new( type => Term::TermType::ERROR, args => $message,
-    );
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->error,
+    args => $message,
+  );
 
   return $q;
 }
@@ -315,7 +306,7 @@ sub error {
 sub now {
   my $self = shift;
 
-  my $q = Rethinkdb::Query->new( type => Term::TermType::NOW, );
+  my $q = Rethinkdb::Query->new( type => $self->term->termType->now, );
 
   return $q;
 }
@@ -324,7 +315,10 @@ sub time {
   my $self = shift;
   my $args = [@_];
 
-  my $q = Rethinkdb::Query->new( type => Term::TermType::TIME, args => $args );
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->time,
+    args => $args
+  );
 
   return $q;
 }
@@ -333,8 +327,10 @@ sub epoch_time {
   my $self = shift;
   my $args = shift;
 
-  my $q = Rethinkdb::Query->new( type => Term::TermType::EPOCH_TIME,
-    args => $args );
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->epoch_time,
+    args => $args
+  );
 
   return $q;
 }
@@ -343,8 +339,10 @@ sub iso8601 {
   my $self = shift;
   my $args = [@_];
 
-  my $q
-    = Rethinkdb::Query->new( type => Term::TermType::ISO8601, args => $args );
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->iso8601,
+    args => $args
+  );
 
   return $q;
 }
@@ -353,8 +351,10 @@ sub monday {
   my $self = shift;
   my $args = [@_];
 
-  my $q
-    = Rethinkdb::Query->new( type => Term::TermType::MONDAY, args => $args );
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->monday,
+    args => $args
+  );
 
   return $q;
 }
@@ -363,8 +363,10 @@ sub tuesday {
   my $self = shift;
   my $args = [@_];
 
-  my $q
-    = Rethinkdb::Query->new( type => Term::TermType::TUESDAY, args => $args );
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->tuesday,
+    args => $args
+  );
 
   return $q;
 }
@@ -373,8 +375,10 @@ sub wednesday {
   my $self = shift;
   my $args = [@_];
 
-  my $q = Rethinkdb::Query->new( type => Term::TermType::WEDNESDAY,
-    args => $args );
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->wednesday,
+    args => $args
+  );
 
   return $q;
 }
@@ -383,8 +387,10 @@ sub thursday {
   my $self = shift;
   my $args = [@_];
 
-  my $q
-    = Rethinkdb::Query->new( type => Term::TermType::THURSDAY, args => $args );
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->thursday,
+    args => $args
+  );
 
   return $q;
 }
@@ -393,8 +399,10 @@ sub friday {
   my $self = shift;
   my $args = [@_];
 
-  my $q
-    = Rethinkdb::Query->new( type => Term::TermType::FRIDAY, args => $args );
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->friday,
+    args => $args
+  );
 
   return $q;
 }
@@ -403,8 +411,10 @@ sub saturday {
   my $self = shift;
   my $args = [@_];
 
-  my $q
-    = Rethinkdb::Query->new( type => Term::TermType::SATURDAY, args => $args );
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->saturday,
+    args => $args
+  );
 
   return $q;
 }
@@ -413,8 +423,10 @@ sub sunday {
   my $self = shift;
   my $args = [@_];
 
-  my $q
-    = Rethinkdb::Query->new( type => Term::TermType::SUNDAY, args => $args );
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->sunday,
+    args => $args
+  );
 
   return $q;
 }
@@ -423,8 +435,10 @@ sub january {
   my $self = shift;
   my $args = [@_];
 
-  my $q
-    = Rethinkdb::Query->new( type => Term::TermType::JANUARY, args => $args );
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->january,
+    args => $args
+  );
 
   return $q;
 }
@@ -433,8 +447,10 @@ sub february {
   my $self = shift;
   my $args = [@_];
 
-  my $q
-    = Rethinkdb::Query->new( type => Term::TermType::FEBRUARY, args => $args );
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->february,
+    args => $args
+  );
 
   return $q;
 }
@@ -443,8 +459,10 @@ sub march {
   my $self = shift;
   my $args = [@_];
 
-  my $q
-    = Rethinkdb::Query->new( type => Term::TermType::MARCH, args => $args );
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->march,
+    args => $args
+  );
 
   return $q;
 }
@@ -453,8 +471,10 @@ sub april {
   my $self = shift;
   my $args = [@_];
 
-  my $q
-    = Rethinkdb::Query->new( type => Term::TermType::APRIL, args => $args );
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->april,
+    args => $args
+  );
 
   return $q;
 }
@@ -463,7 +483,8 @@ sub may {
   my $self = shift;
   my $args = [@_];
 
-  my $q = Rethinkdb::Query->new( type => Term::TermType::MAY, args => $args );
+  my $q = Rethinkdb::Query->new( type => $self->term->termType->may,
+    args => $args );
 
   return $q;
 }
@@ -472,7 +493,10 @@ sub june {
   my $self = shift;
   my $args = [@_];
 
-  my $q = Rethinkdb::Query->new( type => Term::TermType::JUNE, args => $args );
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->june,
+    args => $args
+  );
 
   return $q;
 }
@@ -481,7 +505,10 @@ sub july {
   my $self = shift;
   my $args = [@_];
 
-  my $q = Rethinkdb::Query->new( type => Term::TermType::JULY, args => $args );
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->july,
+    args => $args
+  );
 
   return $q;
 }
@@ -490,8 +517,10 @@ sub august {
   my $self = shift;
   my $args = [@_];
 
-  my $q
-    = Rethinkdb::Query->new( type => Term::TermType::AUGUST, args => $args );
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->august,
+    args => $args
+  );
 
   return $q;
 }
@@ -500,8 +529,10 @@ sub september {
   my $self = shift;
   my $args = [@_];
 
-  my $q = Rethinkdb::Query->new( type => Term::TermType::SEPTEMBER,
-    args => $args );
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->september,
+    args => $args
+  );
 
   return $q;
 }
@@ -510,8 +541,10 @@ sub october {
   my $self = shift;
   my $args = [@_];
 
-  my $q
-    = Rethinkdb::Query->new( type => Term::TermType::OCTOBER, args => $args );
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->october,
+    args => $args
+  );
 
   return $q;
 }
@@ -520,8 +553,10 @@ sub november {
   my $self = shift;
   my $args = [@_];
 
-  my $q
-    = Rethinkdb::Query->new( type => Term::TermType::NOVEMBER, args => $args );
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->november,
+    args => $args
+  );
 
   return $q;
 }
@@ -530,8 +565,10 @@ sub december {
   my $self = shift;
   my $args = [@_];
 
-  my $q
-    = Rethinkdb::Query->new( type => Term::TermType::DECEMBER, args => $args );
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->december,
+    args => $args
+  );
 
   return $q;
 }
@@ -761,29 +798,6 @@ Construct a RQL JSON object from a native object.
 
 Parse a JSON string on the server.
 
-=head2 count
-
-  r->table('marvel')->group_by('strength', r->count)->run;
-
-Count the total size of the group. This is one of the standard aggregator
-object to be used in conjunction with L<Rethinkdb::Query::group_by>.
-
-=head2 sum
-
-  r->table('marvel')->group_by('strength', r->sum('enemiesVanquished'))->run;
-
-Compute the sum of the given field in the group. This is one of the standard
-aggregator object to be used in conjunction with L<Rethinkdb::Query::group_by>.
-
-
-=head2 avg
-
-  r->table('marvel')->group_by('strength', r->avg('agility'))->run;
-
-Compute the average value of the given attribute for the group. This is one
-of the standard aggregator object to be used in conjunction with
-L<Rethinkdb::Query::group_by>.
-
 =head2 do
 
   r->do(r->table('marvel')->get('IronMan'), sub {
@@ -877,4 +891,3 @@ This program is free software, you can redistribute it and/or modify it under
 the terms of the Artistic License version 2.0.
 
 =cut
-

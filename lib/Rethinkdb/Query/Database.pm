@@ -11,7 +11,7 @@ sub create {
 
   my $q = Rethinkdb::Query->new(
     rdb  => $self->rdb,
-    type => Term::TermType::DB_CREATE,
+    type => $self->termType->db_create,
     args => $name,
   );
 
@@ -25,7 +25,7 @@ sub drop {
 
   my $q = Rethinkdb::Query->new(
     rdb  => $self->rdb,
-    type => Term::TermType::DB_DROP,
+    type => $self->termType->db_drop,
     args => $name,
   );
 
@@ -38,7 +38,7 @@ sub list {
 
   my $q = Rethinkdb::Query->new(
     rdb  => $self->rdb,
-    type => Term::TermType::DB_LIST,
+    type => $self->termType->db_list,
   );
 
   weaken $q->{rdb};
@@ -52,7 +52,7 @@ sub table_create {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::TABLE_CREATE,
+    type    => $self->termType->table_create,
     args    => $args,
     optargs => $optargs,
   );
@@ -66,7 +66,7 @@ sub table_drop {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::TABLE_DROP,
+    type    => $self->termType->table_drop,
     args    => $args,
   );
 
@@ -78,7 +78,7 @@ sub table_list {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::TABLE_LIST,
+    type    => $self->termType->table_list,
   );
 
   return $q;
@@ -96,7 +96,7 @@ sub table {
 
   my $t = Rethinkdb::Query::Table->new(
     _parent => $self,
-    type    => Term::TermType::TABLE,
+    type    => $self->termType->table,
     name    => $name,
     args    => $name,
     optargs => $optargs,

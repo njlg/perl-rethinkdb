@@ -19,7 +19,7 @@ sub create {
 
   my $q = Rethinkdb::Query->new(
     rdb     => $self->rdb,
-    type    => Term::TermType::TABLE_CREATE,
+    type    => $self->termType->table_create,
     args    => $self->name,
     optargs => $optargs,
   );
@@ -32,7 +32,7 @@ sub drop {
 
   my $q = Rethinkdb::Query->new(
     rdb  => $self->rdb,
-    type => Term::TermType::TABLE_DROP,
+    type => $self->termType->table_drop,
     args => $self->name,
   );
 
@@ -44,7 +44,7 @@ sub list {
 
   my $q = Rethinkdb::Query->new(
     rdb  => $self->rdb,
-    type => Term::TermType::TABLE_LIST,
+    type => $self->termType->table_list,
   );
 
   return $q;
@@ -61,7 +61,7 @@ sub index_create {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::INDEX_CREATE,
+    type    => $self->termType->index_create,
     args    => $index
   );
 
@@ -74,7 +74,7 @@ sub index_drop {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::INDEX_DROP,
+    type    => $self->termType->index_drop,
     args    => $index
   );
 
@@ -86,7 +86,7 @@ sub index_list {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::INDEX_LIST,
+    type    => $self->termType->index_list,
   );
 
   return $q;
@@ -98,13 +98,13 @@ sub insert {
   my $params = shift;
 
   # my $args = Rethinkdb::Query->new(
-  #   type => Term::TermType::JSON,
+  #   type => $self->termType->json,
   #   args => Rethinkdb::Util->to_json($data),
   # );
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::INSERT,
+    type    => $self->termType->insert,
     args    => Rethinkdb::Util->expr_json($args),
     optargs => $params,
   );
@@ -118,7 +118,7 @@ sub delete {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::DELETE,
+    type    => $self->termType->delete,
     optargs => $optargs,
   );
 
@@ -133,7 +133,7 @@ sub get {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::GET,
+    type    => $self->termType->get,
     args    => $key,
   );
 
@@ -162,7 +162,7 @@ sub get_all {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::GET_ALL,
+    type    => $self->termType->get_all,
     args    => $values,
     optargs => $params,
   );

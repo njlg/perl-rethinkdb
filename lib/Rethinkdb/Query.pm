@@ -8,6 +8,7 @@ use Rethinkdb;
 use Rethinkdb::Protocol;
 
 has [qw{rdb args optargs type _parent}];
+has 'termType' => sub { Rethinkdb::Protocol->new->term->termType; };
 
 sub new {
   my $class = shift;
@@ -139,7 +140,7 @@ sub update {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::UPDATE,
+    type    => $self->termType->update,
     args    => $args,
     optargs => $optargs,
   );
@@ -154,7 +155,7 @@ sub replace {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::REPLACE,
+    type    => $self->termType->replace,
     args    => $args,
     optargs => $optargs,
   );
@@ -168,7 +169,7 @@ sub merge {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::MERGE,
+    type    => $self->termType->merge,
     args    => $args
   );
 
@@ -181,7 +182,7 @@ sub has_fields {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::HAS_FIELDS,
+    type    => $self->termType->has_fields,
     args    => $args
   );
 
@@ -197,7 +198,7 @@ sub attr {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::GET_FIELD,
+    type    => $self->termType->get_field,
     args    => $args
   );
 
@@ -212,7 +213,7 @@ sub append {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::APPEND,
+    type    => $self->termType->append,
     args    => $args
   );
 
@@ -227,7 +228,7 @@ sub prepend {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::PREPEND,
+    type    => $self->termType->prepend,
     args    => $args
   );
 
@@ -240,7 +241,7 @@ sub difference {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::DIFFERENCE,
+    type    => $self->termType->difference,
     args    => [$args],
   );
 
@@ -253,7 +254,7 @@ sub set_insert {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::SET_INSERT,
+    type    => $self->termType->set_insert,
     args    => $args,
   );
 
@@ -266,7 +267,7 @@ sub set_union {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::SET_UNION,
+    type    => $self->termType->set_union,
     args    => [$args],
   );
 
@@ -279,7 +280,7 @@ sub set_intersection {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::SET_INTERSECTION,
+    type    => $self->termType->set_intersection,
     args    => [$args],
   );
 
@@ -292,7 +293,7 @@ sub set_difference {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::SET_DIFFERENCE,
+    type    => $self->termType->set_difference,
     args    => [$args],
   );
 
@@ -305,7 +306,7 @@ sub pluck {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::PLUCK,
+    type    => $self->termType->pluck,
     args    => $args
   );
 
@@ -318,7 +319,7 @@ sub without {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::WITHOUT,
+    type    => $self->termType->without,
     args    => $args
   );
 
@@ -331,7 +332,7 @@ sub delete {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::DELETE,
+    type    => $self->termType->delete,
     optargs => $optargs,
   );
 
@@ -344,7 +345,7 @@ sub insert_at {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::INSERT_AT,
+    type    => $self->termType->insert_at,
     args    => $args,
   );
 
@@ -357,7 +358,7 @@ sub splice_at {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::SPLICE_AT,
+    type    => $self->termType->splice_at,
     args    => $args,
   );
 
@@ -370,7 +371,7 @@ sub delete_at {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::DELETE_AT,
+    type    => $self->termType->delete_at,
     args    => $args,
   );
 
@@ -383,7 +384,7 @@ sub change_at {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::CHANGE_AT,
+    type    => $self->termType->change_at,
     args    => $args,
   );
 
@@ -396,7 +397,7 @@ sub keys {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::KEYS,
+    type    => $self->termType->keys,
     args    => $args,
   );
 
@@ -409,7 +410,7 @@ sub with_fields {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::WITH_FIELDS,
+    type    => $self->termType->with_fields,
     args    => $args,
   );
 
@@ -422,7 +423,7 @@ sub slice {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::SLICE,
+    type    => $self->termType->slice,
     args    => $args,
   );
 
@@ -439,7 +440,7 @@ sub indexes_of {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::INDEXES_OF,
+    type    => $self->termType->indexes_of,
     args    => Rethinkdb::Util->wrap_func($args),
   );
 
@@ -451,7 +452,7 @@ sub is_empty {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::IS_EMPTY,
+    type    => $self->termType->is_empty,
   );
 
   return $q;
@@ -463,7 +464,7 @@ sub sample {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::SAMPLE,
+    type    => $self->termType->sample,
     args    => $args,
   );
 
@@ -474,31 +475,7 @@ sub zip {
   my $self = shift;
 
   my $q
-    = Rethinkdb::Query->new( _parent => $self, type => Term::TermType::ZIP, );
-
-  return $q;
-}
-
-sub distinct {
-  my $self = shift;
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => Term::TermType::DISTINCT,
-  );
-
-  return $q;
-}
-
-sub contains {
-  my $self = shift;
-  my $args = [@_];
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => Term::TermType::CONTAINS,
-    args    => $args
-  );
+    = Rethinkdb::Query->new( _parent => $self, type => $self->termType->zip, );
 
   return $q;
 }
@@ -509,7 +486,7 @@ sub match {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::MATCH,
+    type    => $self->termType->match,
     args    => $expr
   );
 
@@ -522,7 +499,7 @@ sub nth {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::NTH,
+    type    => $self->termType->nth,
     args    => $number,
   );
 
@@ -535,7 +512,7 @@ sub add {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::ADD,
+    type    => $self->termType->add,
     args    => [$args],
   );
 
@@ -548,7 +525,7 @@ sub sub {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::SUB,
+    type    => $self->termType->sub,
     args    => $args,
   );
 
@@ -561,7 +538,7 @@ sub mul {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::MUL,
+    type    => $self->termType->mul,
     args    => $args,
   );
 
@@ -574,7 +551,7 @@ sub div {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::DIV,
+    type    => $self->termType->div,
     args    => $args,
   );
 
@@ -587,7 +564,7 @@ sub mod {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::MOD,
+    type    => $self->termType->mod,
     args    => $args,
   );
 
@@ -600,7 +577,7 @@ sub and {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::ALL,
+    type    => $self->termType->all,
     args    => $args,
   );
 
@@ -613,7 +590,7 @@ sub or {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::ANY,
+    type    => $self->termType->any,
     args    => $args,
   );
 
@@ -626,7 +603,7 @@ sub eq {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::EQ,
+    type    => $self->termType->eq,
     args    => $args,
   );
 
@@ -639,7 +616,7 @@ sub ne {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::NE,
+    type    => $self->termType->ne,
     args    => $args,
   );
 
@@ -652,7 +629,7 @@ sub gt {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::GT,
+    type    => $self->termType->gt,
     args    => $args,
   );
 
@@ -665,7 +642,7 @@ sub ge {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::GE,
+    type    => $self->termType->ge,
     args    => $args,
   );
 
@@ -678,7 +655,7 @@ sub lt {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::LT,
+    type    => $self->termType->lt,
     args    => $args,
   );
 
@@ -691,7 +668,7 @@ sub le {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::LE,
+    type    => $self->termType->le,
     args    => $args,
   );
 
@@ -702,7 +679,7 @@ sub not {
   my $self = shift;
 
   my $q
-    = Rethinkdb::Query->new( _parent => $self, type => Term::TermType::NOT, );
+    = Rethinkdb::Query->new( _parent => $self, type => $self->termType->not, );
 
   return $q;
 }
@@ -713,7 +690,7 @@ sub map {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::MAP,
+    type    => $self->termType->map,
     args    => Rethinkdb::Util->wrap_func($args),
   );
 
@@ -726,7 +703,7 @@ sub filter {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::FILTER,
+    type    => $self->termType->filter,
     args    => Rethinkdb::Util->wrap_func($args),
   );
 
@@ -742,7 +719,7 @@ sub do {
 
     # _parent => $self,
     rdb  => $self->rdb,
-    type => Term::TermType::FUNCALL,
+    type => $self->termType->funcall,
     args => [ $args, $self ],
   );
 
@@ -755,7 +732,7 @@ sub for_each {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::FOREACH,
+    type    => $self->termType->foreach,
     args    => $args,
   );
 
@@ -768,7 +745,7 @@ sub default {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::DEFAULT,
+    type    => $self->termType->default,
     args    => $args,
   );
 
@@ -781,7 +758,7 @@ sub coerce_to {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::COERCE_TO,
+    type    => $self->termType->coerce_to,
     args    => $args,
   );
 
@@ -792,7 +769,7 @@ sub type_of {
   my $self = shift;
 
   my $q
-    = Rethinkdb::Query->new( _parent => $self, type => Term::TermType::TYPEOF,
+    = Rethinkdb::Query->new( _parent => $self, type => $self->termType->typeof,
     );
 
   return $q;
@@ -802,7 +779,7 @@ sub info {
   my $self = shift;
 
   my $q
-    = Rethinkdb::Query->new( _parent => $self, type => Term::TermType::INFO, );
+    = Rethinkdb::Query->new( _parent => $self, type => $self->termType->info, );
 
   return $q;
 }
@@ -813,7 +790,7 @@ sub order_by {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::ORDERBY,
+    type    => $self->termType->orderby,
     args    => $args,
   );
 
@@ -826,7 +803,7 @@ sub concat_map {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::CONCATMAP,
+    type    => $self->termType->concatmap,
     args    => $args,
   );
 
@@ -855,7 +832,7 @@ sub between {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::BETWEEN,
+    type    => $self->termType->between,
     args    => [ $lower, $upper ],
     optargs => $optargs,
   );
@@ -869,7 +846,7 @@ sub inner_join {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::INNER_JOIN,
+    type    => $self->termType->inner_join,
     args    => [ $table, $predicate ],
   );
 
@@ -882,7 +859,7 @@ sub outer_join {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::OUTER_JOIN,
+    type    => $self->termType->outer_join,
     args    => [ $table, $predicate ],
   );
 
@@ -893,33 +870,10 @@ sub eq_join {
   my $self = shift;
   my ( $left, $table, $optargs ) = @_;
 
-  # if( ! $optargs ) {
-  #   $optargs = { index => 'id' };
-  # }
-
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::EQ_JOIN,
+    type    => $self->termType->eq_join,
     args    => [ $left, $table ],
-    optargs => $optargs,
-  );
-
-  return $q;
-}
-
-sub reduce {
-  my $self = shift;
-  my ( $function, $base ) = @_;
-
-  my $optargs = {};
-  if ($base) {
-    $optargs->{base} = $base;
-  }
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => Term::TermType::REDUCE,
-    args    => $function,
     optargs => $optargs,
   );
 
@@ -932,7 +886,7 @@ sub skip {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::SKIP,
+    type    => $self->termType->skip,
     args    => $number,
   );
 
@@ -945,21 +899,8 @@ sub limit {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::LIMIT,
+    type    => $self->termType->limit,
     args    => $number,
-  );
-
-  return $q;
-}
-
-sub count {
-  my $self = shift;
-  my $args = shift;
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => Term::TermType::COUNT,
-    args    => $args
   );
 
   return $q;
@@ -971,33 +912,18 @@ sub union {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::UNION,
+    type    => $self->termType->union,
     args    => $args,
   );
 
   return $q;
 }
 
-sub grouped_map_reduce {
-  my $self = shift;
-  my ( $grouping, $reduction, $mapping, $base ) = @_;
+#
+# aggregation
+#
 
-  my $optargs = {};
-  if ($base) {
-    $optargs->{base} = $base;
-  }
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => Term::TermType::GROUPED_MAP_REDUCE,
-    args    => [ $grouping, $reduction, $mapping ],
-    optargs => $optargs,
-  );
-
-  return $q;
-}
-
-sub group_by {
+sub group {
   my $self = shift;
   my $args = [@_];
 
@@ -1009,12 +935,126 @@ sub group_by {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::GROUPBY,
+    type    => $self->termType->group,
     args    => $args
   );
 
   return $q;
 }
+
+sub ungroup {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->ungroup,
+  );
+
+  return $q;
+}
+
+sub reduce {
+  my $self     = shift;
+  my $function = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->reduce,
+    args    => $function,
+  );
+
+  return $q;
+}
+
+sub count {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->count,
+    args    => $args
+  );
+
+  return $q;
+}
+
+sub sum {
+  my $self = shift;
+  my $args = {@_};
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->sum,
+    args    => $args
+  );
+
+  return $q;
+}
+
+sub avg {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->avg,
+    args    => $args
+  );
+
+  return $q;
+}
+
+sub min {
+  my $self = shift;
+  my $args = {@_};
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->min,
+    args    => $args
+  );
+
+  return $q;
+}
+
+sub max {
+  my $self = shift;
+  my $args = {@_};
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->max,
+    args    => $args
+  );
+
+  return $q;
+}
+
+sub distinct {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->distinct,
+  );
+
+  return $q;
+}
+
+sub contains {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->contains,
+    args    => $args
+  );
+
+  return $q;
+}
+
 
 #
 # time functions
@@ -1025,7 +1065,7 @@ sub to_iso8601 {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::TO_ISO8601,
+    type    => $self->termType->to_iso8601,
   );
 
   return $q;
@@ -1036,7 +1076,7 @@ sub to_epoch_time {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::TO_EPOCH_TIME,
+    type    => $self->termType->to_epoch_time,
   );
 
   return $q;
@@ -1050,7 +1090,7 @@ sub during {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::DURING,
+    type    => $self->termType->during,
     args    => [ $start, $end ],
     optargs => $optargs,
   );
@@ -1062,7 +1102,7 @@ sub date {
   my $self = shift;
 
   my $q
-    = Rethinkdb::Query->new( _parent => $self, type => Term::TermType::DATE, );
+    = Rethinkdb::Query->new( _parent => $self, type => $self->termType->date, );
 
   return $q;
 }
@@ -1072,7 +1112,7 @@ sub time_of_day {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::TIME_OF_DAY,
+    type    => $self->termType->time_of_day,
   );
 
   return $q;
@@ -1083,7 +1123,7 @@ sub timezone {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::TIMEZONE,
+    type    => $self->termType->timezone,
   );
 
   return $q;
@@ -1093,7 +1133,7 @@ sub year {
   my $self = shift;
 
   my $q
-    = Rethinkdb::Query->new( _parent => $self, type => Term::TermType::YEAR, );
+    = Rethinkdb::Query->new( _parent => $self, type => $self->termType->year, );
 
   return $q;
 }
@@ -1102,7 +1142,7 @@ sub month {
   my $self = shift;
 
   my $q
-    = Rethinkdb::Query->new( _parent => $self, type => Term::TermType::MONTH,
+    = Rethinkdb::Query->new( _parent => $self, type => $self->termType->month,
     );
 
   return $q;
@@ -1112,7 +1152,7 @@ sub day {
   my $self = shift;
 
   my $q
-    = Rethinkdb::Query->new( _parent => $self, type => Term::TermType::DAY, );
+    = Rethinkdb::Query->new( _parent => $self, type => $self->termType->day, );
 
   return $q;
 }
@@ -1122,7 +1162,7 @@ sub day_of_week {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::DAY_OF_WEEK,
+    type    => $self->termType->day_of_week,
   );
 
   return $q;
@@ -1133,7 +1173,7 @@ sub day_of_year {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::DAY_OF_YEAR,
+    type    => $self->termType->day_of_year,
   );
 
   return $q;
@@ -1143,7 +1183,7 @@ sub hours {
   my $self = shift;
 
   my $q
-    = Rethinkdb::Query->new( _parent => $self, type => Term::TermType::HOURS,
+    = Rethinkdb::Query->new( _parent => $self, type => $self->termType->hours,
     );
 
   return $q;
@@ -1154,7 +1194,7 @@ sub minutes {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::MINUTES,
+    type    => $self->termType->minutes,
   );
 
   return $q;
@@ -1165,7 +1205,7 @@ sub seconds {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::SECONDS,
+    type    => $self->termType->seconds,
   );
 
   return $q;
@@ -1177,7 +1217,7 @@ sub in_timezone {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => Term::TermType::IN_TIMEZONE,
+    type    => $self->termType->in_timezone,
     args    => $args,
   );
 
