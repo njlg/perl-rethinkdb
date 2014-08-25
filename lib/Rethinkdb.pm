@@ -61,6 +61,8 @@ sub connect {
   return $io->connect;
 }
 
+# DATABASES
+
 sub db_create {
   my $self = shift;
   my $args = shift;
@@ -116,47 +118,7 @@ sub db {
   return $db;
 }
 
-sub table_create {
-  my $self    = shift;
-  my $args    = shift;
-  my $optargs = ref $_[0] ? $_[0] : {@_};
-
-  my $q = Rethinkdb::Query->new(
-    rdb     => $self,
-    type    => $self->term->termType->table_create,
-    args    => $args,
-    optargs => $optargs,
-  );
-
-  weaken $q->{rdb};
-  return $q;
-}
-
-sub table_drop {
-  my $self = shift;
-  my $args = shift;
-
-  my $q = Rethinkdb::Query->new(
-    rdb  => $self,
-    type => $self->term->termType->table_drop,
-    args => $args,
-  );
-
-  weaken $q->{rdb};
-  return $q;
-}
-
-sub table_list {
-  my $self = shift;
-
-  my $q = Rethinkdb::Query->new(
-    rdb  => $self,
-    type => $self->term->termType->table_list,
-  );
-
-  weaken $q->{rdb};
-  return $q;
-}
+# TABLE
 
 sub table {
   my $self     = shift;
@@ -180,6 +142,8 @@ sub table {
   return $t;
 }
 
+# DOCUMENT MANIPULATION
+
 sub row {
   my $self = shift;
 
@@ -192,116 +156,72 @@ sub row {
   return $q;
 }
 
-sub asc {
+sub literal {
   my $self = shift;
-  my $name = shift;
+  my $args = ref $_[0] ? $_[0] : {@_};
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->asc,
-    args => $name,
+    type => $self->term->termType->literal,
+    args => $args,
   );
 
   return $q;
 }
 
-sub desc {
+sub object {
   my $self = shift;
-  my $name = shift;
+  my $args = ref $_[0] ? $_[0] : {@_};
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->desc,
-    args => $name,
+    type => $self->term->termType->object,
+    args => $args,
   );
 
   return $q;
 }
 
-sub js {
-  my $self    = shift;
-  my $args    = shift;
-  my $timeout = shift;
+# MATH AND LOGIC
 
-  my $optargs = {};
-  if ($timeout) {
-    $optargs = { timeout => $timeout };
-  }
+sub and {
+  my $self = shift;
+  my ($args) = @_;
 
   my $q = Rethinkdb::Query->new(
-    rdb     => $self,
-    type    => $self->term->termType->javascript,
+    _parent => $self,
+    type    => $self->termType->and,
     args    => $args,
-    optargs => $optargs,
   );
 
-  weaken $q->{rdb};
   return $q;
 }
 
-sub expr {
-  my $self  = shift;
-  my $value = shift;
-
-  return Rethinkdb::Util->expr($value);
-}
-
-sub json {
-  my $self  = shift;
-  my $value = shift;
-
-  my $q = Rethinkdb::Query->new(
-    rdb  => $self,
-    type => $self->term->termType->json,
-    args => $value,
-  );
-
-  weaken $q->{rdb};
-  return $q;
-}
-
-# TODO: figure out why the arguments have to be reversed here
-sub do {
+sub or {
   my $self = shift;
-  my ( $one, $two ) = @_;
+  my ($args) = @_;
 
   my $q = Rethinkdb::Query->new(
-    rdb  => $self,
-    type => $self->term->termType->funcall,
-    args => [ $two, $one ],
+    _parent => $self,
+    type    => $self->termType->or,
+    args    => $args,
   );
 
-  weaken $q->{rdb};
   return $q;
 }
 
-sub branch {
+sub random {
   my $self = shift;
-  my ( $predicate, $true, $false ) = @_;
-
-  # $predicate = Rethinkdb::Util->wrap_func($predicate);
-  # $true      = Rethinkdb::Util->wrap_func($true);
-  # $false     = Rethinkdb::Util->wrap_func($false);
+  my ($args) = @_;
 
   my $q = Rethinkdb::Query->new(
-    rdb  => $self,
-    type => $self->term->termType->branch,
-    args => [ $predicate, $true, $false ],
-  );
-
-  weaken $q->{rdb};
-  return $q;
-}
-
-sub error {
-  my $self = shift;
-  my ($message) = @_;
-
-  my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->error,
-    args => $message,
+    _parent => $self,
+    type    => $self->termType->random,
+    args    => $args,
   );
 
   return $q;
 }
+
+# DATES AND TIMES
 
 sub now {
   my $self = shift;
@@ -573,6 +493,146 @@ sub december {
   return $q;
 }
 
+# CONTROL STRUCTURES
+
+sub args {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->args,
+    args => $args
+  );
+
+  return $q;
+}
+
+# TODO: figure out why the arguments have to be reversed here
+sub do {
+  my $self = shift;
+  my ( $one, $two ) = @_;
+
+  my $q = Rethinkdb::Query->new(
+    rdb  => $self,
+    type => $self->term->termType->funcall,
+    args => [ $two, $one ],
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub branch {
+  my $self = shift;
+  my ( $predicate, $true, $false ) = @_;
+
+  # $predicate = Rethinkdb::Util->wrap_func($predicate);
+  # $true      = Rethinkdb::Util->wrap_func($true);
+  # $false     = Rethinkdb::Util->wrap_func($false);
+
+  my $q = Rethinkdb::Query->new(
+    rdb  => $self,
+    type => $self->term->termType->branch,
+    args => [ $predicate, $true, $false ],
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub error {
+  my $self = shift;
+  my ($message) = @_;
+
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->error,
+    args => $message,
+  );
+
+  return $q;
+}
+
+sub expr {
+  my $self  = shift;
+  my $value = shift;
+
+  return Rethinkdb::Util->expr($value);
+}
+
+sub js {
+  my $self    = shift;
+  my $args    = shift;
+  my $timeout = shift;
+
+  my $optargs = {};
+  if ($timeout) {
+    $optargs = { timeout => $timeout };
+  }
+
+  my $q = Rethinkdb::Query->new(
+    rdb     => $self,
+    type    => $self->term->termType->javascript,
+    args    => $args,
+    optargs => $optargs,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub json {
+  my $self  = shift;
+  my $value = shift;
+
+  my $q = Rethinkdb::Query->new(
+    rdb  => $self,
+    type => $self->term->termType->json,
+    args => $value,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+sub http {
+  my $self  = shift;
+  my $value = shift;
+
+  my $q = Rethinkdb::Query->new(
+    rdb  => $self,
+    type => $self->term->termType->http,
+    args => $value,
+  );
+
+  weaken $q->{rdb};
+  return $q;
+}
+
+# MISC
+
+sub asc {
+  my $self = shift;
+  my $name = shift;
+
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->asc,
+    args => $name,
+  );
+
+  return $q;
+}
+
+sub desc {
+  my $self = shift;
+  my $name = shift;
+
+  my $q = Rethinkdb::Query->new(
+    type => $self->term->termType->desc,
+    args => $name,
+  );
+
+  return $q;
+}
 
 sub true  { Rethinkdb::_True->new; }
 sub false { Rethinkdb::_False->new; }

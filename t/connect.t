@@ -48,13 +48,20 @@ isa_ok r->io, 'Rethinkdb::IO';
 
 # close connection
 $conn = r->connect;
-isa_ok $conn->close,  'Rethinkdb::IO';
-isa_ok $conn->handle, 'IO::Socket::INET';
-is $conn->handle->peerport, undef;
-is $conn->handle->peerhost, undef;
+isa_ok $conn->close, 'Rethinkdb::IO';
+is $conn->handle,    undef;
+
+$conn = r->connect;
+isa_ok $conn->close(noreply_wait => 0), 'Rethinkdb::IO';
+is $conn->handle,    undef;
 
 # reconnect
 isa_ok $conn->reconnect, 'Rethinkdb::IO';
+isa_ok $conn->handle,    'IO::Socket::INET';
+is $conn->handle->peerport, 28015;
+is $conn->handle->peerhost, '127.0.0.1';
+
+isa_ok $conn->reconnect(noreply_wait => 0), 'Rethinkdb::IO';
 isa_ok $conn->handle,    'IO::Socket::INET';
 is $conn->handle->peerport, 28015;
 is $conn->handle->peerhost, '127.0.0.1';
@@ -65,5 +72,9 @@ is $conn->default_db, 'test2';
 
 $conn->use('wiggle-waggle');
 is $conn->default_db, 'wiggle-waggle';
+
+# noreply_wait
+my $res = $conn->noreply_wait;
+is $res->type_description, 'wait_complete';
 
 done_testing();

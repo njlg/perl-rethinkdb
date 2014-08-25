@@ -54,6 +54,7 @@ sub index_create {
   my $self  = shift;
   my $index = shift;
   my $func  = shift;
+  my $multi = shift;
 
   if ($func) {
     carp 'table->index_create does not accept functions yet';
@@ -92,6 +93,43 @@ sub index_list {
   return $q;
 }
 
+sub index_status {
+  my $self    = shift;
+  my $indices = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->index_status,
+    args    => $indices,
+  );
+
+  return $q;
+}
+
+sub index_wait {
+  my $self    = shift;
+  my $indices = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->index_wait,
+    args    => $indices,
+  );
+
+  return $q;
+}
+
+sub changes {
+  my $self    = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->changes,
+  );
+
+  return $q;
+}
+
 sub insert {
   my $self   = shift;
   my $args   = shift;
@@ -120,6 +158,17 @@ sub delete {
     _parent => $self,
     type    => $self->termType->delete,
     optargs => $optargs,
+  );
+
+  return $q;
+}
+
+sub sync {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->sync,
   );
 
   return $q;
@@ -165,6 +214,36 @@ sub get_all {
     type    => $self->termType->get_all,
     args    => $values,
     optargs => $params,
+  );
+
+  return $q;
+}
+
+sub between {
+  my $self = shift;
+  my ( $lower, $upper, $index, $left_bound, $right_bound ) = @_;
+
+  my $optargs = {};
+  if ( ref $index ) {
+    $optargs = $index;
+  }
+  else {
+    $optargs->{index} = $index || 'id';
+
+    if ($left_bound) {
+      $optargs->{left_bound} = $left_bound;
+    }
+
+    if ($right_bound) {
+      $optargs->{right_bound} = $right_bound;
+    }
+  }
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->between,
+    args    => [ $lower, $upper ],
+    optargs => $optargs,
   );
 
   return $q;

@@ -133,6 +133,8 @@ sub run {
   return $connection->_start( $self, $args );
 }
 
+# WRITING DATA
+
 sub update {
   my $self    = shift;
   my $args    = shift;
@@ -163,6 +165,403 @@ sub replace {
   return $q;
 }
 
+sub delete {
+  my $self = shift;
+  my $optargs = @_ ? @_ > 1 ? {@_} : { %{ $_[0] } } : {};
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->delete,
+    optargs => $optargs,
+  );
+
+  return $q;
+}
+
+# SELECTING DATA
+
+sub filter {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->filter,
+    args    => Rethinkdb::Util->wrap_func($args),
+  );
+
+  return $q;
+}
+
+# JOINS
+
+sub inner_join {
+  my $self = shift;
+  my ( $table, $predicate ) = @_;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->inner_join,
+    args    => [ $table, $predicate ],
+  );
+
+  return $q;
+}
+
+sub outer_join {
+  my $self = shift;
+  my ( $table, $predicate ) = @_;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->outer_join,
+    args    => [ $table, $predicate ],
+  );
+
+  return $q;
+}
+
+sub eq_join {
+  my $self = shift;
+  my ( $left, $table, $optargs ) = @_;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->eq_join,
+    args    => [ $left, $table ],
+    optargs => $optargs,
+  );
+
+  return $q;
+}
+
+sub zip {
+  my $self = shift;
+
+  my $q
+    = Rethinkdb::Query->new( _parent => $self, type => $self->termType->zip, );
+
+  return $q;
+}
+
+# TRANSFORMATIONS
+
+sub map {
+  my $self = shift;
+  my ($args) = @_;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->map,
+    args    => Rethinkdb::Util->wrap_func($args),
+  );
+
+  return $q;
+}
+
+sub with_fields {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->with_fields,
+    args    => $args,
+  );
+
+  return $q;
+}
+
+sub concat_map {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->concatmap,
+    args    => $args,
+  );
+
+  return $q;
+}
+
+sub order_by {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->orderby,
+    args    => $args,
+  );
+
+  return $q;
+}
+
+sub skip {
+  my $self   = shift;
+  my $number = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->skip,
+    args    => $number,
+  );
+
+  return $q;
+}
+
+sub limit {
+  my $self   = shift;
+  my $number = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->limit,
+    args    => $number,
+  );
+
+  return $q;
+}
+
+sub slice {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->slice,
+    args    => $args,
+  );
+
+  return $q;
+}
+
+sub nth {
+  my $self   = shift;
+  my $number = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->nth,
+    args    => $number,
+  );
+
+  return $q;
+}
+
+sub indexes_of {
+  my $self = shift;
+  my ($args) = @_;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->indexes_of,
+    args    => Rethinkdb::Util->wrap_func($args),
+  );
+
+  return $q;
+}
+
+sub is_empty {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->is_empty,
+  );
+
+  return $q;
+}
+
+sub union {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->union,
+    args    => $args,
+  );
+
+  return $q;
+}
+
+sub sample {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->sample,
+    args    => $args,
+  );
+
+  return $q;
+}
+
+# AGGREGATION
+
+sub group {
+  my $self = shift;
+  my $args = [@_];
+
+  my $reductor;
+  if ( ref $args->[ $#{$args} ] ) {
+    $reductor = pop @{$args};
+    $args = [ $args, $reductor ];
+  }
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->group,
+    args    => $args
+  );
+
+  return $q;
+}
+
+sub ungroup {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->ungroup,
+  );
+
+  return $q;
+}
+
+sub reduce {
+  my $self     = shift;
+  my $function = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->reduce,
+    args    => $function,
+  );
+
+  return $q;
+}
+
+sub count {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->count,
+    args    => $args
+  );
+
+  return $q;
+}
+
+sub sum {
+  my $self = shift;
+  my $args = {@_};
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->sum,
+    args    => $args
+  );
+
+  return $q;
+}
+
+sub avg {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->avg,
+    args    => $args
+  );
+
+  return $q;
+}
+
+sub min {
+  my $self = shift;
+  my $args = {@_};
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->min,
+    args    => $args
+  );
+
+  return $q;
+}
+
+sub max {
+  my $self = shift;
+  my $args = {@_};
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->max,
+    args    => $args
+  );
+
+  return $q;
+}
+
+sub distinct {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->distinct,
+  );
+
+  return $q;
+}
+
+sub contains {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->contains,
+    args    => $args
+  );
+
+  return $q;
+}
+
+# DOCUMENT MANIPULATION
+
+sub pluck {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->pluck,
+    args    => $args
+  );
+
+  return $q;
+}
+
+sub without {
+  my $self = shift;
+  my $args = @_ ? @_ > 1 ? [@_] : [ @{ $_[0] } ] : [];
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->without,
+    args    => $args
+  );
+
+  return $q;
+}
+
 sub merge {
   my $self = shift;
   my $args = shift;
@@ -170,35 +569,6 @@ sub merge {
   my $q = Rethinkdb::Query->new(
     _parent => $self,
     type    => $self->termType->merge,
-    args    => $args
-  );
-
-  return $q;
-}
-
-sub has_fields {
-  my $self = shift;
-  my $args = shift;
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->has_fields,
-    args    => $args
-  );
-
-  return $q;
-}
-
-# TODO: replace this with AUTOLOAD or overload %{}
-# to get something like r->table->get()->{attr}->run;
-# or like r->table->get()->attr->run;
-sub attr {
-  my $self = shift;
-  my $args = shift;
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->get_field,
     args    => $args
   );
 
@@ -300,40 +670,30 @@ sub set_difference {
   return $q;
 }
 
-sub pluck {
+# TODO: replace this with AUTOLOAD or overload %{}
+# to get something like r->table->get()->{attr}->run;
+# or like r->table->get()->attr->run;
+sub attr {
   my $self = shift;
-  my $args = [@_];
+  my $args = shift;
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => $self->termType->pluck,
+    type    => $self->termType->get_field,
     args    => $args
   );
 
   return $q;
 }
 
-sub without {
+sub has_fields {
   my $self = shift;
-  my $args = @_ ? @_ > 1 ? [@_] : [ @{ $_[0] } ] : [];
+  my $args = shift;
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => $self->termType->without,
+    type    => $self->termType->has_fields,
     args    => $args
-  );
-
-  return $q;
-}
-
-sub delete {
-  my $self = shift;
-  my $optargs = @_ ? @_ > 1 ? {@_} : { %{ $_[0] } } : {};
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->delete,
-    optargs => $optargs,
   );
 
   return $q;
@@ -404,81 +764,7 @@ sub keys {
   return $q;
 }
 
-sub with_fields {
-  my $self = shift;
-  my $args = [@_];
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->with_fields,
-    args    => $args,
-  );
-
-  return $q;
-}
-
-sub slice {
-  my $self = shift;
-  my $args = [@_];
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->slice,
-    args    => $args,
-  );
-
-  return $q;
-}
-
-sub indexes_of {
-  my $self = shift;
-  my ($args) = @_;
-
-  # if( ref $args ) {
-  #   croak 'Unsupported argument to indexes_of';
-  # }
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->indexes_of,
-    args    => Rethinkdb::Util->wrap_func($args),
-  );
-
-  return $q;
-}
-
-sub is_empty {
-  my $self = shift;
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->is_empty,
-  );
-
-  return $q;
-}
-
-sub sample {
-  my $self = shift;
-  my $args = shift;
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->sample,
-    args    => $args,
-  );
-
-  return $q;
-}
-
-sub zip {
-  my $self = shift;
-
-  my $q
-    = Rethinkdb::Query->new( _parent => $self, type => $self->termType->zip, );
-
-  return $q;
-}
+# STRING MANIPULATION
 
 sub match {
   my $self = shift;
@@ -493,18 +779,45 @@ sub match {
   return $q;
 }
 
-sub nth {
-  my $self   = shift;
-  my $number = [@_];
+sub split {
+  my $self = shift;
+  my ($expr) = @_;
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => $self->termType->nth,
-    args    => $number,
+    type    => $self->termType->split,
+    args    => $expr
   );
 
   return $q;
 }
+
+sub upcase {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->upcase,
+  );
+
+  return $q;
+}
+
+sub downcase {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->downcase,
+  );
+
+  return $q;
+}
+
+# MATH AND LOGIC
+
+
+
 
 sub add {
   my $self = shift;
@@ -684,399 +997,27 @@ sub not {
   return $q;
 }
 
-sub map {
-  my $self = shift;
-  my ($args) = @_;
+# DATES AND TIMES
 
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->map,
-    args    => Rethinkdb::Util->wrap_func($args),
-  );
-
-  return $q;
-}
-
-sub filter {
+sub in_timezone {
   my $self = shift;
   my $args = shift;
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => $self->termType->filter,
-    args    => Rethinkdb::Util->wrap_func($args),
-  );
-
-  return $q;
-}
-
-# TODO: figure out why the arguments have to be reversed here
-sub do {
-  my $self = shift;
-  my ($args) = @_;
-
-  my $q = Rethinkdb::Query->new(
-
-    # _parent => $self,
-    rdb  => $self->rdb,
-    type => $self->termType->funcall,
-    args => [ $args, $self ],
-  );
-
-  return $q;
-}
-
-sub for_each {
-  my $self = shift;
-  my $args = shift;
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->foreach,
+    type    => $self->termType->in_timezone,
     args    => $args,
   );
 
   return $q;
 }
 
-sub default {
-  my $self = shift;
-  my $args = shift;
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->default,
-    args    => $args,
-  );
-
-  return $q;
-}
-
-sub coerce_to {
-  my $self = shift;
-  my $args = shift;
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->coerce_to,
-    args    => $args,
-  );
-
-  return $q;
-}
-
-sub type_of {
-  my $self = shift;
-
-  my $q
-    = Rethinkdb::Query->new( _parent => $self, type => $self->termType->typeof,
-    );
-
-  return $q;
-}
-
-sub info {
-  my $self = shift;
-
-  my $q
-    = Rethinkdb::Query->new( _parent => $self, type => $self->termType->info, );
-
-  return $q;
-}
-
-sub order_by {
-  my $self = shift;
-  my $args = [@_];
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->orderby,
-    args    => $args,
-  );
-
-  return $q;
-}
-
-sub concat_map {
-  my $self = shift;
-  my $args = [@_];
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->concatmap,
-    args    => $args,
-  );
-
-  return $q;
-}
-
-sub between {
-  my $self = shift;
-  my ( $lower, $upper, $index, $left_bound, $right_bound ) = @_;
-
-  my $optargs = {};
-  if ( ref $index ) {
-    $optargs = $index;
-  }
-  else {
-    $optargs->{index} = $index || 'id';
-
-    if ($left_bound) {
-      $optargs->{left_bound} = $left_bound;
-    }
-
-    if ($right_bound) {
-      $optargs->{right_bound} = $right_bound;
-    }
-  }
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->between,
-    args    => [ $lower, $upper ],
-    optargs => $optargs,
-  );
-
-  return $q;
-}
-
-sub inner_join {
-  my $self = shift;
-  my ( $table, $predicate ) = @_;
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->inner_join,
-    args    => [ $table, $predicate ],
-  );
-
-  return $q;
-}
-
-sub outer_join {
-  my $self = shift;
-  my ( $table, $predicate ) = @_;
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->outer_join,
-    args    => [ $table, $predicate ],
-  );
-
-  return $q;
-}
-
-sub eq_join {
-  my $self = shift;
-  my ( $left, $table, $optargs ) = @_;
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->eq_join,
-    args    => [ $left, $table ],
-    optargs => $optargs,
-  );
-
-  return $q;
-}
-
-sub skip {
-  my $self   = shift;
-  my $number = shift;
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->skip,
-    args    => $number,
-  );
-
-  return $q;
-}
-
-sub limit {
-  my $self   = shift;
-  my $number = shift;
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->limit,
-    args    => $number,
-  );
-
-  return $q;
-}
-
-sub union {
-  my $self = shift;
-  my $args = shift;
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->union,
-    args    => $args,
-  );
-
-  return $q;
-}
-
-#
-# aggregation
-#
-
-sub group {
-  my $self = shift;
-  my $args = [@_];
-
-  my $reductor;
-  if ( ref $args->[ $#{$args} ] ) {
-    $reductor = pop @{$args};
-    $args = [ $args, $reductor ];
-  }
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->group,
-    args    => $args
-  );
-
-  return $q;
-}
-
-sub ungroup {
+sub timezone {
   my $self = shift;
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => $self->termType->ungroup,
-  );
-
-  return $q;
-}
-
-sub reduce {
-  my $self     = shift;
-  my $function = shift;
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->reduce,
-    args    => $function,
-  );
-
-  return $q;
-}
-
-sub count {
-  my $self = shift;
-  my $args = shift;
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->count,
-    args    => $args
-  );
-
-  return $q;
-}
-
-sub sum {
-  my $self = shift;
-  my $args = {@_};
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->sum,
-    args    => $args
-  );
-
-  return $q;
-}
-
-sub avg {
-  my $self = shift;
-  my $args = [@_];
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->avg,
-    args    => $args
-  );
-
-  return $q;
-}
-
-sub min {
-  my $self = shift;
-  my $args = {@_};
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->min,
-    args    => $args
-  );
-
-  return $q;
-}
-
-sub max {
-  my $self = shift;
-  my $args = {@_};
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->max,
-    args    => $args
-  );
-
-  return $q;
-}
-
-sub distinct {
-  my $self = shift;
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->distinct,
-  );
-
-  return $q;
-}
-
-sub contains {
-  my $self = shift;
-  my $args = [@_];
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->contains,
-    args    => $args
-  );
-
-  return $q;
-}
-
-
-#
-# time functions
-#
-
-sub to_iso8601 {
-  my $self = shift;
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->to_iso8601,
-  );
-
-  return $q;
-}
-
-sub to_epoch_time {
-  my $self = shift;
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->to_epoch_time,
+    type    => $self->termType->timezone,
   );
 
   return $q;
@@ -1102,7 +1043,8 @@ sub date {
   my $self = shift;
 
   my $q
-    = Rethinkdb::Query->new( _parent => $self, type => $self->termType->date, );
+    = Rethinkdb::Query->new( _parent => $self, type => $self->termType->date,
+    );
 
   return $q;
 }
@@ -1118,22 +1060,12 @@ sub time_of_day {
   return $q;
 }
 
-sub timezone {
-  my $self = shift;
-
-  my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    type    => $self->termType->timezone,
-  );
-
-  return $q;
-}
-
 sub year {
   my $self = shift;
 
   my $q
-    = Rethinkdb::Query->new( _parent => $self, type => $self->termType->year, );
+    = Rethinkdb::Query->new( _parent => $self, type => $self->termType->year,
+    );
 
   return $q;
 }
@@ -1211,15 +1143,102 @@ sub seconds {
   return $q;
 }
 
-sub in_timezone {
+sub to_iso8601 {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->to_iso8601,
+  );
+
+  return $q;
+}
+
+sub to_epoch_time {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->to_epoch_time,
+  );
+
+  return $q;
+}
+
+# CONTROL STRUCTURES
+
+# TODO: figure out why the arguments have to be reversed here
+sub do {
+  my $self = shift;
+  my ($args) = @_;
+
+  my $q = Rethinkdb::Query->new(
+
+    # _parent => $self,
+    rdb  => $self->rdb,
+    type => $self->termType->funcall,
+    args => [ $args, $self ],
+  );
+
+  return $q;
+}
+
+sub for_each {
   my $self = shift;
   my $args = shift;
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => $self->termType->in_timezone,
+    type    => $self->termType->foreach,
     args    => $args,
   );
+
+  return $q;
+}
+
+sub default {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->default,
+    args    => $args,
+  );
+
+  return $q;
+}
+
+sub coerce_to {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->coerce_to,
+    args    => $args,
+  );
+
+  return $q;
+}
+
+sub type_of {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    type    => $self->termType->typeof,
+  );
+
+  return $q;
+}
+
+sub info {
+  my $self = shift;
+
+  my $q
+    = Rethinkdb::Query->new( _parent => $self, type => $self->termType->info,
+    );
 
   return $q;
 }

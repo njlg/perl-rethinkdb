@@ -125,11 +125,10 @@ is $res->response, 'str1str2', 'Correct response';
 
 # js with function
 $res = r->table('marvel')
-  ->filter( r->js('(function (row) { return row.age > 30; })') )->run($conn);
+  ->filter( r->js('(function (row) { return row.age > 35; })') )->run($conn);
 
 is $res->type, 2, 'Correct response type';
-is_deeply [ map { $_->{superhero} } @{ $res->response } ],
-  [ 'Wolverine', 'Iron Man' ], 'Correct response';
+is $res->response->[0]->{superhero}, 'Wolverine', 'Correct response type';
 
 # js with timeout
 $res = r->js( 'while(true) {}', 1.3 )->run($conn);
