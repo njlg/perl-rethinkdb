@@ -1,3 +1,7 @@
+0.06  2014-08-29
+  - Rearranging internal API
+  - Documenting all modules
+
 0.05  2014-08-10
   - Updating API to be compatible with 1.13.3 (using JSON Protcol)
 

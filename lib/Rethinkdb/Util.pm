@@ -11,11 +11,11 @@ use Rethinkdb::Protocol;
 my $PROTOCOL = Rethinkdb::Protocol->new;
 my $COUNTER = 0;
 
-sub token {
+sub _token {
   return $COUNTER++;
 }
 
-sub _wrap_func {
+sub _wrap_func_helper {
   my $node = shift;
 
   if ( !( blessed $node && $node->isa('Rethinkdb::Query') ) ) {
@@ -23,15 +23,15 @@ sub _wrap_func {
   }
 
   if ( blessed $node
-    && $node->type
-    && $node->type eq $PROTOCOL->term->termType->implicit_var )
+    && $node->_type
+    && $node->_type eq $PROTOCOL->term->termType->implicit_var )
   {
     return 1;
   }
 
   if ( $node->args ) {
     foreach ( @{ $node->args } ) {
-      if ( _wrap_func($_) ) {
+      if ( _wrap_func_helper($_) ) {
         return 1;
       }
     }
@@ -40,37 +40,37 @@ sub _wrap_func {
   return;
 }
 
-sub wrap_func {
+sub _wrap_func {
   my $self = shift;
   my $arg  = shift;
 
-  my $val = $self->expr($arg);
+  my $val = $self->_expr($arg);
 
-  if ( _wrap_func $val ) {
-    return $self->make_func( sub ($) { $val; } );
+  if ( _wrap_func_helper $val ) {
+    return $self->_make_func( sub ($) { $val; } );
   }
 
   return $val;
 }
 
-sub expr {
+sub _expr {
   my $self  = shift;
   my $value = shift;
 
-  if ( blessed($value) && $value->can('build') ) {
+  if ( blessed($value) && $value->can('_build') ) {
     return $value;
   }
   elsif ( ref $value eq 'ARRAY' ) {
-    return $self->make_array($value);
+    return $self->_make_array($value);
   }
   elsif ( ref $value eq 'HASH' ) {
-    return $self->make_obj($value);
+    return $self->_make_obj($value);
   }
   elsif ( ref $value eq 'CODE' ) {
-    return $self->make_func($value);
+    return $self->_make_func($value);
   }
   else {
-    return Rethinkdb::Query::Datum->new($value);
+    return Rethinkdb::Query::Datum->new({ data => $value });
   }
 
   # to croak or not?
@@ -78,11 +78,11 @@ sub expr {
 }
 
 # try to make expr mostly JSON
-sub expr_json {
+sub _expr_json {
   my $self  = shift;
   my $value = shift;
 
-  if ( blessed($value) && $value->can('build') ) {
+  if ( blessed($value) && $value->can('_build') ) {
     return $value;
   }
 
@@ -92,34 +92,33 @@ sub expr_json {
   my $retval;
   eval { $retval = encode_json $value; };
 
-  # say Dumper $@;
-  # say Dumper $retval;
-
   if ( !$@ && $retval ) {
-    return Rethinkdb::Query->new( type => $PROTOCOL->term->termType->json,
-      args => $retval );
+    return Rethinkdb::Query->new(
+      _type => $PROTOCOL->term->termType->json,
+      args => $retval
+    );
   }
   elsif ( ref $value eq 'ARRAY' ) {
-    return $self->make_array($value);
+    return $self->_make_array($value);
   }
   elsif ( ref $value eq 'ARRAY' ) {
-    return $self->make_array($value);
+    return $self->_make_array($value);
   }
   elsif ( ref $value eq 'HASH' ) {
-    return $self->make_obj($value);
+    return $self->_make_obj($value);
   }
   elsif ( ref $value eq 'CODE' ) {
-    return $self->make_func($value);
+    return $self->_make_func($value);
   }
   else {
-    return Rethinkdb::Query::Datum->new($value);
+    return Rethinkdb::Query::Datum->new({ data => $value });
   }
 
   # to croak or not?
   return;
 }
 
-sub to_json {
+sub _to_json {
   my $self  = shift;
   my $value = shift;
 
@@ -132,7 +131,7 @@ sub to_json {
   return $json;
 }
 
-sub to_term {
+sub _to_term {
   my $self  = shift;
   my $value = shift;
 
@@ -140,13 +139,13 @@ sub to_term {
     return;
   }
 
-  my $datum = $self->to_datum($value);
+  my $datum = $self->_to_datum($value);
   my $term = { type => $PROTOCOL->term->termType->datum, datum => $datum };
 
   return $term;
 }
 
-sub to_datum {
+sub _to_datum {
   my $self  = shift;
   my $value = shift;
   my $hash  = {};
@@ -156,10 +155,10 @@ sub to_datum {
   }
 
   if ( ref $value eq 'ARRAY' ) {
-    return $self->make_array($value);
+    return $self->_make_array($value);
   }
   elsif ( ref $value eq 'HASH' ) {
-    return $self->make_obj($value);
+    return $self->_make_obj($value);
   }
   elsif ( looks_like_number $value ) {
     $hash = { type => $PROTOCOL->datum->datumType->r_num, r_num => $value };
@@ -176,31 +175,31 @@ sub to_datum {
   return $hash;
 }
 
-sub make_array {
+sub _make_array {
   my $self = shift;
   my $args = @_ ? @_ > 1 ? [@_] : [ @{ $_[0] } ] : [];
 
   my $obj = Rethinkdb::Query->new(
-    type => $PROTOCOL->term->termType->make_array,
+    _type => $PROTOCOL->term->termType->make_array,
     args => $args,
   );
 
   return $obj;
 }
 
-sub make_obj {
+sub _make_obj {
   my $self = shift;
   my $optargs = @_ ? @_ > 1 ? {@_} : { %{ $_[0] } } : {};
 
   my $obj = Rethinkdb::Query->new(
-    type    => $PROTOCOL->term->termType->make_obj,
+    _type    => $PROTOCOL->term->termType->make_obj,
     optargs => $optargs,
   );
 
   return $obj;
 }
 
-sub make_func {
+sub _make_func {
   my $self = shift;
   my $func = shift;
 
@@ -210,14 +209,14 @@ sub make_func {
 
   foreach ( 1 .. $param_length ) {
     push @{$params},
-      Rethinkdb::Query->new( type => $PROTOCOL->term->termType->var, args => $_, );
+      Rethinkdb::Query->new( _type => $PROTOCOL->term->termType->var, args => $_, );
   }
 
   my $body = $func->( @{$params} );
-  my $args = $self->make_array( [ 1 .. $param_length ] );
+  my $args = $self->_make_array( [ 1 .. $param_length ] );
 
   my $obj = Rethinkdb::Query->new(
-    type => $PROTOCOL->term->termType->func,
+    _type => $PROTOCOL->term->termType->func,
     args => [ $args, $body ],
   );
 
@@ -235,7 +234,7 @@ sub _to_datum_object {
       key => $_,
       val => {
         type  => $PROTOCOL->term->termType->datum,
-        datum => Rethinkdb::Util->to_datum( $values->{$_} )
+        datum => $self->_to_datum( $values->{$_} )
       }
       };
   }
@@ -251,7 +250,7 @@ sub _to_datum_array {
 
   my $list = [];
   foreach ( @{$values} ) {
-    push @{$list}, Rethinkdb::Util->to_datum($_);
+    push @{$list}, $self->_to_datum($_);
   }
 
   my $expr = { type => $PROTOCOL->datum->datumType->r_array, r_array => $list };
@@ -259,14 +258,14 @@ sub _to_datum_array {
   return $expr;
 }
 
-sub from_datum {
+sub _from_datum {
   my $self  = shift;
   my $datum = shift;
 
-  if ( $datum->type == $PROTOCOL->datum->datumType->r_null ) {
+  if ( $datum->_type == $PROTOCOL->datum->datumType->r_null ) {
     return undef;
   }
-  elsif ( $datum->type == $PROTOCOL->datum->datumType->r_bool ) {
+  elsif ( $datum->_type == $PROTOCOL->datum->datumType->r_bool ) {
     if ( $datum->r_bool ) {
       return Rethinkdb::_True->new;
     }
@@ -274,34 +273,50 @@ sub from_datum {
       return Rethinkdb::_False->new;
     }
   }
-  elsif ( $datum->type == $PROTOCOL->datum->datumType->r_num ) {
+  elsif ( $datum->_type == $PROTOCOL->datum->datumType->r_num ) {
     return $datum->r_num;
   }
-  elsif ( $datum->type == $PROTOCOL->datum->datumType->r_str ) {
+  elsif ( $datum->_type == $PROTOCOL->datum->datumType->r_str ) {
     return $datum->r_str;
   }
-  elsif ( $datum->type == $PROTOCOL->datum->datumType->r_array ) {
+  elsif ( $datum->_type == $PROTOCOL->datum->datumType->r_array ) {
     my $r_array = $datum->r_array;
     my $array   = [];
 
     foreach ( @{$r_array} ) {
-      push @{$array}, $self->from_datum($_);
+      push @{$array}, $self->_from_datum($_);
     }
 
     return $array;
   }
-  elsif ( $datum->type == $PROTOCOL->datum->datumType->r_object ) {
+  elsif ( $datum->_type == $PROTOCOL->datum->datumType->r_object ) {
     my $r_object = $datum->r_object;
     my $object   = {};
 
     foreach ( @{$r_object} ) {
-      $object->{ $_->key } = $self->from_datum( $_->val );
+      $object->{ $_->key } = $self->_from_datum( $_->val );
     }
 
     return $object;
   }
 
-  croak 'Invalid datum type (' . $datum->type . ')';
+  croak 'Invalid datum type (' . $datum->_type . ')';
 }
 
 1;
+
+=encoding utf8
+
+=head1 NAME
+
+Rethinkdb::Util - RethinkDB Utilities
+
+=head1 DESCRIPTION
+
+This module contains internal utilities used by the RethinkDB perl driver.
+
+=head1 SEE ALSO
+
+L<Rethinkdb>, L<http://rethinkdb.com>
+
+=cut

@@ -5,7 +5,7 @@ A Pure-Perl RethinkDB Driver
 # Notes
 
 * This is still in alpha stage
-* This version is compatible with RethinkDB 1.13.3
+* This version is compatible with RethinkDB 1.14
 * The implementation is close to 100% complete
 * For now, see tests in `t/*.t` for examples
 
@@ -18,6 +18,4 @@ A Pure-Perl RethinkDB Driver
 * Submit to [CPAN](http://www.cpan.org/)
 * Look into non-blocking IO
 * Organize code
-* Document source code
-* Document in general
 * Integrate with Travis-CI

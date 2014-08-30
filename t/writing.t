@@ -81,9 +81,10 @@ is $res->response->{inserted}, 0, 'Correct number of inserts';
 $res
   = r->table('marvel')
   ->insert( { superhero => 'Iron Man', superpower => 'Mach 5' },
-  { upsert => 1 } )->run;
+  { conflict => 'replace' } )->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
+
 is $res->response->{errors},   0, 'Correct number of errors';
 is $res->response->{inserted}, 0, 'Correct number of inserts';
 is $res->response->{replaced}, 1, 'Correct number replaced';
@@ -92,7 +93,7 @@ is $res->response->{replaced}, 1, 'Correct number replaced';
 $res
   = r->table('marvel')
   ->insert( { superhero => 'Iron Man', superpower => 'Arc Reactor' },
-  { upsert => r->true } )->run;
+  { conflict => 'replace' } )->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 is $res->response->{replaced}, 1, 'Correct number replaced';

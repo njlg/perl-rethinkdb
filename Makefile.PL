@@ -21,7 +21,5 @@ WriteMakefile(
       bugtracker  => 'https://github.com/njlg/perl-rethinkdb/issues'
     },
   },
-  PREREQ_PM => { 'Google::ProtocolBuffers' => '0.08' },
   test      => { TESTS       => 't/*.t' }
 );
-

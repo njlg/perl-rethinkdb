@@ -48,7 +48,7 @@ TODO: {
 # table class methods
 #
 isa_ok r->db('test')->table('dcuniverse'), 'Rethinkdb::Query::Table', 'Correct class';
-isa_ok r->db('test')->table('dcuniverse')->rdb, 'Rethinkdb',
+isa_ok r->db('test')->table('dcuniverse')->_rdb, 'Rethinkdb',
   'Correctly has reference';
 
 # create table
@@ -58,12 +58,6 @@ $res = r->db('test')->table('dcuniverse')->create->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 is $res->type, 1, 'Correct status code';
-
-# list tables
-r->db('test')->table->list, 'Rethinkdb::Query', 'Correct class';
-$res = r->db('test')->table->list->run;
-isa_ok $res, 'Rethinkdb::Response', 'Correct class';
-ok grep {/dcuniverse/} @{ $res->response }, 'Table was listed';
 
 # create secondary index
 $res = r->db('test')->table('dcuniverse')->index_create('alias')->run;
