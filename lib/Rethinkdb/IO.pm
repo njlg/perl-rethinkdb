@@ -13,13 +13,13 @@ has port       => 28015;
 has default_db => 'test';
 has auth_key   => '';
 has timeout    => 20;
-has [ 'rdb', 'handle' ];
-has 'protocol' => sub { Rethinkdb::Protocol->new; };
+has [ '_rdb', '_handle' ];
+has '_protocol' => sub { Rethinkdb::Protocol->new; };
 
 sub connect {
   my $self = shift;
 
-  $self->{handle} = IO::Socket::INET->new(
+  $self->{_handle} = IO::Socket::INET->new(
     PeerHost => $self->host,
     PeerPort => $self->port,
     Reuse    => 1,
@@ -27,18 +27,18 @@ sub connect {
     )
     or croak 'ERROR: Could not connect to ' . $self->host . ':' . $self->port;
 
-  $self->handle->send( pack 'L<',
-    $self->protocol->versionDummy->version->v0_3 );
-  $self->handle->send(
+  $self->_handle->send( pack 'L<',
+    $self->_protocol->versionDummy->version->v0_3 );
+  $self->_handle->send(
     ( pack 'L<', length $self->auth_key ) . $self->auth_key );
 
-  $self->handle->send( pack 'L<',
-    $self->protocol->versionDummy->protocol->json );
+  $self->_handle->send( pack 'L<',
+    $self->_protocol->versionDummy->protocol->json );
 
   my $response;
   my $char = '';
   do {
-    $self->handle->recv( $char, 1 );
+    $self->_handle->recv( $char, 1 );
     $response .= $char;
   } while ( $char ne "\0" );
 
@@ -57,14 +57,14 @@ sub close {
   my $self = shift;
   my $args = ref $_[0] ? $_[0] : {@_};
 
-  if( $self->handle ) {
-    if( !defined $args->{noreply_wait} || !$args->{noreply_wait} ) {
+  if ( $self->_handle ) {
+    if ( !defined $args->{noreply_wait} || !$args->{noreply_wait} ) {
       say 'noreply_wait';
       $self->noreply_wait;
     }
 
-    $self->handle->close;
-    $self->handle(undef);
+    $self->_handle->close;
+    $self->_handle(undef);
   }
 
   return $self;
@@ -101,8 +101,8 @@ sub noreply_wait {
 
   return $self->_send(
     {
-      type  => $self->protocol->query->queryType->noreply_wait,
-      token => Rethinkdb::Util::token(),
+      type  => $self->_protocol->query->queryType->noreply_wait,
+      token => Rethinkdb::Util::_token(),
     }
   );
 }
@@ -112,9 +112,9 @@ sub _start {
   my ( $query, $args ) = @_;
 
   my $q = {
-    type  => $self->protocol->query->queryType->start,
-    token => Rethinkdb::Util::token(),
-    query => $query->build
+    type  => $self->_protocol->query->queryType->start,
+    token => Rethinkdb::Util::_token(),
+    query => $query->_build
   };
 
   return $self->_send($q);
@@ -183,7 +183,7 @@ sub _encode_recurse {
       $args->{ $_->{key} } = $self->_encode_recurse( $_->{val} );
     }
 
-    if ( $data->{type} == $self->protocol->term->termType->make_obj ) {
+    if ( $data->{type} == $self->_protocol->term->termType->make_obj ) {
       return $args;
     }
 
@@ -202,10 +202,10 @@ sub _decode {
   foreach ( @{ $decode->{r} } ) {
     if ( ref $_ eq 'JSON::PP::Boolean' ) {
       if ($_) {
-        push @{$clean}, $self->rdb->true;
+        push @{$clean}, $self->_rdb->true;
       }
       else {
-        push @{$clean}, $self->rdb->false;
+        push @{$clean}, $self->_rdb->false;
       }
     }
     else {
@@ -241,18 +241,18 @@ sub _send {
   }
 
   # send message
-  $self->handle->send( $header . $serial );
+  $self->_handle->send( $header . $serial );
 
   # receive message
   my $data;
 
-  $self->handle->recv( $token, 8 );
+  $self->_handle->recv( $token, 8 );
   $token = unpack 'Q<', $token;
 
-  $self->handle->recv( $length, 4 );
+  $self->_handle->recv( $length, 4 );
   $length = unpack 'L<', $length;
 
-  $self->handle->recv( $data, $length );
+  $self->_handle->recv( $data, $length );
 
   # decode RQL data
   my $res_data = $self->_decode($data);
@@ -260,17 +260,19 @@ sub _send {
 
   # fetch the rest of the data if steam/partial
   if ( $res_data->{t} == 3 ) {
-    my $more
-      = $self->_send(
-      { type => $self->protocol->query->queryType->continue, token => $token }
-      );
+    my $more = $self->_send(
+      {
+        type  => $self->_protocol->query->queryType->continue,
+        token => $token
+      }
+    );
 
     push @{ $res_data->{r} }, @{ $more->response };
     $res_data->{t} = $more->type;
   }
 
   # put data in response
-  my $res = Rethinkdb::Response->init($res_data);
+  my $res = Rethinkdb::Response->_init($res_data);
 
   if ( $ENV{RDB_DEBUG} ) {
     say {*STDERR} 'RECEIVED:';
@@ -352,8 +354,8 @@ L<Rethinkdb::IO> is currently set to use.
 
 =head1 METHODS
 
-L<Rethinkdb> inherits all methods from L<Rethinkdb::Base> and implements the
-following methods.
+L<Rethinkdb::IO> inherits all methods from L<Rethinkdb::Base> and implements
+the following methods.
 
 =head2 connect
 
@@ -408,3 +410,9 @@ use this connection.
 
 The C<noreply_wait> method will tell the database to wait until all "no reply"
 have executed before responding.
+
+=head1 SEE ALSO
+
+L<Rethinkdb>, L<http://rethinkdb.com>
+
+=cut

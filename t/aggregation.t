@@ -199,7 +199,7 @@ is $res->response, '4', 'Correct number of documents';
 # distinct (on table)
 $res = r->table('marvel')->distinct->run;
 
-is $res->type, 1, 'Correct response type';
+is $res->type, 2, 'Correct response type';
 is scalar @{ $res->response }, 9, 'Correct number of documents';
 
 # distinct (on query)

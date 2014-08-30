@@ -49,22 +49,22 @@ isa_ok r->io, 'Rethinkdb::IO';
 # close connection
 $conn = r->connect;
 isa_ok $conn->close, 'Rethinkdb::IO';
-is $conn->handle,    undef;
+is $conn->_handle,    undef;
 
 $conn = r->connect;
 isa_ok $conn->close(noreply_wait => 0), 'Rethinkdb::IO';
-is $conn->handle,    undef;
+is $conn->_handle,    undef;
 
 # reconnect
 isa_ok $conn->reconnect, 'Rethinkdb::IO';
-isa_ok $conn->handle,    'IO::Socket::INET';
-is $conn->handle->peerport, 28015;
-is $conn->handle->peerhost, '127.0.0.1';
+isa_ok $conn->_handle,    'IO::Socket::INET';
+is $conn->_handle->peerport, 28015;
+is $conn->_handle->peerhost, '127.0.0.1';
 
 isa_ok $conn->reconnect(noreply_wait => 0), 'Rethinkdb::IO';
-isa_ok $conn->handle,    'IO::Socket::INET';
-is $conn->handle->peerport, 28015;
-is $conn->handle->peerhost, '127.0.0.1';
+isa_ok $conn->_handle,    'IO::Socket::INET';
+is $conn->_handle->peerport, 28015;
+is $conn->_handle->peerhost, '127.0.0.1';
 
 # switch default databases
 $conn->use('test2');

@@ -31,7 +31,7 @@ sub r {
 
   if ($package::_rdb_io) {
     $self = __PACKAGE__->new( io => $package::_rdb_io );
-    $self->io->rdb($self);
+    $self->io->_rdb($self);
   }
   else {
     $self = __PACKAGE__->new;
@@ -49,7 +49,7 @@ sub connect {
   my $timeout  = shift || 20;
 
   my $io = Rethinkdb::IO->new(
-    rdb      => $self,
+    _rdb     => $self,
     host     => $host,
     port     => $port,
     db       => $db,
@@ -57,7 +57,7 @@ sub connect {
     timeout  => $timeout
   );
 
-  weaken $io->{rdb};
+  weaken $io->{_rdb};
   return $io->connect;
 }
 
@@ -68,12 +68,12 @@ sub db_create {
   my $args = shift;
 
   my $q = Rethinkdb::Query->new(
-    rdb  => $self,
-    type => $self->term->termType->db_create,
+    _rdb => $self,
+    _type => $self->term->termType->db_create,
     args => $args,
   );
 
-  weaken $q->{rdb};
+  weaken $q->{_rdb};
   return $q;
 }
 
@@ -82,12 +82,12 @@ sub db_drop {
   my $args = shift;
 
   my $q = Rethinkdb::Query->new(
-    rdb  => $self,
-    type => $self->term->termType->db_drop,
+    _rdb => $self,
+    _type => $self->term->termType->db_drop,
     args => $args
   );
 
-  weaken $q->{rdb};
+  weaken $q->{_rdb};
   return $q;
 }
 
@@ -95,11 +95,11 @@ sub db_list {
   my $self = shift;
 
   my $q = Rethinkdb::Query->new(
-    rdb  => $self,
-    type => $self->term->termType->db_list,
+    _rdb => $self,
+    _type => $self->term->termType->db_list,
   );
 
-  weaken $q->{rdb};
+  weaken $q->{_rdb};
   return $q;
 }
 
@@ -108,13 +108,13 @@ sub db {
   my $name = shift;
 
   my $db = Rethinkdb::Query::Database->new(
-    rdb  => $self,
-    type => $self->term->termType->db,
+    _rdb => $self,
+    _type => $self->term->termType->db,
     name => $name,
     args => $name,
   );
 
-  weaken $db->{rdb};
+  weaken $db->{_rdb};
   return $db;
 }
 
@@ -131,14 +131,14 @@ sub table {
   }
 
   my $t = Rethinkdb::Query::Table->new(
-    rdb     => $self,
-    type    => $self->term->termType->table,
+    _rdb    => $self,
+    _type    => $self->term->termType->table,
     name    => $name,
     args    => $name,
     optargs => $optargs,
   );
 
-  weaken $t->{rdb};
+  weaken $t->{_rdb};
   return $t;
 }
 
@@ -148,11 +148,11 @@ sub row {
   my $self = shift;
 
   my $q = Rethinkdb::Query->new(
-    rdb  => $self,
-    type => $self->term->termType->implicit_var,
+    _rdb => $self,
+    _type => $self->term->termType->implicit_var,
   );
 
-  weaken $q->{rdb};
+  weaken $q->{_rdb};
   return $q;
 }
 
@@ -161,7 +161,7 @@ sub literal {
   my $args = ref $_[0] ? $_[0] : {@_};
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->literal,
+    _type => $self->term->termType->literal,
     args => $args,
   );
 
@@ -173,7 +173,7 @@ sub object {
   my $args = ref $_[0] ? $_[0] : {@_};
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->object,
+    _type => $self->term->termType->object,
     args => $args,
   );
 
@@ -188,7 +188,7 @@ sub and {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => $self->termType->and,
+    _type    => $self->termType->and,
     args    => $args,
   );
 
@@ -201,7 +201,7 @@ sub or {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => $self->termType->or,
+    _type    => $self->termType->or,
     args    => $args,
   );
 
@@ -214,7 +214,7 @@ sub random {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    type    => $self->termType->random,
+    _type    => $self->termType->random,
     args    => $args,
   );
 
@@ -226,7 +226,7 @@ sub random {
 sub now {
   my $self = shift;
 
-  my $q = Rethinkdb::Query->new( type => $self->term->termType->now, );
+  my $q = Rethinkdb::Query->new( _type => $self->term->termType->now, );
 
   return $q;
 }
@@ -236,7 +236,7 @@ sub time {
   my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->time,
+    _type => $self->term->termType->time,
     args => $args
   );
 
@@ -248,7 +248,7 @@ sub epoch_time {
   my $args = shift;
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->epoch_time,
+    _type => $self->term->termType->epoch_time,
     args => $args
   );
 
@@ -260,7 +260,7 @@ sub iso8601 {
   my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->iso8601,
+    _type => $self->term->termType->iso8601,
     args => $args
   );
 
@@ -272,7 +272,7 @@ sub monday {
   my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->monday,
+    _type => $self->term->termType->monday,
     args => $args
   );
 
@@ -284,7 +284,7 @@ sub tuesday {
   my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->tuesday,
+    _type => $self->term->termType->tuesday,
     args => $args
   );
 
@@ -296,7 +296,7 @@ sub wednesday {
   my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->wednesday,
+    _type => $self->term->termType->wednesday,
     args => $args
   );
 
@@ -308,7 +308,7 @@ sub thursday {
   my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->thursday,
+    _type => $self->term->termType->thursday,
     args => $args
   );
 
@@ -320,7 +320,7 @@ sub friday {
   my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->friday,
+    _type => $self->term->termType->friday,
     args => $args
   );
 
@@ -332,7 +332,7 @@ sub saturday {
   my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->saturday,
+    _type => $self->term->termType->saturday,
     args => $args
   );
 
@@ -344,7 +344,7 @@ sub sunday {
   my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->sunday,
+    _type => $self->term->termType->sunday,
     args => $args
   );
 
@@ -356,7 +356,7 @@ sub january {
   my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->january,
+    _type => $self->term->termType->january,
     args => $args
   );
 
@@ -368,7 +368,7 @@ sub february {
   my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->february,
+    _type => $self->term->termType->february,
     args => $args
   );
 
@@ -380,7 +380,7 @@ sub march {
   my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->march,
+    _type => $self->term->termType->march,
     args => $args
   );
 
@@ -392,7 +392,7 @@ sub april {
   my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->april,
+    _type => $self->term->termType->april,
     args => $args
   );
 
@@ -403,7 +403,7 @@ sub may {
   my $self = shift;
   my $args = [@_];
 
-  my $q = Rethinkdb::Query->new( type => $self->term->termType->may,
+  my $q = Rethinkdb::Query->new( _type => $self->term->termType->may,
     args => $args );
 
   return $q;
@@ -414,7 +414,7 @@ sub june {
   my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->june,
+    _type => $self->term->termType->june,
     args => $args
   );
 
@@ -426,7 +426,7 @@ sub july {
   my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->july,
+    _type => $self->term->termType->july,
     args => $args
   );
 
@@ -438,7 +438,7 @@ sub august {
   my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->august,
+    _type => $self->term->termType->august,
     args => $args
   );
 
@@ -450,7 +450,7 @@ sub september {
   my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->september,
+    _type => $self->term->termType->september,
     args => $args
   );
 
@@ -462,7 +462,7 @@ sub october {
   my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->october,
+    _type => $self->term->termType->october,
     args => $args
   );
 
@@ -474,7 +474,7 @@ sub november {
   my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->november,
+    _type => $self->term->termType->november,
     args => $args
   );
 
@@ -486,7 +486,7 @@ sub december {
   my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->december,
+    _type => $self->term->termType->december,
     args => $args
   );
 
@@ -500,7 +500,7 @@ sub args {
   my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->args,
+    _type => $self->term->termType->args,
     args => $args
   );
 
@@ -513,12 +513,12 @@ sub do {
   my ( $one, $two ) = @_;
 
   my $q = Rethinkdb::Query->new(
-    rdb  => $self,
-    type => $self->term->termType->funcall,
+    _rdb => $self,
+    _type => $self->term->termType->funcall,
     args => [ $two, $one ],
   );
 
-  weaken $q->{rdb};
+  weaken $q->{_rdb};
   return $q;
 }
 
@@ -526,17 +526,13 @@ sub branch {
   my $self = shift;
   my ( $predicate, $true, $false ) = @_;
 
-  # $predicate = Rethinkdb::Util->wrap_func($predicate);
-  # $true      = Rethinkdb::Util->wrap_func($true);
-  # $false     = Rethinkdb::Util->wrap_func($false);
-
   my $q = Rethinkdb::Query->new(
-    rdb  => $self,
-    type => $self->term->termType->branch,
+    _rdb => $self,
+    _type => $self->term->termType->branch,
     args => [ $predicate, $true, $false ],
   );
 
-  weaken $q->{rdb};
+  weaken $q->{_rdb};
   return $q;
 }
 
@@ -545,7 +541,7 @@ sub error {
   my ($message) = @_;
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->error,
+    _type => $self->term->termType->error,
     args => $message,
   );
 
@@ -556,7 +552,7 @@ sub expr {
   my $self  = shift;
   my $value = shift;
 
-  return Rethinkdb::Util->expr($value);
+  return Rethinkdb::Util->_expr($value);
 }
 
 sub js {
@@ -570,13 +566,13 @@ sub js {
   }
 
   my $q = Rethinkdb::Query->new(
-    rdb     => $self,
-    type    => $self->term->termType->javascript,
+    _rdb    => $self,
+    _type    => $self->term->termType->javascript,
     args    => $args,
     optargs => $optargs,
   );
 
-  weaken $q->{rdb};
+  weaken $q->{_rdb};
   return $q;
 }
 
@@ -585,12 +581,12 @@ sub json {
   my $value = shift;
 
   my $q = Rethinkdb::Query->new(
-    rdb  => $self,
-    type => $self->term->termType->json,
+    _rdb => $self,
+    _type => $self->term->termType->json,
     args => $value,
   );
 
-  weaken $q->{rdb};
+  weaken $q->{_rdb};
   return $q;
 }
 
@@ -599,12 +595,12 @@ sub http {
   my $value = shift;
 
   my $q = Rethinkdb::Query->new(
-    rdb  => $self,
-    type => $self->term->termType->http,
+    _rdb => $self,
+    _type => $self->term->termType->http,
     args => $value,
   );
 
-  weaken $q->{rdb};
+  weaken $q->{_rdb};
   return $q;
 }
 
@@ -615,7 +611,7 @@ sub asc {
   my $name = shift;
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->asc,
+    _type => $self->term->termType->asc,
     args => $name,
   );
 
@@ -627,7 +623,7 @@ sub desc {
   my $name = shift;
 
   my $q = Rethinkdb::Query->new(
-    type => $self->term->termType->desc,
+    _type => $self->term->termType->desc,
     args => $name,
   );
 
@@ -702,6 +698,13 @@ The C<io> attribute returns the current L<Rethinkdb::IO> instance that
 L<Rethinkdb> is currently set to use. If C<io> is not set by the time C<run>
 is called, then an error will occur.
 
+=head2 term
+
+  my $term = r->term;
+
+The C<term> attribute returns an instance of the RethinkDB Query Langague
+protocol.
+
 =head1 METHODS
 
 L<Rethinkdb> inherits all methods from L<Rethinkdb::Base> and implements the
@@ -737,7 +740,8 @@ relational databases.
 
   r->db_drop('test')->run;
 
-Drop a database. The database, all its tables, and corresponding data will be deleted.
+Drop a database. The database, all its tables, and corresponding data will be
+deleted.
 
 =head2 db_list
 
@@ -751,52 +755,6 @@ List all database names in the system.
 
 Reference a database.
 
-=head2 table_create
-
-  r->table_create('marvel')->run;
-  r->table_create('marvel', {
-    primary_key => 'superhero',
-    durability  => 'soft',
-    cache_size  => 512,
-    datacenter  => 'obscurus',
-  })->run;
-
-Create a table. A RethinkDB table is a collection of JSON documents.
-
-The second argument contains optional arguments:
-
-=over 4
-
-=item primary_key (string)
-
-The name of the primary key. The default primary key is id.
-
-=item durability (string)
-
-If set to 'soft', this enables soft durability on this table: writes will be acknowledged by the server immediately and flushed to disk in the background. Default is 'hard' (acknowledgement of writes happens after data has been written to disk).
-
-=item cache_size (number)
-
-Set the cache size (in MB) to be used by the table. Default is 1024MB.
-
-=item datacenter (string)
-
-The name of the datacenter this table should be assigned to.
-
-=back
-
-=head2 table_drop
-
-  r->table_drop('marvel')->run;
-
-Drop a table. The table and all its data will be deleted.
-
-=head2 table_list
-
-  r->table_list->run;
-
-List all table names in a database.
-
 =head2 table
 
   r->table('marvel')->run;
@@ -806,9 +764,6 @@ List all table names in a database.
 
 Select all documents in a table. This command can be chained with other
 commands to do further processing on the data.
-
-The second argument specifies whether using outdated results is okay or not.
-By default the results will be accurate.
 
 =head2 row
 
@@ -824,39 +779,245 @@ By default the results will be accurate.
 
 Returns the currently visited document.
 
-=head2 asc
+=head2 literal
 
-  r->table('marvel')->order_by(r->asc('enemies_vanquished'))->run;
+  r->table('users')->get(1)->update({
+    data: r->literal({ age => 19, job => 'Engineer' })
+  })->run;
 
-Specifies that a column should be ordered in ascending order.
+Replace an object in a field instead of merging it with an existing object in a
+merge or update operation.
 
-=head2 desc
+=head2 object
 
-  r->table('marvel')->order_by(r->desc('enemies_vanquished'))->run;
+  r->object('id', 5, 'data', ['foo', 'bar'])->run;
 
-Specifies that a column should be ordered in descending order.
+Creates an object from a list of key-value pairs, where the keys must be
+strings. C<r.object(A, B, C, D)> is equivalent to
+C<r.expr([[A, B], [C, D]]).coerce_to('OBJECT')>.
 
-=head2 js
+=head2 and
 
-  r->js("'str1' + 'str2'")->run($conn);
-  r->table('marvel')->filter(
-    r->js('(function (row) { return row.age > 90; })')
-  )->run($conn);
-  r->js('while(true) {}', 1.3)->run($conn);
+  r->and(true, false)->run;
 
-Create a javascript expression.
+Compute the logical "and" of two or more values.
 
-=head2 expr
+=head2 or
 
-  r->expr({a => 'b'})->merge({b => [1,2,3]})->run($conn);
+  r->or(true, false)->run;
 
-Construct a RQL JSON object from a native object.
+Compute the logical "or" of two or more values.
 
-=head2 json
+=head2 random
 
-  r->json("[1,2,3]")->run($conn);
+  r->random()
+  r->random(number[, number], {float => true})
+  r->random(integer[, integer])
 
-Parse a JSON string on the server.
+Generate a random number between given (or implied) bounds. C<random> takes
+zero, one or two arguments.
+
+=head2 now
+
+  r->table("users")->insert({
+    name => "John",
+    subscription_date => r->now()
+  })->run($conn);
+
+Return a time object representing the current time in UTC. The command C<now()>
+is computed once when the server receives the query, so multiple instances of
+C<r.now()> will always return the same time inside a query.
+
+=head2 time
+
+  r->table('user')->get('John')->update({
+    birthdate => r->time(1986, 11, 3, 'Z')
+  })->run;
+
+Create a time object for a specific time.
+
+=head2 epoch_time
+
+  r->table('user')->get('John')->update({
+    "birthdate" => r->epoch_time(531360000)
+  })->run;
+
+Create a time object based on seconds since epoch. The first argument is a
+double and will be rounded to three decimal places (millisecond-precision).
+
+=head2 iso8601
+
+  r->table('user')->get('John')->update({
+    birth => r->iso8601('1986-11-03T08:30:00-07:00')
+  })->run;
+
+Create a time object based on an ISO 8601 date-time string
+(e.g. '2013-01-01T01:01:01+00:00'). We support all valid ISO 8601 formats
+except for week dates. If you pass an ISO 8601 date-time without a time zone,
+you must specify the time zone with the default_timezone argument. Read more
+about the ISO 8601 format at L<Wikipedia|http://en.wikipedia.org/wiki/ISO_8601>.
+
+=head2 monday
+
+  r->table('users')->filter(
+    r->row('birthdate')->day_of_week()->eq(r->monday)
+  )->run;
+
+L<monday> is a literal day of the week for comparisions.
+
+=head2 tuesday
+
+  r->table('users')->filter(
+    r->row('birthdate')->day_of_week()->eq(r->tuesday)
+  )->run;
+
+L<tuesday> is a literal day of the week for comparisions.
+
+=head2 wednesday
+
+  r->table('users')->filter(
+    r->row('birthdate')->day_of_week()->eq(r->wednesday)
+  )->run;
+
+L<wednesday> is a literal day of the week for comparisions.
+
+=head2 thursday
+
+  r->table('users')->filter(
+    r->row('birthdate')->day_of_week()->eq(r->thursday)
+  )->run;
+
+L<thursday> is a literal day of the week for comparisions.
+
+=head2 friday
+
+  r->table('users')->filter(
+    r->row('birthdate')->day_of_week()->eq(r->friday)
+  )->run;
+
+L<friday> is a literal day of the week for comparisions.
+
+=head2 saturday
+
+  r->table('users')->filter(
+    r->row('birthdate')->day_of_week()->eq(r->saturday)
+  )->run;
+
+L<saturday> is a literal day of the week for comparisions.
+
+=head2 sunday
+
+  r->table('users')->filter(
+    r->row('birthdate')->day_of_week()->eq(r->sunday)
+  )->run;
+
+L<sunday> is a literal day of the week for comparisions.
+
+=head2 january
+
+  r->table('users')->filter(
+    r->row('birthdate')->month()->eq(r->january)
+  )->run;
+
+L<january> is a literal month for comparisions.
+
+=head2 february
+
+  r->table('users')->filter(
+    r->row('birthdate')->month()->eq(r->february)
+  )->run;
+
+L<february> is a literal month for comparisions.
+
+=head2 march
+
+  r->table('users')->filter(
+    r->row('birthdate')->month()->eq(r->march)
+  )->run;
+
+L<march> is a literal month for comparisions.
+
+=head2 april
+
+  r->table('users')->filter(
+    r->row('birthdate')->month()->eq(r->april)
+  )->run;
+
+L<april> is a literal month for comparisions.
+
+=head2 may
+
+  r->table('users')->filter(
+    r->row('birthdate')->month()->eq(r->may)
+  )->run;
+
+L<may> is a literal month for comparisions.
+
+=head2 june
+
+  r->table('users')->filter(
+    r->row('birthdate')->month()->eq(r->june)
+  )->run;
+
+L<june> is a literal month for comparisions.
+
+=head2 july
+
+  r->table('users')->filter(
+    r->row('birthdate')->month()->eq(r->july)
+  )->run;
+
+L<july> is a literal month for comparisions.
+
+=head2 august
+
+  r->table('users')->filter(
+    r->row('birthdate')->month()->eq(r->august)
+  )->run;
+
+L<august> is a literal month for comparisions.
+
+=head2 september
+
+  r->table('users')->filter(
+    r->row('birthdate')->month()->eq(r->september)
+  )->run;
+
+L<september> is a literal month for comparisions.
+
+=head2 october
+
+  r->table('users')->filter(
+    r->row('birthdate')->month()->eq(r->october)
+  )->run;
+
+L<october> is a literal month for comparisions.
+
+=head2 november
+
+  r->table('users')->filter(
+    r->row('birthdate')->month()->eq(r->november)
+  )->run;
+
+L<november> is a literal month for comparisions.
+
+=head2 december
+
+  r->table('users')->filter(
+    r->row('birthdate')->month()->eq(r->december)
+  )->run;
+
+L<december> is a literal month for comparisions.
+
+=head2 args
+
+  r->table('people')->get_all('Alice', 'Bob')->run;
+  # or
+  r->table('people')->get_all(r->args(['Alice', 'Bob']))->run;
+
+C<< r->args >> is a special term that's used to splice an array of arguments into
+another term. This is useful when you want to call a variadic term such as
+L<Rethinkdb::Query::Table/"get_all"> with a set of arguments produced at runtime.
 
 =head2 do
 
@@ -884,55 +1045,70 @@ result is determined by the type of the branch that gets executed.
 
 =head2 error
 
-=head2 now
+  r->table('marvel')->get('IronMan')->do(sub {
+    my $ironman = shift;
+    r->branch(
+      $ironman->attr('victories')->lt($ironman->attr('battles')),
+      r->error('impossible code path'),
+      $ironman
+    );
+  })->run;
 
-=head2 time
+Throw a runtime error. If called with no arguments inside the second argument
+to default, re-throw the current error.
 
-=head2 epoch_time
+=head2 expr
 
-=head2 iso8601
+  r->expr({a => 'b'})->merge({b => [1,2,3]})->run($conn);
 
-=head2 monday
+Construct a RQL JSON object from a native object.
 
-=head2 tuesday
+=head2 js
 
-=head2 wednesday
+  r->js("'str1' + 'str2'")->run($conn);
+  r->table('marvel')->filter(
+    r->js('(function (row) { return row.age > 90; })')
+  )->run($conn);
+  r->js('while(true) {}', 1.3)->run($conn);
 
-=head2 thursday
+Create a javascript expression.
 
-=head2 friday
+=head2 json
 
-=head2 saturday
+  r->json("[1,2,3]")->run($conn);
 
-=head2 sunday
+Parse a JSON string on the server.
 
-=head2 january
+=head2 http
 
-=head2 february
+  r->table('posts')->insert(r->http('httpbin.org/get'))->run;
 
-=head2 march
+Retrieve data from the specified URL over HTTP. The return type depends on the
+C<result_format> option, which checks the C<Content-Type> of the response by default.
 
-=head2 april
+=head2 asc
 
-=head2 may
+  r->table('marvel')->order_by(r->asc('enemies_vanquished'))->run;
 
-=head2 june
+Specifies that a column should be ordered in ascending order.
 
-=head2 july
+=head2 desc
 
-=head2 august
+  r->table('marvel')->order_by(r->desc('enemies_vanquished'))->run;
 
-=head2 september
-
-=head2 october
-
-=head2 november
-
-=head2 december
+Specifies that a column should be ordered in descending order.
 
 =head2 true
 
+  r->true->run;
+
+Helper literal since Perl does not have a C<true> literal.
+
 =head2 false
+
+  r->true->run;
+
+Helper literal since Perl does not have a C<false> literal.
 
 =head1 AUTHOR
 
@@ -942,10 +1118,11 @@ Nathan Levin-Greenhaw, C<njlg@cpan.org>.
 
 Unless otherwise noted:
 
-Copyright (C) 2013, Nathan Levin-Greenhaw
+Copyright (C) 2013-2014, Nathan Levin-Greenhaw
 
-A lot of the above documentation above was taken from the L<official documentation|http://rethinkdb.com/api/>.
-Copyright (C) 2010-2013 RethinkDB.
+A lot of the above documentation above was taken from the
+L<official documentation|http://rethinkdb.com/api/>.
+Copyright (C) 2010-2014 RethinkDB.
 
 This program is free software, you can redistribute it and/or modify it under
 the terms of the Artistic License version 2.0.
