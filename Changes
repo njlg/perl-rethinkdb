@@ -1,3 +1,6 @@
+0.07  2014-11-01
+  - Query `run()` now takes an optional callback function
+
 0.06  2014-08-29
   - Rearranging internal API
   - Documenting all modules

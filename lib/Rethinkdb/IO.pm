@@ -1,6 +1,8 @@
 package Rethinkdb::IO;
 use Rethinkdb::Base -base;
 
+no warnings 'recursion';
+
 use Carp 'croak';
 use IO::Socket::INET;
 use JSON::PP;
@@ -13,7 +15,7 @@ has port       => 28015;
 has default_db => 'test';
 has auth_key   => '';
 has timeout    => 20;
-has [ '_rdb', '_handle' ];
+has [ '_rdb', '_handle', '_callbacks' ];
 has '_protocol' => sub { Rethinkdb::Protocol->new; };
 
 sub connect {
@@ -50,6 +52,8 @@ sub connect {
     croak "ERROR: Unable to connect to the database";
   }
 
+  $self->_callbacks( {} );
+
   return $self;
 }
 
@@ -59,7 +63,6 @@ sub close {
 
   if ( $self->_handle ) {
     if ( !defined $args->{noreply_wait} || !$args->{noreply_wait} ) {
-      say 'noreply_wait';
       $self->noreply_wait;
     }
 
@@ -67,14 +70,14 @@ sub close {
     $self->_handle(undef);
   }
 
+  $self->_callbacks( {} );
+
   return $self;
 }
 
 sub reconnect {
   my $self = shift;
   my $args = ref $_[0] ? $_[0] : {@_};
-
-  say 'reconnecting';
 
   return $self->close($args)->connect;
 }
@@ -109,13 +112,17 @@ sub noreply_wait {
 
 sub _start {
   my $self = shift;
-  my ( $query, $args ) = @_;
+  my ( $query, $args, $callback ) = @_;
 
   my $q = {
     type  => $self->_protocol->query->queryType->start,
     token => Rethinkdb::Util::_token(),
     query => $query->_build
   };
+
+  if ( ref $callback eq 'CODE' ) {
+    $self->_callbacks->{ $q->{token} } = $callback;
+  }
 
   return $self->_send($q);
 }
@@ -258,17 +265,44 @@ sub _send {
   my $res_data = $self->_decode($data);
   $res_data->{token} = $token;
 
-  # fetch the rest of the data if steam/partial
-  if ( $res_data->{t} == 3 ) {
-    my $more = $self->_send(
-      {
-        type  => $self->_protocol->query->queryType->continue,
-        token => $token
-      }
-    );
+  # handle partial and feed responses
+  if ( $res_data->{t} == 3 or $res_data->{t} == 5 ) {
+    if ( $self->_callbacks->{$token} ) {
+      my $res = Rethinkdb::Response->_init($res_data);
 
-    push @{ $res_data->{r} }, @{ $more->response };
-    $res_data->{t} = $more->type;
+      if ( $ENV{RDB_DEBUG} ) {
+        say {*STDERR} 'RECEIVED:';
+        say {*STDERR} Dumper $res;
+      }
+
+      # send what we have
+      $self->_callbacks->{$token}->( $res );
+
+      # fetch more
+      return $self->_send(
+        {
+          type  => $self->_protocol->query->queryType->continue,
+          token => $token
+        }
+      );
+    }
+    else {
+      if ( $ENV{RDB_DEBUG} ) {
+        say {*STDERR} 'RECEIVED:';
+        say {*STDERR} Dumper $res_data;
+      }
+
+      # fetch the rest of the data if stream/partial/feed
+      my $more = $self->_send(
+        {
+          type  => $self->_protocol->query->queryType->continue,
+          token => $token
+        }
+      );
+
+      push @{ $res_data->{r} }, @{ $more->response };
+      $res_data->{t} = $more->type;
+    }
   }
 
   # put data in response

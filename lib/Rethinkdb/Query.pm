@@ -118,10 +118,11 @@ sub _optargs {
 
 sub run {
   my $self = shift;
-  my ( $connection, $args ) = @_;
+  my ( $connection, $args, $callback ) = @_;
 
   if ( ref $connection ne 'Rethinkdb::IO' ) {
-    $args = $connection;
+    $callback = $args;
+    $args     = $connection;
     if ( $self->_rdb && $self->_rdb->io ) {
       $connection = $self->_rdb->io;
     }
@@ -130,7 +131,12 @@ sub run {
     }
   }
 
-  return $connection->_start( $self, $args );
+  if ( ref $args eq 'CODE' ) {
+    $callback = $args;
+    $args     = {};
+  }
+
+  return $connection->_start( $self, $args, $callback );
 }
 
 # WRITING DATA
