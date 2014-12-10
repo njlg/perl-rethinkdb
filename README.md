@@ -2,14 +2,31 @@
 
 A Pure-Perl RethinkDB Driver
 
-# Notes
+```perl
+package MyApp;
+use Rethinkdb;
+
+r->connect->repl;
+r->table('agents')->get('007')->update(
+  r->branch(
+    r->row->attr('in_centrifuge'),
+    {'expectation': 'death'},
+    {}
+  )
+)->run;
+```
+
+## Documentation
+See http://njlg.info/perl-rethinkdb/
+
+## Notes
 
 * This is still in alpha stage
 * This version is compatible with RethinkDB 1.14
 * The implementation is close to 100% complete
 * For now, see tests in `t/*.t` for examples
 
-# Todo
+## Todo
 
 * Double check all method parameters match the official drivers
 * Add sugar syntax for `attr` (e.g. `$doc->{attr}`), `slice` (e.g. `$doc->[3..6]`), and `nth` (e.g. `$doc->[3]`)
