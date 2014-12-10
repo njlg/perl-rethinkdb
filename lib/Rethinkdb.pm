@@ -719,7 +719,7 @@ C<r> is a factory method to begin a new Rethink DB query. The C<r> sub is
 exported in the importer's namespace so that it can be used as short-hand;
 similar to what the official drivers provide. In addition, to creating a
 new instance, if a L<Rethinkdb::IO> connection has been repl-ized, then that
-connection will be set via L<io> in the new instance.
+connection will be set via C<io> in the new instance.
 
 =head2 connect
 
@@ -863,7 +863,7 @@ about the ISO 8601 format at L<Wikipedia|http://en.wikipedia.org/wiki/ISO_8601>.
     r->row('birthdate')->day_of_week()->eq(r->monday)
   )->run;
 
-L<monday> is a literal day of the week for comparisions.
+L</monday> is a literal day of the week for comparisions.
 
 =head2 tuesday
 
@@ -871,7 +871,7 @@ L<monday> is a literal day of the week for comparisions.
     r->row('birthdate')->day_of_week()->eq(r->tuesday)
   )->run;
 
-L<tuesday> is a literal day of the week for comparisions.
+L</tuesday> is a literal day of the week for comparisions.
 
 =head2 wednesday
 
@@ -879,7 +879,7 @@ L<tuesday> is a literal day of the week for comparisions.
     r->row('birthdate')->day_of_week()->eq(r->wednesday)
   )->run;
 
-L<wednesday> is a literal day of the week for comparisions.
+L</wednesday> is a literal day of the week for comparisions.
 
 =head2 thursday
 
@@ -895,7 +895,7 @@ L<thursday> is a literal day of the week for comparisions.
     r->row('birthdate')->day_of_week()->eq(r->friday)
   )->run;
 
-L<friday> is a literal day of the week for comparisions.
+L</friday> is a literal day of the week for comparisions.
 
 =head2 saturday
 
@@ -903,7 +903,7 @@ L<friday> is a literal day of the week for comparisions.
     r->row('birthdate')->day_of_week()->eq(r->saturday)
   )->run;
 
-L<saturday> is a literal day of the week for comparisions.
+L</saturday> is a literal day of the week for comparisions.
 
 =head2 sunday
 
@@ -911,7 +911,7 @@ L<saturday> is a literal day of the week for comparisions.
     r->row('birthdate')->day_of_week()->eq(r->sunday)
   )->run;
 
-L<sunday> is a literal day of the week for comparisions.
+L</sunday> is a literal day of the week for comparisions.
 
 =head2 january
 
@@ -919,7 +919,7 @@ L<sunday> is a literal day of the week for comparisions.
     r->row('birthdate')->month()->eq(r->january)
   )->run;
 
-L<january> is a literal month for comparisions.
+L</january> is a literal month for comparisions.
 
 =head2 february
 
@@ -927,7 +927,7 @@ L<january> is a literal month for comparisions.
     r->row('birthdate')->month()->eq(r->february)
   )->run;
 
-L<february> is a literal month for comparisions.
+L</february> is a literal month for comparisions.
 
 =head2 march
 
@@ -935,7 +935,7 @@ L<february> is a literal month for comparisions.
     r->row('birthdate')->month()->eq(r->march)
   )->run;
 
-L<march> is a literal month for comparisions.
+L</march> is a literal month for comparisions.
 
 =head2 april
 
@@ -943,7 +943,7 @@ L<march> is a literal month for comparisions.
     r->row('birthdate')->month()->eq(r->april)
   )->run;
 
-L<april> is a literal month for comparisions.
+L</april> is a literal month for comparisions.
 
 =head2 may
 
@@ -951,7 +951,7 @@ L<april> is a literal month for comparisions.
     r->row('birthdate')->month()->eq(r->may)
   )->run;
 
-L<may> is a literal month for comparisions.
+L</may> is a literal month for comparisions.
 
 =head2 june
 
@@ -959,7 +959,7 @@ L<may> is a literal month for comparisions.
     r->row('birthdate')->month()->eq(r->june)
   )->run;
 
-L<june> is a literal month for comparisions.
+L</june> is a literal month for comparisions.
 
 =head2 july
 
@@ -967,7 +967,7 @@ L<june> is a literal month for comparisions.
     r->row('birthdate')->month()->eq(r->july)
   )->run;
 
-L<july> is a literal month for comparisions.
+L</july> is a literal month for comparisions.
 
 =head2 august
 
@@ -975,7 +975,7 @@ L<july> is a literal month for comparisions.
     r->row('birthdate')->month()->eq(r->august)
   )->run;
 
-L<august> is a literal month for comparisions.
+L</august> is a literal month for comparisions.
 
 =head2 september
 
@@ -983,7 +983,7 @@ L<august> is a literal month for comparisions.
     r->row('birthdate')->month()->eq(r->september)
   )->run;
 
-L<september> is a literal month for comparisions.
+L</september> is a literal month for comparisions.
 
 =head2 october
 
@@ -991,7 +991,7 @@ L<september> is a literal month for comparisions.
     r->row('birthdate')->month()->eq(r->october)
   )->run;
 
-L<october> is a literal month for comparisions.
+L</october> is a literal month for comparisions.
 
 =head2 november
 
@@ -999,7 +999,7 @@ L<october> is a literal month for comparisions.
     r->row('birthdate')->month()->eq(r->november)
   )->run;
 
-L<november> is a literal month for comparisions.
+L</november> is a literal month for comparisions.
 
 =head2 december
 
@@ -1007,7 +1007,7 @@ L<november> is a literal month for comparisions.
     r->row('birthdate')->month()->eq(r->december)
   )->run;
 
-L<december> is a literal month for comparisions.
+L</december> is a literal month for comparisions.
 
 =head2 args
 
