@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width">
+    <title>Rethinkdb::Query - Perl RethinkDB
+    </title>
+    <link rel="alternate" href="http://localhost:8080/feed.xml" type="application/rss+xml" title="A Pure Perl RethinkDB Driver">
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic|Anonymous+Pro:400,700,400italic,700italic|Merriweather:400,700,300">
+    <link rel="stylesheet" href="/css/main.css">
+  </head>
+  <body class="article-detail">
+    <header class="header">
+      <div class="content-wrap">
+        <div class="logo">
+          <h1><a href="http://localhost:8080">Perl RethinkDB</a></h1>
+          <p class="description">A Pure Perl RethinkDB Driver</p>
+        </div>
+      </div>
+    </header>
+    <div id="content">
+      <div class="content-wrap">
+        <div class="row">
+          <div class="sidebar">
+            <nav role="complementary" data-spy="affix" data-offset-top="250" data-offset-bottom="175"><ul class="nav">
+<li class="active"><a href="#rethinkdb-query">Rethinkdb::Query</a><ul>
+<li><a href="#attributes">ATTRIBUTES</a><ul>
+<li><a href="#args">args</a></li>
+<li><a href="#optargs">optargs</a></li>
+</ul>
+</li>
+<li><a href="#methods">METHODS</a><ul>
+<li><a href="#new">new</a></li>
+<li><a href="#run">run</a></li>
+<li><a href="#update">update</a></li>
+<li><a href="#replace">replace</a></li>
+<li><a href="#delete">delete</a></li>
+<li><a href="#filter">filter</a></li>
+<li><a href="#inner_join">inner_join</a></li>
+<li><a href="#outer_join">outer_join</a></li>
+<li><a href="#eq_join">eq_join</a></li>
+<li><a href="#zip">zip</a></li>
+<li><a href="#map">map</a></li>
+<li><a href="#with_fields">with_fields</a></li>
+<li><a href="#concat_map">concat_map</a></li>
+<li><a href="#order_by">order_by</a></li>
+<li><a href="#skip">skip</a></li>
+<li><a href="#limit">limit</a></li>
+<li><a href="#slice">slice</a></li>
+<li><a href="#nth">nth</a></li>
+<li><a href="#indexes_of">indexes_of</a></li>
+<li><a href="#is_empty">is_empty</a></li>
+<li><a href="#union">union</a></li>
+<li><a href="#sample">sample</a></li>
+<li><a href="#group">group</a></li>
+<li><a href="#ungroup">ungroup</a></li>
+<li><a href="#reduce">reduce</a></li>
+<li><a href="#count">count</a></li>
+<li><a href="#sum">sum</a></li>
+<li><a href="#avg">avg</a></li>
+<li><a href="#min">min</a></li>
+<li><a href="#max">max</a></li>
+<li><a href="#distinct">distinct</a></li>
+<li><a href="#contains">contains</a></li>
+<li><a href="#pluck">pluck</a></li>
+<li><a href="#without">without</a></li>
+<li><a href="#merge">merge</a></li>
+<li><a href="#append">append</a></li>
+<li><a href="#prepend">prepend</a></li>
+<li><a href="#difference">difference</a></li>
+<li><a href="#set_insert">set_insert</a></li>
+<li><a href="#set_union">set_union</a></li>
+<li><a href="#set_intersection">set_intersection</a></li>
+<li><a href="#set_difference">set_difference</a></li>
+<li><a href="#attr">attr</a></li>
+<li><a href="#has_fields">has_fields</a></li>
+<li><a href="#insert_at">insert_at</a></li>
+<li><a href="#splice_at">splice_at</a></li>
+<li><a href="#delete_at">delete_at</a></li>
+<li><a href="#change_at">change_at</a></li>
+<li><a href="#keys">keys</a></li>
+<li><a href="#match">match</a></li>
+<li><a href="#split">split</a></li>
+<li><a href="#upcase">upcase</a></li>
+<li><a href="#downcase">downcase</a></li>
+<li><a href="#add">add</a></li>
+<li><a href="#sub">sub</a></li>
+<li><a href="#mul">mul</a></li>
+<li><a href="#div">div</a></li>
+<li><a href="#mod">mod</a></li>
+<li><a href="#and">and</a></li>
+<li><a href="#or">or</a></li>
+<li><a href="#eq">eq</a></li>
+<li><a href="#ne">ne</a></li>
+<li><a href="#gt">gt</a></li>
+<li><a href="#ge">ge</a></li>
+<li><a href="#lt">lt</a></li>
+<li><a href="#le">le</a></li>
+<li><a href="#not">not</a></li>
+<li><a href="#in_timezone">in_timezone</a></li>
+<li><a href="#timezone">timezone</a></li>
+<li><a href="#during">during</a></li>
+<li><a href="#date">date</a></li>
+<li><a href="#time_of_day">time_of_day</a></li>
+<li><a href="#year">year</a></li>
+<li><a href="#month">month</a></li>
+<li><a href="#day">day</a></li>
+<li><a href="#day_of_week">day_of_week</a></li>
+<li><a href="#day_of_year">day_of_year</a></li>
+<li><a href="#hours">hours</a></li>
+<li><a href="#minutes">minutes</a></li>
+<li><a href="#seconds">seconds</a></li>
+<li><a href="#to_iso8601">to_iso8601</a></li>
+<li><a href="#to_epoch_time">to_epoch_time</a></li>
+<li><a href="#do">do</a></li>
+<li><a href="#for_each">for_each</a></li>
+<li><a href="#default">default</a></li>
+<li><a href="#coerce_to">coerce_to</a></li>
+<li><a href="#type_of">type_of</a></li>
+<li><a href="#info">info</a></li>
+</ul>
+</li>
+<li><a href="#see-also">SEE ALSO</a></li>
+</ul>
+</li>
+</ul>
+
+            </nav>
+          </div>
+          <article role="main" class="article">
+            <section class="content"><h1 id="rethinkdb-query">Rethinkdb::Query</h1>
+<p>Rethinkdb::Query is a type of&nbsp;query.</p>
+<h2 id="attributes"><span class="caps">ATTRIBUTES</span></h2>
+<p><a href="/packages/rethinkdb/query">Rethinkdb::Query</a> implements the following&nbsp;attributes.</p>
+<h3 id="args">args</h3>
+<pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$query</span> = r-&gt;table(<span class="string">'marvel'</span>)-&gt;get(<span class="number">1</span>);
+<span class="keyword">say</span> <span class="variable">$query</span>-&gt;args;
+</code></pre>
+<p>The arguments for this instance of a&nbsp;query.</p>
+<h3 id="optargs">optargs</h3>
+<pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$query</span> = r-&gt;table(<span class="string">'marvel'</span>)-&gt;get_all(<span class="number">1</span>, { <span class="string">index =&gt;</span> <span class="string">'rank'</span> });
+<span class="keyword">say</span> <span class="variable">$query</span>-&gt;optargs;
+</code></pre>
+<p>The optional arguments for this instance of a&nbsp;query.</p>
+<h2 id="methods"><span class="caps">METHODS</span></h2>
+<p><a href="/packages/rethinkdb/query">Rethinkdb::Query</a> implements the following&nbsp;methods.</p>
+<h3 id="new">new</h3>
+<p>This is a specialized constructor that enables chaining the queries together
+in a rational way. This constructor should never be called directly by
+consumers of this&nbsp;library.</p>
+<h3 id="run">run</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;run;
+</code></pre>
+<p>Run a query on a&nbsp;connection.</p>
+<p>The callback will get either an error, a single <span class="caps">JSON</span> result, or a cursor,
+depending on the&nbsp;query.</p>
+<h3 id="update">update</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'posts'</span>)-&gt;get(<span class="number">1</span>)-&gt;update({<span class="string">status =&gt;</span> <span class="string">'published'</span>})-&gt;run;
+</code></pre>
+<p>Update <span class="caps">JSON</span> documents in a table. Accepts a JSON document, a ReQL expression,
+or a combination of the&nbsp;two.</p>
+<h3 id="replace">replace</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'posts'</span>)-&gt;get(<span class="number">1</span>)-&gt;replace({
+  <span class="string">id      =&gt;</span> <span class="number">1</span>,
+  <span class="string">title   =&gt;</span> <span class="string">'Lorem ipsum'</span>,
+  <span class="string">content =&gt;</span> <span class="string">'Aleas jacta est'</span>,
+  <span class="string">status  =&gt;</span> <span class="string">'draft'</span>
+})-&gt;run;
+</code></pre>
+<p>Replace documents in a table. Accepts a <span class="caps">JSON</span> document or a ReQL expression, and
+replaces the original document with the new one. The new document must have the
+same primary key as the original&nbsp;document.</p>
+<h3 id="delete">delete</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'comments'</span>)-&gt;
+  get(<span class="string">'7eab9e63-73f1-4f33-8ce4-95cbea626f59'</span>)-&gt;<span class="keyword">delete</span>-&gt;run;
+</code></pre>
+<p>Delete one or more documents from a&nbsp;table.</p>
+<h3 id="filter">filter</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter({<span class="string">'age'</span> =&gt; <span class="number">30</span>})-&gt;run;
+</code></pre>
+<p>Get all the documents for which the given predicate is&nbsp;true.</p>
+<p><a href="/rethinkdb/query/#filter">“filter”</a> can be called on a sequence, selection, or a field containing an
+array of elements. The return type is the same as the type on which the
+function was called&nbsp;on.</p>
+<p>The body of every filter is wrapped in an implicit <code>default(r-&gt;false)</code>,
+which means that if a non-existence errors is thrown (when you try to access a
+field that does not exist in a document), RethinkDB will just ignore the
+document. The <code>default</code> value can be changed by passing the named argument
+<code>default</code>. Setting this optional argument to <code>r-&gt;error</code> will cause any
+non-existence errors to return a <code>runtime_error</code>.</p>
+<h3 id="inner_join">inner_join</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;inner_join(r-&gt;table(<span class="string">'dc'</span>), <span class="sub"><span class="keyword">sub</span>($$) {</span>
+  <span class="keyword">my</span> (<span class="variable">$marvel</span>, <span class="variable">$dc</span>) = <span class="variable">@_</span>;
+  <span class="keyword">return</span> marvel-&gt;attr(<span class="string">'strength'</span>)-&gt;<span class="keyword">lt</span>(<span class="variable">$dc</span>-&gt;attr(<span class="string">'strength'</span>));
+})-&gt;run;
+</code></pre>
+<p>Returns the inner product of two sequences (e.g. a table, a filter result)
+filtered by the predicate. The query compares each row of the left sequence
+with each row of the right sequence to find all pairs of rows which satisfy
+the predicate. When the predicate is satisfied, each matched pair of rows of
+both sequences are combined into a result&nbsp;row.</p>
+<h3 id="outer_join">outer_join</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;outer_join(r-&gt;table(<span class="string">'dc'</span>), <span class="sub"><span class="keyword">sub</span> ($$) {</span>
+  <span class="keyword">my</span> (<span class="variable">$marvel</span>, <span class="variable">$dc</span>) = <span class="variable">@_</span>;
+  <span class="keyword">return</span> <span class="variable">$marvel</span>-&gt;attr(<span class="string">'strength'</span>)-&gt;<span class="keyword">lt</span>(<span class="variable">$dc</span>-&gt;attr(<span class="string">'strength'</span>));
+})-&gt;run;
+</code></pre>
+<p>Computes a left outer join by retaining each row in the left table even if no
+match was found in the right&nbsp;table.</p>
+<h3 id="eq_join">eq_join</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'players'</span>)-&gt;eq_join(<span class="string">'gameId'</span>, r-&gt;table(<span class="string">'games'</span>))-&gt;run;
+</code></pre>
+<p>Join tables using a field on the left-hand sequence matching primary keys or
+secondary indexes on the right-hand table. <a href="/rethinkdb/query/#eq_join">“eq_join”</a> is more efficient than
+other ReQL join types, and operates much faster. Documents in the result set
+consist of pairs of left-hand and right-hand documents, matched when the
+field on the left-hand side exists and is non-null and an entry with that
+field’s value exists in the specified index on the right-hand&nbsp;side.</p>
+<h3 id="zip">zip</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;eq_join(<span class="string">'main_dc_collaborator'</span>,
+  r-&gt;table(<span class="string">'dc'</span>))-&gt;zip()-&gt;run;
+</code></pre>
+<p>Used to <em>zip</em> up the result of a join by merging the <em>right</em> fields into
+<em>left</em> fields of each member of the&nbsp;sequence.</p>
+<h3 id="map">map</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;<span class="keyword">map</span>(<span class="sub"><span class="keyword">sub</span> {</span>
+  <span class="keyword">my</span> <span class="variable">$hero</span> = <span class="keyword">shift</span>;
+  <span class="keyword">return</span> <span class="variable">$hero</span>-&gt;attr(<span class="string">'combatPower'</span>)-&gt;add(
+    <span class="variable">$hero</span>-&gt;(<span class="string">'compassionPower'</span>)-&gt;mul(<span class="number">2</span>)
+  );
+})-&gt;run;
+</code></pre>
+<p>Transform each element of the sequence by applying the given mapping&nbsp;function.</p>
+<h3 id="with_fields">with_fields</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;with_fields(<span class="string">'id'</span>, <span class="string">'username'</span>, <span class="string">'posts'</span>)-&gt;run;
+</code></pre>
+<p>Plucks one or more attributes from a sequence of objects, filtering out any
+objects in the sequence that do not have the specified fields. Functionally,
+this is identical to <a href="/rethinkdb/query/#has_fields">“has_fields”</a> followed by <a href="/rethinkdb/query/#pluck">“pluck”</a> on a&nbsp;sequence.</p>
+<h3 id="concat_map">concat_map</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;concatMap(<span class="sub"><span class="keyword">sub</span> {</span>
+  <span class="keyword">my</span> <span class="variable">$hero</span> = <span class="keyword">shift</span>;
+  <span class="keyword">return</span> <span class="variable">$hero</span>-&gt;attr(<span class="string">'defeatedMonsters'</span>);
+})-&gt;run;
+</code></pre>
+<p>Concatenate one or more elements into a single sequence using a mapping&nbsp;function.</p>
+<h3 id="order_by">order_by</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'posts'</span>)-&gt;order_by({<span class="string">index =&gt;</span> <span class="string">'date'</span>})-&gt;run;
+r-&gt;table(<span class="string">'posts'</span>)-&gt;order_by({<span class="string">index =&gt;</span> r-&gt;desc(<span class="string">'date'</span>)})-&gt;run;
+</code></pre>
+<p>Sort the sequence by document values of the given key(s). To specify the
+ordering, wrap the attribute with either <a href="/packages/rethinkdb#asc"><code>r-&gt;asc</code></a> or
+<a href="/packages/rethinkdb#desc"><code>r-&gt;desc</code></a> (defaults to&nbsp;ascending).</p>
+<p>Sorting without an index requires the server to hold the sequence in memory,
+and is limited to 100,000 documents. Sorting with an index can be done on
+arbitrarily large tables, or after a <a href="/packages/rethinkdb/query/table#between">“between” in Rethinkdb::Query::Table</a> command
+using the same&nbsp;index.</p>
+<h3 id="skip">skip</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;order_by(<span class="string">'successMetric'</span>)-&gt;skip(<span class="number">10</span>)-&gt;run;
+</code></pre>
+<p>Skip a number of elements from the head of the&nbsp;sequence.</p>
+<h3 id="limit">limit</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;order_by(<span class="string">'belovedness'</span>)-&gt;limit(<span class="number">10</span>)-&gt;run;
+</code></pre>
+<p>End the sequence after the given number of&nbsp;elements.</p>
+<h3 id="slice">slice</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'players'</span>)-&gt;order_by({<span class="string">index =&gt;</span> <span class="string">'age'</span>})-&gt;slice(<span class="number">3</span>, <span class="number">6</span>)-&gt;run;
+</code></pre>
+<p>Return the elements of a sequence within the specified&nbsp;range.</p>
+<h3 id="nth">nth</h3>
+<pre><code class="lang-perl">r-&gt;expr([<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>])-&gt;nth(<span class="number">1</span>)-&gt;run;
+</code></pre>
+<p>Get the nth element of a&nbsp;sequence.</p>
+<h3 id="indexes_of">indexes_of</h3>
+<pre><code class="lang-perl">r-&gt;expr([<span class="string">'a'</span>,<span class="string">'b'</span>,<span class="string">'c'</span>])-&gt;indexes_of(<span class="string">'c'</span>)-&gt;run;
+</code></pre>
+<p>Get the indexes of an element in a sequence. If the argument is a predicate,
+get the indexes of all elements matching&nbsp;it.</p>
+<h3 id="is_empty">is_empty</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;is_empty-&gt;run;
+</code></pre>
+<p>Test if a sequence is&nbsp;empty.</p>
+<h3 id="union">union</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;union(r-&gt;table(<span class="string">'dc'</span>))-&gt;run;
+</code></pre>
+<p>Concatenate two&nbsp;sequences.</p>
+<h3 id="sample">sample</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;sample(<span class="number">3</span>)-&gt;run;
+</code></pre>
+<p>Select a given number of elements from a sequence with uniform random
+distribution. Selection is done without&nbsp;replacement.</p>
+<h3 id="group">group</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'games'</span>)-&gt;group(<span class="string">'player'</span>)-&gt;max(<span class="string">'points'</span>)-&gt;run;
+</code></pre>
+<p>Takes a stream and partitions it into multiple groups based on the fields or
+functions provided. Commands chained after <a href="/rethinkdb/query/#group">“group”</a> will be called on each of
+these grouped sub-streams, producing grouped&nbsp;data.</p>
+<h3 id="ungroup">ungroup</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'games'</span>)
+  -&gt;group(<span class="string">'player'</span>)-&gt;max(<span class="string">'points'</span>)-&gt;attr(<span class="string">'points'</span>)
+  -&gt;ungroup()-&gt;order_by(r-&gt;desc(<span class="string">'reduction'</span>))-&gt;run;
+</code></pre>
+<p>Takes a grouped stream or grouped data and turns it into an array of objects
+representing the groups. Any commands chained after <a href="/rethinkdb/query/#ungroup">“ungroup”</a> will operate on
+this array, rather than operating on each group individually. This is useful
+if you want to e.g. order the groups by the value of their&nbsp;reduction.</p>
+<h3 id="reduce">reduce</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'posts'</span>)-&gt;<span class="keyword">map</span>(<span class="sub"><span class="keyword">sub</span> {</span> <span class="keyword">return</span> <span class="number">1</span>; })-&gt;reduce(<span class="sub"><span class="keyword">sub</span>($$) {</span>
+  <span class="keyword">my</span> (<span class="variable">$left</span>, <span class="variable">$right</span>) = <span class="variable">@_</span>;
+  <span class="keyword">return</span> <span class="variable">$left</span>-&gt;add(<span class="variable">$right</span>);
+})-&gt;run;
+</code></pre>
+<p>Produce a single value from a sequence through repeated application of a
+reduction&nbsp;function.</p>
+<h3 id="count">count</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;count-&gt;add(r-&gt;table(<span class="string">'dc'</span>)-&gt;count-&gt;run
+</code></pre>
+<p>Count the number of elements in the sequence. With a single argument, count the
+number of elements equal to it. If the argument is a function, it is equivalent
+to calling filter before&nbsp;count.</p>
+<h3 id="sum">sum</h3>
+<pre><code class="lang-perl">r-&gt;expr([<span class="number">3</span>, <span class="number">5</span>, <span class="number">7</span>])-&gt;sum-&gt;run;
+</code></pre>
+<p>Sums all the elements of a sequence. If called with a field name, sums all the
+values of that field in the sequence, skipping elements of the sequence that
+lack that field. If called with a function, calls that function on every
+element of the sequence and sums the results, skipping elements of the sequence
+where that function returns <code>null</code> or a non-existence&nbsp;error.</p>
+<h3 id="avg">avg</h3>
+<pre><code class="lang-perl">r-&gt;expr([<span class="number">3</span>, <span class="number">5</span>, <span class="number">7</span>])-&gt;avg-&gt;run;
+</code></pre>
+<p>Averages all the elements of a sequence. If called with a field name, averages
+all the values of that field in the sequence, skipping elements of the sequence
+that lack that field. If called with a function, calls that function on every
+element of the sequence and averages the results, skipping elements of the
+sequence where that function returns <code>null</code> or a non-existence&nbsp;error.</p>
+<h3 id="min">min</h3>
+<pre><code class="lang-perl">r-&gt;expr([<span class="number">3</span>, <span class="number">5</span>, <span class="number">7</span>])-&gt;min-&gt;run;
+</code></pre>
+<p>Finds the minimum of a sequence. If called with a field name, finds the element
+of that sequence with the smallest value in that field. If called with a
+function, calls that function on every element of the sequence and returns the
+element which produced the smallest value, ignoring any elements where the
+function returns <code>null</code> or produces a non-existence&nbsp;error.</p>
+<h3 id="max">max</h3>
+<pre><code class="lang-perl">r-&gt;expr([<span class="number">3</span>, <span class="number">5</span>, <span class="number">7</span>])-&gt;max-&gt;run;
+</code></pre>
+<p>Finds the maximum of a sequence. If called with a field name, finds the element
+of that sequence with the largest value in that field. If called with a
+function, calls that function on every element of the sequence and returns the
+element which produced the largest value, ignoring any elements where the
+function returns null or produces a non-existence&nbsp;error.</p>
+<h3 id="distinct">distinct</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;concat_map(<span class="sub"><span class="keyword">sub</span> {</span>
+  <span class="keyword">my</span> <span class="variable">$hero</span> = <span class="keyword">shift</span>;
+  <span class="keyword">return</span> <span class="variable">$hero</span>-&gt;attr(<span class="string">'villainList'</span>)
+})-&gt;distinct-&gt;run;
+</code></pre>
+<p>Remove duplicate elements from the&nbsp;sequence.</p>
+<h3 id="contains">contains</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;get(<span class="string">'ironman'</span>)-&gt;
+  attr(<span class="string">'opponents'</span>)-&gt;contains(<span class="string">'superman'</span>)-&gt;run;
+</code></pre>
+<p>Returns whether or not a sequence contains all the specified values, or if
+functions are provided instead, returns whether or not a sequence contains
+values matching all the specified&nbsp;functions.</p>
+<h3 id="pluck">pluck</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;get(<span class="string">'IronMan'</span>)-&gt;
+  pluck(<span class="string">'reactorState'</span>, <span class="string">'reactorPower'</span>)-&gt;run;
+</code></pre>
+<p>Plucks out one or more attributes from either an object or a sequence of
+objects&nbsp;(projection).</p>
+<h3 id="without">without</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;get(<span class="string">'IronMan'</span>)-&gt;without(<span class="string">'personalVictoriesList'</span>)-&gt;run;
+</code></pre>
+<p>The opposite of pluck; takes an object or a sequence of objects, and returns
+them with the specified paths&nbsp;removed.</p>
+<h3 id="merge">merge</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;get(<span class="string">'IronMan'</span>)-&gt;merge(
+  r-&gt;table(<span class="string">'loadouts'</span>)-&gt;get(<span class="string">'alienInvasionKit'</span>)
+)-&gt;run;
+</code></pre>
+<p>Merge two objects together to construct a new object with properties from both.
+Gives preference to attributes from other when there is a&nbsp;conflict.</p>
+<h3 id="append">append</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;get(<span class="string">'IronMan'</span>)-&gt;
+  attr(<span class="string">'equipment'</span>)-&gt;append(<span class="string">'newBoots'</span>)-&gt;run;
+</code></pre>
+<p>Append a value to an&nbsp;array.</p>
+<h3 id="prepend">prepend</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;get(<span class="string">'IronMan'</span>)-&gt;
+  attr(<span class="string">'equipment'</span>)-&gt;prepend(<span class="string">'newBoots'</span>)-&gt;run;
+</code></pre>
+<p>Prepend a value to an&nbsp;array.</p>
+<h3 id="difference">difference</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;get(<span class="string">'IronMan'</span>)-&gt;
+  attr(<span class="string">'equipment'</span>)-&gt;difference([<span class="string">'Boots'</span>])-&gt;run;
+</code></pre>
+<p>Remove the elements of one array from another&nbsp;array.</p>
+<h3 id="set_insert">set_insert</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;get(<span class="string">'IronMan'</span>)-&gt;
+  attr(<span class="string">'equipment'</span>)-&gt;set_insert(<span class="string">'newBoots'</span>)-&gt;run;
+</code></pre>
+<p>Add a value to an array and return it as a set (an array with distinct&nbsp;values).</p>
+<h3 id="set_union">set_union</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;get(<span class="string">'IronMan'</span>)-&gt;
+  attr(<span class="string">'equipment'</span>)-&gt;set_union([<span class="string">'newBoots'</span>, <span class="string">'arc_reactor'</span>])-&gt;run;
+</code></pre>
+<p>Add a several values to an array and return it as a set (an array with distinct&nbsp;values).</p>
+<h3 id="set_intersection">set_intersection</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;get(<span class="string">'IronMan'</span>)-&gt;attr(<span class="string">'equipment'</span>)-&gt;
+  set_intersection([<span class="string">'newBoots'</span>, <span class="string">'arc_reactor'</span>])-&gt;run;
+</code></pre>
+<p>Intersect two arrays returning values that occur in both of them as a set (an
+array with distinct&nbsp;values).</p>
+<h3 id="set_difference">set_difference</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;get(<span class="string">'IronMan'</span>)-&gt;attr(<span class="string">'equipment'</span>)-&gt;
+  set_difference([<span class="string">'newBoots'</span>, <span class="string">'arc_reactor'</span>])-&gt;run;
+</code></pre>
+<p>Remove the elements of one array from another and return them as a set (an
+array with distinct&nbsp;values).</p>
+<h3 id="attr">attr</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;get(<span class="string">'IronMan'</span>)-&gt;attr(<span class="string">'firstAppearance'</span>)-&gt;run;
+</code></pre>
+<p>Get a single field from an object. If called on a sequence, gets that field
+from every object in the sequence, skipping objects that lack&nbsp;it.</p>
+<h3 id="has_fields">has_fields</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'players'</span>)-&gt;has_fields(<span class="string">'games_won'</span>)-&gt;run;
+</code></pre>
+<p>Test if an object has one or more fields. An object has a field if it has that
+key and the key has a non-null value. For instance, the object
+<code>{&#39;a&#39; =&gt; 1, &#39;b&#39; =&gt; 2, &#39;c&#39; =&gt; null}</code> has the fields <code>a</code> and <code>b</code>.</p>
+<h3 id="insert_at">insert_at</h3>
+<pre><code class="lang-perl">r-&gt;expr([<span class="string">'Iron Man'</span>, <span class="string">'Spider-Man'</span>])-&gt;insert_at(<span class="number">1</span>, <span class="string">'Hulk'</span>)-&gt;run;
+</code></pre>
+<p>Insert a value in to an array at a given index. Returns the modified&nbsp;array.</p>
+<h3 id="splice_at">splice_at</h3>
+<pre><code class="lang-perl">r-&gt;expr([<span class="string">'Iron Man'</span>, <span class="string">'Spider-Man'</span>])-&gt;splice_at(<span class="number">1</span>, [<span class="string">'Hulk'</span>, <span class="string">'Thor'</span>])-&gt;run;
+</code></pre>
+<p>Insert several values in to an array at a given index. Returns the modified&nbsp;array.</p>
+<h3 id="delete_at">delete_at</h3>
+<pre><code class="lang-perl">r-&gt;expr([<span class="string">'a'</span>,<span class="string">'b'</span>,<span class="string">'c'</span>,<span class="string">'d'</span>,<span class="string">'e'</span>,<span class="string">'f'</span>])-&gt;delete_at(<span class="number">1</span>)-&gt;run;
+</code></pre>
+<p>Remove one or more elements from an array at a given index. Returns the
+modified&nbsp;array.</p>
+<h3 id="change_at">change_at</h3>
+<pre><code class="lang-perl">r-&gt;expr([<span class="string">'Iron Man'</span>, <span class="string">'Bruce'</span>, <span class="string">'Spider-Man'</span>])-&gt;change_at(<span class="number">1</span>, <span class="string">'Hulk'</span>)-&gt;run;
+</code></pre>
+<p>Change a value in an array at a given index. Returns the modified&nbsp;array.</p>
+<h3 id="keys">keys</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;get(<span class="string">'ironman'</span>)-&gt;<span class="keyword">keys</span>-&gt;run;
+</code></pre>
+<p>Return an array containing all of the object’s&nbsp;keys.</p>
+<h3 id="match">match</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter(<span class="sub"><span class="keyword">sub</span> {</span>
+  <span class="keyword">my</span> <span class="variable">$doc</span> = <span class="keyword">shift</span>;
+  <span class="keyword">return</span> <span class="variable">$doc</span>-&gt;attr(<span class="string">'name'</span>)-&gt;match(<span class="string">'^A'</span>)
+})-&gt;run;
+</code></pre>
+<p>Matches against a regular expression. If there is a match, returns an object
+with the&nbsp;fields:</p>
+<h3 id="split">split</h3>
+<pre><code class="lang-perl">r-&gt;expr(<span class="string">'foo  bar bax'</span>)-&gt;<span class="keyword">split</span>-&gt;run;
+r-&gt;expr(<span class="string">'foo,bar,bax'</span>)-&gt;<span class="keyword">split</span>(<span class="string">","</span>)-&gt;run;
+r-&gt;expr(<span class="string">'foo,bar,bax'</span>)-&gt;<span class="keyword">split</span>(<span class="string">","</span>, <span class="number">1</span>)-&gt;run;
+</code></pre>
+<p>Splits a string into substrings. Splits on whitespace when called with no
+arguments. When called with a separator, splits on that separator. When called
+with a separator and a maximum number of splits, splits on that separator at
+most <code>max_splits</code> times. (Can be called with None as the separator if you want
+to split on whitespace while still specifying <code>max_splits</code>.)</p>
+<p>Mimics the behavior of Python’s string.split in edge cases, except for
+splitting on the empty string, which instead produces an array of
+single-character&nbsp;strings.</p>
+<h3 id="upcase">upcase</h3>
+<pre><code class="lang-perl">r-&gt;expr(<span class="string">'Sentence about LaTeX.'</span>)-&gt;upcase-&gt;run;
+</code></pre>
+<p>Uppercases a&nbsp;string.</p>
+<h3 id="downcase">downcase</h3>
+<pre><code class="lang-perl">r-&gt;expr(<span class="string">'Sentence about LaTeX.'</span>)-&gt;downcase-&gt;run;
+</code></pre>
+<p>Lowercases a&nbsp;string.</p>
+<h3 id="add">add</h3>
+<pre><code class="lang-perl">r-&gt;expr(<span class="number">2</span>)-&gt;add(<span class="number">2</span>)-&gt;run;
+</code></pre>
+<p>Sum two numbers, concatenate two strings, or concatenate 2&nbsp;arrays.</p>
+<h3 id="sub">sub</h3>
+<pre><code class="lang-perl">r-&gt;expr(<span class="number">2</span>)-&gt;<span class="sub"><span class="keyword">sub</span>(2)-&gt;run;</span>
+</code></pre>
+<p>Subtract two&nbsp;numbers.</p>
+<h3 id="mul">mul</h3>
+<pre><code class="lang-perl">r-&gt;expr(<span class="number">2</span>)-&gt;mul(<span class="number">2</span>)-&gt;run;
+</code></pre>
+<p>Multiply two numbers, or make a periodic&nbsp;array.</p>
+<h3 id="div">div</h3>
+<pre><code class="lang-perl">r-&gt;expr(<span class="number">2</span>)-&gt;div(<span class="number">2</span>)-&gt;run;
+</code></pre>
+<p>Divide two&nbsp;numbers.</p>
+<h3 id="mod">mod</h3>
+<pre><code class="lang-perl">r-&gt;expr(<span class="number">2</span>)-&gt;mod(<span class="number">2</span>)-&gt;run;
+</code></pre>
+<p>Find the remainder when dividing two&nbsp;numbers.</p>
+<h3 id="and">and</h3>
+<pre><code class="lang-perl">r-&gt;expr(r-&gt;true)-&gt;<span class="keyword">and</span>(r-&gt;false)-&gt;run;
+</code></pre>
+<p>Compute the logical “and” of two or more&nbsp;values.</p>
+<h3 id="or">or</h3>
+<pre><code class="lang-perl">r-&gt;expr(r-&gt;true)-&gt;<span class="keyword">or</span>(r-&gt;false)-&gt;run;
+</code></pre>
+<p>Compute the logical “or” of two or more&nbsp;values.</p>
+<h3 id="eq">eq</h3>
+<pre><code class="lang-perl">r-&gt;expr(<span class="number">2</span>)-&gt;e<span class="string">q(2)</span>-&gt;run;
+</code></pre>
+<p>Test if two values are&nbsp;equal.</p>
+<h3 id="ne">ne</h3>
+<pre><code class="lang-perl">r-&gt;expr(<span class="number">2</span>)-&gt;<span class="keyword">ne</span>(<span class="number">2</span>)-&gt;run;
+</code></pre>
+<p>Test if two values are not&nbsp;equal.</p>
+<h3 id="gt">gt</h3>
+<pre><code class="lang-perl">r-&gt;expr(<span class="number">2</span>)-&gt;<span class="keyword">gt</span>(<span class="number">2</span>)-&gt;run;
+</code></pre>
+<p>Test if the first value is greater than&nbsp;other.</p>
+<h3 id="ge">ge</h3>
+<pre><code class="lang-perl">r-&gt;expr(<span class="number">2</span>)-&gt;ge(<span class="number">2</span>)-&gt;run;
+</code></pre>
+<p>Test if the first value is greater than or equal to&nbsp;other.</p>
+<h3 id="lt">lt</h3>
+<pre><code class="lang-perl">r-&gt;expr(<span class="number">2</span>)-&gt;<span class="keyword">lt</span>(<span class="number">2</span>)-&gt;run;
+</code></pre>
+<p>Test if the first value is less than&nbsp;other.</p>
+<h3 id="le">le</h3>
+<pre><code class="lang-perl">r-&gt;expr(<span class="number">2</span>)-&gt;le(<span class="number">2</span>)-&gt;run;
+</code></pre>
+<p>Test if the first value is less than or equal to&nbsp;other.</p>
+<h3 id="not">not</h3>
+<pre><code class="lang-perl">r-&gt;expr(r-&gt;true)-&gt;<span class="keyword">not</span>-&gt;run;
+</code></pre>
+<p>Compute the logical inverse (not) of an&nbsp;expression.</p>
+<h3 id="in_timezone">in_timezone</h3>
+<pre><code class="lang-perl">r-&gt;now-&gt;in_timezone(<span class="string">'-08:00'</span>)-&gt;hours-&gt;run;
+</code></pre>
+<p>Return a new time object with a different timezone. While the time stays the
+same, the results returned by methods such as <a href="/rethinkdb/query/#hours">“hours”</a> will change since they
+take the timezone into account. The timezone argument has to be of the <span class="caps">ISO</span> 8601&nbsp;format.</p>
+<h3 id="timezone">timezone</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter(<span class="sub"><span class="keyword">sub</span> {</span>
+  <span class="keyword">my</span> <span class="variable">$user</span> = <span class="keyword">shift</span>;
+  <span class="keyword">return</span> <span class="variable">$user</span>-&gt;attr(<span class="string">'subscriptionDate'</span>)-&gt;timezone-&gt;eql(<span class="string">'-07:00'</span>);
+})-&gt;run;
+</code></pre>
+<p>Return the timezone of the time&nbsp;object.</p>
+<h3 id="during">during</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'posts'</span>)-&gt;filter(
+  r-&gt;row-&gt;attr(<span class="string">'date'</span>)-&gt;during(
+    r-&gt;<span class="keyword">time</span>(<span class="number">2013</span>, <span class="number">12</span>, <span class="number">1</span>, <span class="string">'Z'</span>),
+    r-&gt;<span class="keyword">time</span>(<span class="number">2013</span>, <span class="number">12</span>, <span class="number">10</span>, <span class="string">'Z'</span>)
+  )
+)-&gt;run;
+</code></pre>
+<p>Return if a time is between two other times (by default, inclusive for the
+start, exclusive for the&nbsp;end).</p>
+<h3 id="date">date</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter(<span class="sub"><span class="keyword">sub</span> {</span>
+  <span class="keyword">my</span> <span class="variable">$user</span> = <span class="keyword">shift</span>;
+  <span class="keyword">return</span> user-&gt;attr(<span class="string">'birthdate'</span>)-&gt;date-&gt;eql(r-&gt;now-&gt;date);
+})-&gt;run;
+</code></pre>
+<p>Return a new time object only based on the day, month and year (ie. the same
+day at&nbsp;00:00).</p>
+<h3 id="time_of_day">time_of_day</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'posts'</span>)-&gt;filter(
+  r-&gt;row-&gt;attr(<span class="string">'date'</span>)-&gt;time_of_day-&gt;le(<span class="number">12</span><span class="variable">*60</span><span class="variable">*60</span>)
+)-&gt;run;
+</code></pre>
+<p>Return the number of seconds elapsed since the beginning of the day stored in
+the time&nbsp;object.</p>
+<h3 id="year">year</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter(<span class="sub"><span class="keyword">sub</span> {</span>
+  <span class="keyword">my</span> <span class="variable">$user</span> = <span class="keyword">shift</span>;
+  <span class="keyword">return</span> user-&gt;attr(<span class="string">'birthdate'</span>)-&gt;year-&gt;eql(<span class="number">1986</span>);
+})-&gt;run;
+</code></pre>
+<p>Return the year of a time&nbsp;object.</p>
+<h3 id="month">month</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter(
+  r-&gt;row-&gt;attr(<span class="string">'birthdate'</span>)-&gt;month-&gt;eql(<span class="number">11</span>)
+)-&gt;run;
+</code></pre>
+<p>Return the month of a time object as a number between 1 and 12. For your
+convenience, the terms <a href="/packages/rethinkdb#january"><code>r-&gt;january</code></a>,
+<a href="/packages/rethinkdb#february"><code>r-&gt;february</code></a> etc. are defined and map to the
+appropriate&nbsp;integer.</p>
+<h3 id="day">day</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter(
+  r-&gt;row-&gt;attr(<span class="string">'birthdate'</span>)-&gt;day-&gt;eql(<span class="number">24</span>)
+)-&gt;run;
+</code></pre>
+<p>Return the day of a time object as a number between 1 and&nbsp;31.</p>
+<h3 id="day_of_week">day_of_week</h3>
+<pre><code class="lang-perl">r-&gt;now-&gt;day_of_week-&gt;run;
+</code></pre>
+<p>Return the day of week of a time object as a number between 1 and 7 (following
+<span class="caps">ISO</span> 8601 standard). For your convenience, the terms r.monday, r.tuesday etc.
+are defined and map to the appropriate&nbsp;integer.</p>
+<h3 id="day_of_year">day_of_year</h3>
+<pre><code class="lang-perl">r-&gt;now-&gt;day_of_year-&gt;run;
+</code></pre>
+<p>Return the day of the year of a time object as a number between 1 and 366
+(following <span class="caps">ISO</span> 8601&nbsp;standard).</p>
+<h3 id="hours">hours</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'posts'</span>)-&gt;filter(<span class="sub"><span class="keyword">sub</span> {</span>
+  <span class="keyword">my</span> <span class="variable">$post</span> = <span class="keyword">shift</span>;
+  <span class="keyword">return</span> <span class="variable">$post</span>-&gt;attr(<span class="string">'date'</span>)-&gt;hours-&gt;<span class="keyword">lt</span>(<span class="number">4</span>);
+})-&gt;run;
+</code></pre>
+<p>Return the hour in a time object as a number between 0 and&nbsp;23.</p>
+<h3 id="minutes">minutes</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'posts'</span>)-&gt;filter(<span class="sub"><span class="keyword">sub</span> {</span>
+  <span class="keyword">my</span> <span class="variable">$post</span> = <span class="keyword">shift</span>;
+  <span class="keyword">return</span> <span class="variable">$post</span>-&gt;attr(<span class="string">'date'</span>)-&gt;minutes-&gt;<span class="keyword">lt</span>(<span class="number">10</span>);
+})-&gt;run;
+</code></pre>
+<p>Return the minute in a time object as a number between 0 and&nbsp;59.</p>
+<h3 id="seconds">seconds</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'posts'</span>)-&gt;filter(<span class="sub"><span class="keyword">sub</span> {</span>
+  <span class="keyword">my</span> <span class="variable">$post</span> = <span class="keyword">shift</span>;
+  <span class="keyword">return</span> <span class="variable">$post</span>-&gt;attr(<span class="string">'date'</span>)-&gt;seconds-&gt;<span class="keyword">lt</span>(<span class="number">30</span>);
+})-&gt;run;
+</code></pre>
+<p>Return the seconds in a time object as a number between 0 and 59.999 (double&nbsp;precision).</p>
+<h3 id="to_iso8601">to_iso8601</h3>
+<pre><code class="lang-perl">r-&gt;now-&gt;to_iso8601-&gt;run;
+</code></pre>
+<p>Convert a time object to its <span class="caps">ISO</span> 8601&nbsp;format.</p>
+<h3 id="to_epoch_time">to_epoch_time</h3>
+<pre><code class="lang-perl">r-&gt;now-&gt;to_epoch_time-&gt;run;
+</code></pre>
+<p>Convert a time object to its epoch&nbsp;time.</p>
+<h3 id="do">do</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'players'</span>)-&gt;get(<span class="string">'86be93eb-a112-48f5-a829-15b2cb49de1d'</span>)-&gt;<span class="keyword">do</span>(<span class="sub"><span class="keyword">sub</span> {</span>
+  <span class="keyword">my</span> <span class="variable">$player</span> = <span class="keyword">shift</span>;
+  <span class="keyword">return</span> <span class="variable">$player</span>-&gt;attr(<span class="string">'gross_score'</span>)-&gt;<span class="sub"><span class="keyword">sub</span>($player-&gt;attr('course_handicap'));</span>
+})-&gt;run
+</code></pre>
+<p>Evaluate an expression and pass its values as arguments to a function or to an&nbsp;expression.</p>
+<h3 id="for_each">for_each</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;for_each(<span class="sub"><span class="keyword">sub</span> {</span>
+  <span class="keyword">my</span> <span class="variable">$hero</span> = <span class="keyword">shift</span>;
+  r-&gt;table(<span class="string">'villains'</span>)-&gt;get(<span class="variable">$hero</span>-&gt;attr(<span class="string">'villainDefeated'</span>))-&gt;<span class="keyword">delete</span>;
+})-&gt;run;
+</code></pre>
+<p>Loop over a sequence, evaluating the given write query for each&nbsp;element.</p>
+<h3 id="default">default</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'posts'</span>)-&gt;<span class="keyword">map</span>(<span class="sub"><span class="keyword">sub</span> {</span>
+  <span class="keyword">my</span> <span class="variable">$post</span> = <span class="keyword">shift</span>;
+  <span class="keyword">return</span> {
+    <span class="string">title =&gt;</span> <span class="variable">$post</span>-&gt;attr(<span class="string">'title'</span>),
+    <span class="string">author =&gt;</span> <span class="variable">$post</span>-&gt;attr(<span class="string">'author'</span>)-&gt;default(<span class="string">'Anonymous'</span>)
+  };
+})-&gt;run
+</code></pre>
+<p>Handle non-existence errors. Tries to evaluate and return its first argument.
+If an error related to the absence of a value is thrown in the process, or if
+its first argument returns <code>null</code>, returns its second argument.
+(Alternatively, the second argument may be a function which will be called with
+either the text of the non-existence error or <code>null</code>.)</p>
+<h3 id="coerce_to">coerce_to</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'posts'</span>)-&gt;<span class="keyword">map</span>(<span class="sub"><span class="keyword">sub</span> {</span>
+  <span class="keyword">my</span> <span class="variable">$post</span> = <span class="keyword">shift</span>;
+  <span class="keyword">return</span> <span class="variable">$post</span>-&gt;merge({
+    <span class="string">'comments'</span> =&gt; r-&gt;table(<span class="string">'comments'</span>)-&gt;get_all(
+      <span class="variable">$post</span>-&gt;attr(<span class="string">'id'</span>), { <span class="string">index =&gt;</span> <span class="string">'post_id'</span> })-&gt;coerce_to(<span class="string">'array'</span>)
+  });
+)-&gt;run
+</code></pre>
+<p>Convert a value of one type into&nbsp;another.</p>
+<h3 id="type_of">type_of</h3>
+<pre><code class="lang-perl">r-&gt;expr(<span class="string">'foo'</span>)-&gt;type_of-&gt;run;
+</code></pre>
+<p>Gets the type of a&nbsp;value.</p>
+<h3 id="info">info</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;info-&gt;run;
+</code></pre>
+<p>Get information about a ReQL&nbsp;value.</p>
+<h2 id="see-also"><span class="caps">SEE</span>&nbsp;ALSO</h2>
+<p><a href="/packages/rethinkdb">Rethinkdb</a>, <a href="http://rethinkdb.com">http://rethinkdb.com</a></p>
+</section>
+          </article>
+        </div>
+      </div>
+    </div>
+    <footer>
+      <div class="content-wrap">
+        <div class="nav"><a href="/">« Back</a><a href="#content" id="top">↑ Top</a></div>
+        <section class="about"><p>Unless otherwise noted: Copyright &copy; 2013-2014, <a href="http://njlg.info">Nathan Levin-Greenhaw</a></p>
+<p>A lot of the above documentation herein was taken from the
+<a href="http://rethinkdb.com/api/">official documentation</a>.
+Copyright &copy; 2010-2014 RethinkDB.</p>
+<p>This program is free software, you can redistribute it and/or modify it under
+the terms of the Artistic License version 2.0.</p>
+
+        </section>
+        <section class="copy">
+          <p>
+            &copy; 2014
+            <a href="http://njlg.info">Nathan Levin-Greenhaw</a>
+            &mdash; powered by
+            <a href="https://github.com/jnordberg/wintersmith">Wintersmith</a>
+          </p>
+        </section>
+      </div>
+    </footer>
+  </body>
+</html>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/waypoints/2.0.5/waypoints.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/waypoints/2.0.5/shortcuts/sticky-elements/waypoints-sticky.min.js"></script>
+<script src="/js/p.js"></script>

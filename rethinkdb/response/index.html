@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width">
+    <title>Rethinkdb::Response - Perl RethinkDB
+    </title>
+    <link rel="alternate" href="http://localhost:8080/feed.xml" type="application/rss+xml" title="A Pure Perl RethinkDB Driver">
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic|Anonymous+Pro:400,700,400italic,700italic|Merriweather:400,700,300">
+    <link rel="stylesheet" href="/css/main.css">
+  </head>
+  <body class="article-detail">
+    <header class="header">
+      <div class="content-wrap">
+        <div class="logo">
+          <h1><a href="http://localhost:8080">Perl RethinkDB</a></h1>
+          <p class="description">A Pure Perl RethinkDB Driver</p>
+        </div>
+      </div>
+    </header>
+    <div id="content">
+      <div class="content-wrap">
+        <div class="row">
+          <div class="sidebar">
+            <nav role="complementary" data-spy="affix" data-offset-top="250" data-offset-bottom="175"><ul class="nav">
+<li class="active"><a href="#rethinkdb-response">Rethinkdb::Response</a><ul>
+<li><a href="#attributes">ATTRIBUTES</a><ul>
+<li><a href="#type">type</a></li>
+<li><a href="#type_description">type_description</a></li>
+<li><a href="#response">response</a></li>
+<li><a href="#token">token</a></li>
+<li><a href="#error_message">error_message</a></li>
+<li><a href="#backtrace">backtrace</a></li>
+</ul>
+</li>
+<li><a href="#see-also">SEE ALSO</a></li>
+</ul>
+</li>
+</ul>
+
+            </nav>
+          </div>
+          <article role="main" class="article">
+            <section class="content"><h1 id="rethinkdb-response">Rethinkdb::Response</h1>
+<p>All responses from the driver come as an instance of this&nbsp;class.</p>
+<pre><code class="lang-perl"><span class="keyword">package</span> MyApp;
+<span class="keyword">use</span> Rethinkdb;
+
+<span class="keyword">my</span> <span class="variable">$res</span> = r-&gt;table(<span class="string">'marvel'</span>)-&gt;run;
+<span class="keyword">say</span> <span class="variable">$res</span>-&gt;type;
+<span class="keyword">say</span> <span class="variable">$res</span>-&gt;type_description;
+<span class="keyword">say</span> <span class="variable">$res</span>-&gt;response;
+<span class="keyword">say</span> <span class="variable">$res</span>-&gt;token;
+<span class="keyword">say</span> <span class="variable">$res</span>-&gt;error_message;
+<span class="keyword">say</span> <span class="variable">$res</span>-&gt;backtrace;
+</code></pre>
+<h2 id="attributes"><span class="caps">ATTRIBUTES</span></h2>
+<p><a href="/packages/rethinkdb/response">Rethinkdb::Response</a> implements the following&nbsp;attributes.</p>
+<h3 id="type">type</h3>
+<pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$res</span> = r-&gt;table(<span class="string">'marvel'</span>)-&gt;run;
+<span class="keyword">say</span> <span class="variable">$res</span>-&gt;type;
+</code></pre>
+<p>The response type code. The current response types&nbsp;are:</p>
+<pre><code class="lang-perl"><span class="string">'success_atom'</span> =&gt; <span class="number">1</span>
+<span class="string">'success_sequence'</span> =&gt; <span class="number">2</span>
+<span class="string">'success_partial'</span> =&gt; <span class="number">3</span>
+<span class="string">'success_feed'</span> =&gt; <span class="number">5</span>
+<span class="string">'wait_complete'</span> =&gt; <span class="number">4</span>
+<span class="string">'client_error'</span> =&gt; <span class="number">16</span>
+<span class="string">'compile_error'</span> =&gt; <span class="number">17</span>
+<span class="string">'runtime_error'</span> =&gt; <span class="number">18</span>
+</code></pre>
+<h3 id="type_description">type_description</h3>
+<pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$res</span> = r-&gt;table(<span class="string">'marvel'</span>)-&gt;run;
+<span class="keyword">say</span> <span class="variable">$res</span>-&gt;type_description;
+</code></pre>
+<p>The response type description (e.g. <code>success_atom</code>, <code>runtime_error</code>).</p>
+<h3 id="response">response</h3>
+<pre><code class="lang-perl"><span class="keyword">use</span> Data::Dumper;
+<span class="keyword">my</span> <span class="variable">$res</span> = r-&gt;table(<span class="string">'marvel'</span>)-&gt;run;
+<span class="keyword">say</span> Dumper <span class="variable">$res</span>-&gt;response;
+</code></pre>
+<p>The actual response value from the&nbsp;database.</p>
+<h3 id="token">token</h3>
+<pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$res</span> = r-&gt;table(<span class="string">'marvel'</span>)-&gt;run;
+<span class="keyword">say</span> Dumper <span class="variable">$res</span>-&gt;token;
+</code></pre>
+<p>Each request made to the database must have a unique token. The response from
+the database includes that token incase further actions are&nbsp;required.</p>
+<h3 id="error_message">error_message</h3>
+<pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$res</span> = r-&gt;table(<span class="string">'marvel'</span>)-&gt;run;
+<span class="keyword">say</span> <span class="variable">$res</span>-&gt;error_message;
+</code></pre>
+<p>If the request cause an error, this attribute will contain the error message
+from the&nbsp;database.</p>
+<h3 id="backtrace">backtrace</h3>
+<pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$res</span> = r-&gt;table(<span class="string">'marvel'</span>)-&gt;run;
+<span class="keyword">say</span> <span class="variable">$res</span>-&gt;backtrace;
+</code></pre>
+<p>If the request cause an error, this attribute will contain a backtrace for the&nbsp;error.</p>
+<h2 id="see-also"><span class="caps">SEE</span>&nbsp;ALSO</h2>
+<p><a href="/packages/rethinkdb">Rethinkdb</a>, <a href="http://rethinkdb.com">http://rethinkdb.com</a></p>
+</section>
+          </article>
+        </div>
+      </div>
+    </div>
+    <footer>
+      <div class="content-wrap">
+        <div class="nav"><a href="/">« Back</a><a href="#content" id="top">↑ Top</a></div>
+        <section class="about"><p>Unless otherwise noted: Copyright &copy; 2013-2014, <a href="http://njlg.info">Nathan Levin-Greenhaw</a></p>
+<p>A lot of the above documentation herein was taken from the
+<a href="http://rethinkdb.com/api/">official documentation</a>.
+Copyright &copy; 2010-2014 RethinkDB.</p>
+<p>This program is free software, you can redistribute it and/or modify it under
+the terms of the Artistic License version 2.0.</p>
+
+        </section>
+        <section class="copy">
+          <p>
+            &copy; 2014
+            <a href="http://njlg.info">Nathan Levin-Greenhaw</a>
+            &mdash; powered by
+            <a href="https://github.com/jnordberg/wintersmith">Wintersmith</a>
+          </p>
+        </section>
+      </div>
+    </footer>
+  </body>
+</html>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/waypoints/2.0.5/waypoints.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/waypoints/2.0.5/shortcuts/sticky-elements/waypoints-sticky.min.js"></script>
+<script src="/js/p.js"></script>

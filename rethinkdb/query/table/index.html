@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width">
+    <title>Rethinkdb::Query::Table - Perl RethinkDB
+    </title>
+    <link rel="alternate" href="http://localhost:8080/feed.xml" type="application/rss+xml" title="A Pure Perl RethinkDB Driver">
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic|Anonymous+Pro:400,700,400italic,700italic|Merriweather:400,700,300">
+    <link rel="stylesheet" href="/css/main.css">
+  </head>
+  <body class="article-detail">
+    <header class="header">
+      <div class="content-wrap">
+        <div class="logo">
+          <h1><a href="http://localhost:8080">Perl RethinkDB</a></h1>
+          <p class="description">A Pure Perl RethinkDB Driver</p>
+        </div>
+      </div>
+    </header>
+    <div id="content">
+      <div class="content-wrap">
+        <div class="row">
+          <div class="sidebar">
+            <nav role="complementary" data-spy="affix" data-offset-top="250" data-offset-bottom="175"><ul class="nav">
+<li class="active"><a href="#rethinkdb-query-table">Rethinkdb::Query:: Table</a><ul>
+<li><a href="#attributes">ATTRIBUTES</a><ul>
+<li><a href="#name">name</a></li>
+</ul>
+</li>
+<li><a href="#methods">METHODS</a><ul>
+<li><a href="#create">create</a></li>
+<li><a href="#drop">drop</a></li>
+<li><a href="#index_create">index_create</a></li>
+<li><a href="#index_drop">index_drop</a></li>
+<li><a href="#index_list">index_list</a></li>
+<li><a href="#index_status">index_status</a></li>
+<li><a href="#index_wait">index_wait</a></li>
+<li><a href="#changes">changes</a></li>
+<li><a href="#insert">insert</a></li>
+<li><a href="#sync">sync</a></li>
+<li><a href="#get">get</a></li>
+<li><a href="#get_all">get_all</a></li>
+<li><a href="#between">between</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            </nav>
+          </div>
+          <article role="main" class="article">
+            <section class="content"><h1 id="rethinkdb-query-table">Rethinkdb::Query::Table</h1>
+<p>Rethinkdb::Query::Table is a type of query that represents a table in a database. This classes contains methods to interact with said&nbsp;table.</p>
+<h2 id="attributes"><span class="caps">ATTRIBUTES</span></h2>
+<p><a href="/packages/rethinkdb/query/table">Rethinkdb::Query::Table</a> implements the following&nbsp;attributes.</p>
+<h3 id="name">name</h3>
+<pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$table</span> = r-&gt;db(<span class="string">'comics'</span>)-&gt;table(<span class="string">'superheros'</span>);
+<span class="keyword">say</span> <span class="variable">$table</span>-&gt;name;
+</code></pre>
+<p>The name of the&nbsp;table.</p>
+<h2 id="methods"><span class="caps">METHODS</span></h2>
+<p><a href="/packages/rethinkdb/query/table">Rethinkdb::Query::Table</a> implements the following&nbsp;methods.</p>
+<h3 id="create">create</h3>
+<pre><code class="lang-perl">r-&gt;db(<span class="string">'test'</span>)-&gt;table(<span class="string">'dc_universe'</span>)-&gt;create-&gt;run;
+</code></pre>
+<p>Create this table. A RethinkDB table is a collection of <span class="caps">JSON</span>&nbsp;documents.</p>
+<p>If successful, the operation returns an object: <code>{created =&gt; 1}</code>. If a
+table with the same name already exists, the operation returns a
+<code>runtime_error</code>.</p>
+<p><strong>Note:</strong> that you can only use alphanumeric characters and underscores for the
+table&nbsp;name.</p>
+<h3 id="drop">drop</h3>
+<pre><code class="lang-perl">r-&gt;db(<span class="string">'test'</span>)-&gt;table(<span class="string">'dc_universe'</span>)-&gt;drop-&gt;run(conn)
+</code></pre>
+<p>Drop this table. The table and all its data will be&nbsp;deleted.</p>
+<p>If successful, the operation returns an object: <code>{dropped =&gt; 1}</code>. If the
+specified table doesn’t exist a <code>runtime_error</code> is&nbsp;returned.</p>
+<h3 id="index_create">index_create</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'comments'</span>)-&gt;index_create(<span class="string">'post_id'</span>)-&gt;run;
+</code></pre>
+<p>Create a new secondary index on a&nbsp;table.</p>
+<h3 id="index_drop">index_drop</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'dc'</span>)-&gt;index_drop(<span class="string">'code_name'</span>)-&gt;run;
+</code></pre>
+<p>Delete a previously created secondary index of this&nbsp;table.</p>
+<h3 id="index_list">index_list</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;index_list-&gt;run;
+</code></pre>
+<p>List all the secondary indexes of this&nbsp;table.</p>
+<h3 id="index_status">index_status</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'test'</span>)-&gt;index_status-&gt;run;
+r-&gt;table(<span class="string">'test'</span>)-&gt;index_status(<span class="string">'timestamp'</span>)-&gt;run;
+</code></pre>
+<p>Get the status of the specified indexes on this table, or the status of all
+indexes on this table if no indexes are&nbsp;specified.</p>
+<h3 id="index_wait">index_wait</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'test'</span>)-&gt;index_wait-&gt;run;
+r-&gt;table(<span class="string">'test'</span>)-&gt;index_wait(<span class="string">'timestamp'</span>)-&gt;run;
+</code></pre>
+<p>Wait for the specified indexes on this table to be ready, or for all indexes on
+this table to be ready if no indexes are&nbsp;specified.</p>
+<h3 id="changes">changes</h3>
+<pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$stream</span> = r-&gt;table(<span class="string">'games'</span>)-&gt;changes-&gt;run;
+<span class="keyword">foreach</span>( @{<span class="variable">$stream</span>} ) {
+  <span class="keyword">say</span> Dumper <span class="variable">$_</span>;
+}
+</code></pre>
+<p>Return an infinite stream of objects representing changes to a table. Whenever
+an <code>insert</code>, <code>delete</code>, <code>update</code> or <code>replace</code> is performed on the table, an
+object of the form <code>{&#39;old_val&#39; =&gt; ..., &#39;new_val&#39; =&gt; ...}</code> will be appended
+to the stream. For an <code>insert</code>, <code>old_val</code> will be <code>null</code>, and for a
+<code>delete</code>, <code>new_val</code> will be <code>null</code>.</p>
+<h3 id="insert">insert</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'posts'</span>)-&gt;insert({
+  <span class="string">id =&gt;</span> <span class="number">1</span>,
+  <span class="string">title =&gt;</span> <span class="string">'Lorem ipsum'</span>,
+  <span class="string">content =&gt;</span> <span class="string">'Dolor sit amet'</span>
+})-&gt;run;
+</code></pre>
+<p>Insert documents into a table. Accepts a single document or an array of&nbsp;documents.</p>
+<h3 id="sync">sync</h3>
+<p><a href="/rethinkdb/query/table/#sync">“sync”</a> ensures that writes on a given table are written to permanent storage.
+Queries that specify soft durability <code>{durability =&gt; &#39;soft&#39;}</code> do not give
+such guarantees, so sync can be used to ensure the state of these queries. A
+call to sync does not return until all previous writes to the table are&nbsp;persisted.</p>
+<h3 id="get">get</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'posts'</span>)-&gt;get(<span class="string">'a9849eef-7176-4411-935b-79a6e3c56a74'</span>)-&gt;run;
+</code></pre>
+<p>Get a document by primary&nbsp;key.</p>
+<p>If no document exists with that primary key, <a href="/rethinkdb/query/table/#get">“get”</a> will return <code>null</code>.</p>
+<h3 id="get_all">get_all</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;get_all(<span class="string">'man_of_steel'</span>, { <span class="string">index =&gt;</span> <span class="string">'code_name'</span> })-&gt;run;
+</code></pre>
+<p>Get all documents where the given value matches the value of the requested&nbsp;index.</p>
+<h3 id="between">between</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;between(<span class="number">10</span>, <span class="number">20</span>)-&gt;run;
+</code></pre>
+<p>Get all documents between two keys. Accepts three optional arguments: <code>index</code>,
+<code>left_bound</code>, and <code>right_bound</code>. If <code>index</code> is set to the name of a
+secondary index, <a href="/rethinkdb/query/table/#between">“between”</a> will return all documents where that index’s value
+is in the specified range (it uses the primary key by default). <code>left_bound</code>
+or <code>right_bound</code> may be set to open or closed to indicate whether or not to
+include that endpoint of the range (by default, <code>left_bound</code> is closed and
+<code>right_bound</code> is&nbsp;open).</p>
+</section>
+          </article>
+        </div>
+      </div>
+    </div>
+    <footer>
+      <div class="content-wrap">
+        <div class="nav"><a href="/">« Back</a><a href="#content" id="top">↑ Top</a></div>
+        <section class="about"><p>Unless otherwise noted: Copyright &copy; 2013-2014, <a href="http://njlg.info">Nathan Levin-Greenhaw</a></p>
+<p>A lot of the above documentation herein was taken from the
+<a href="http://rethinkdb.com/api/">official documentation</a>.
+Copyright &copy; 2010-2014 RethinkDB.</p>
+<p>This program is free software, you can redistribute it and/or modify it under
+the terms of the Artistic License version 2.0.</p>
+
+        </section>
+        <section class="copy">
+          <p>
+            &copy; 2014
+            <a href="http://njlg.info">Nathan Levin-Greenhaw</a>
+            &mdash; powered by
+            <a href="https://github.com/jnordberg/wintersmith">Wintersmith</a>
+          </p>
+        </section>
+      </div>
+    </footer>
+  </body>
+</html>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/waypoints/2.0.5/waypoints.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/waypoints/2.0.5/shortcuts/sticky-elements/waypoints-sticky.min.js"></script>
+<script src="/js/p.js"></script>

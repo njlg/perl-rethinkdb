@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width">
+    <title>Rethinkdb::IO - Perl RethinkDB
+    </title>
+    <link rel="alternate" href="http://localhost:8080/feed.xml" type="application/rss+xml" title="A Pure Perl RethinkDB Driver">
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic|Anonymous+Pro:400,700,400italic,700italic|Merriweather:400,700,300">
+    <link rel="stylesheet" href="/css/main.css">
+  </head>
+  <body class="article-detail">
+    <header class="header">
+      <div class="content-wrap">
+        <div class="logo">
+          <h1><a href="http://localhost:8080">Perl RethinkDB</a></h1>
+          <p class="description">A Pure Perl RethinkDB Driver</p>
+        </div>
+      </div>
+    </header>
+    <div id="content">
+      <div class="content-wrap">
+        <div class="row">
+          <div class="sidebar">
+            <nav role="complementary" data-spy="affix" data-offset-top="250" data-offset-bottom="175"><ul class="nav">
+<li class="active"><a href="#rethinkdb-io">Rethinkdb::IO</a><ul>
+<li><a href="#attributes">ATTRIBUTES</a><ul>
+<li><a href="#host">host</a></li>
+<li><a href="#port">port</a></li>
+<li><a href="#default_db">default_db</a></li>
+<li><a href="#auth_key">auth_key</a></li>
+<li><a href="#timeout">timeout</a></li>
+</ul>
+</li>
+<li><a href="#methods">METHODS</a><ul>
+<li><a href="#connect">connect</a></li>
+<li><a href="#close">close</a></li>
+<li><a href="#reconnect">reconnect</a></li>
+<li><a href="#repl">repl</a></li>
+<li><a href="#use">use</a></li>
+<li><a href="#noreply_wait">noreply_wait</a></li>
+</ul>
+</li>
+<li><a href="#see-also">SEE ALSO</a></li>
+</ul>
+</li>
+</ul>
+
+            </nav>
+          </div>
+          <article role="main" class="article">
+            <section class="content"><h1 id="rethinkdb-io">Rethinkdb::<span class="caps">IO</span></h1>
+<p>This module handles communicating with the RethinkDB&nbsp;Database.</p>
+<pre><code class="lang-perl"><span class="keyword">package</span> MyApp;
+<span class="keyword">use</span> Rethinkdb::<span class="caps">IO</span>;
+
+<span class="keyword">my</span> <span class="variable">$io</span> = Rethinkdb::<span class="caps">IO</span>-&gt;new-&gt;<span class="keyword">connect</span>;
+<span class="variable">$io</span>-&gt;<span class="keyword">use</span>(<span class="string">'marvel'</span>);
+<span class="variable">$io</span>-&gt;<span class="keyword">close</span>;
+</code></pre>
+<h2 id="attributes"><span class="caps">ATTRIBUTES</span></h2>
+<p><a href="/packages/rethinkdb/io">Rethinkdb::<span class="caps">IO</span></a> implements the following&nbsp;attributes.</p>
+<h3 id="host">host</h3>
+<pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$io</span> = Rethinkdb::<span class="caps">IO</span>-&gt;new-&gt;<span class="keyword">connect</span>;
+<span class="keyword">my</span> <span class="variable">$host</span> = <span class="variable">$io</span>-&gt;host;
+<span class="variable">$io</span>-&gt;host(<span class="string">'r.example.com'</span>);
+</code></pre>
+<p>The <code>host</code> attribute returns or sets the current host name that
+<a href="/packages/rethinkdb/io">Rethinkdb::<span class="caps">IO</span></a> is currently set to&nbsp;use.</p>
+<h3 id="port">port</h3>
+<pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$io</span> = Rethinkdb::<span class="caps">IO</span>-&gt;new-&gt;<span class="keyword">connect</span>;
+<span class="keyword">my</span> <span class="variable">$port</span> = <span class="variable">$io</span>-&gt;port;
+<span class="variable">$io</span>-&gt;port(<span class="number">1212</span>);
+</code></pre>
+<p>The <code>port</code> attribute returns or sets the current port number that
+<a href="/packages/rethinkdb/io">Rethinkdb::<span class="caps">IO</span></a> is currently set to&nbsp;use.</p>
+<h3 id="default_db">default_db</h3>
+<pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$io</span> = Rethinkdb::<span class="caps">IO</span>-&gt;new-&gt;<span class="keyword">connect</span>;
+<span class="keyword">my</span> <span class="variable">$port</span> = <span class="variable">$io</span>-&gt;default_db;
+<span class="variable">$io</span>-&gt;default_db(<span class="string">'marvel'</span>);
+</code></pre>
+<p>The <code>default_db</code> attribute returns or sets the current database name that
+<a href="/packages/rethinkdb/io">Rethinkdb::<span class="caps">IO</span></a> is currently set to&nbsp;use.</p>
+<h3 id="auth_key">auth_key</h3>
+<pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$io</span> = Rethinkdb::<span class="caps">IO</span>-&gt;new-&gt;<span class="keyword">connect</span>;
+<span class="keyword">my</span> <span class="variable">$port</span> = <span class="variable">$io</span>-&gt;auth_key;
+<span class="variable">$io</span>-&gt;auth_key(<span class="string">'setec astronomy'</span>);
+</code></pre>
+<p>The <code>auth_key</code> attribute returns or sets the current authentication key that
+<a href="/packages/rethinkdb/io">Rethinkdb::<span class="caps">IO</span></a> is currently set to&nbsp;use.</p>
+<h3 id="timeout">timeout</h3>
+<pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$io</span> = Rethinkdb::<span class="caps">IO</span>-&gt;new-&gt;<span class="keyword">connect</span>;
+<span class="keyword">my</span> <span class="variable">$timeout</span> = <span class="variable">$io</span>-&gt;timeout;
+<span class="variable">$io</span>-&gt;timeout(<span class="number">60</span>);
+</code></pre>
+<p>The <code>timeout</code> attribute returns or sets the timeout length that
+<a href="/packages/rethinkdb/io">Rethinkdb::<span class="caps">IO</span></a> is currently set to&nbsp;use.</p>
+<h2 id="methods"><span class="caps">METHODS</span></h2>
+<p><a href="/packages/rethinkdb/io">Rethinkdb::<span class="caps">IO</span></a> inherits all methods from <a href="/packages/rethinkdb/base">Rethinkdb::Base</a> and implements
+the following&nbsp;methods.</p>
+<h3 id="connect">connect</h3>
+<pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$io</span> = Rethinkdb::<span class="caps">IO</span>-&gt;new;
+<span class="variable">$io</span>-&gt;host(<span class="string">'rdb.example.com'</span>);
+<span class="variable">$io</span>-&gt;<span class="keyword">connect</span>-&gt;repl;
+</code></pre>
+<p>The <code>connect</code> method initiates the connection to the RethinkDB&nbsp;database.</p>
+<h3 id="close">close</h3>
+<pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$io</span> = Rethinkdb::<span class="caps">IO</span>-&gt;new;
+<span class="variable">$io</span>-&gt;host(<span class="string">'rdb.example.com'</span>);
+<span class="variable">$io</span>-&gt;<span class="keyword">connect</span>;
+<span class="variable">$io</span>-&gt;<span class="keyword">close</span>;
+</code></pre>
+<p>The <code>connect</code> method closes the current connection to the RethinkDB&nbsp;database.</p>
+<h3 id="reconnect">reconnect</h3>
+<pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$io</span> = Rethinkdb::<span class="caps">IO</span>-&gt;new;
+<span class="variable">$io</span>-&gt;host(<span class="string">'rdb.example.com'</span>);
+<span class="variable">$io</span>-&gt;<span class="keyword">connect</span>;
+<span class="variable">$io</span>-&gt;reconnect;
+</code></pre>
+<p>The <code>reconnect</code> method closes and reopens a connection to the RethinkDB&nbsp;database.</p>
+<h3 id="repl">repl</h3>
+<pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$io</span> = Rethinkdb::<span class="caps">IO</span>-&gt;new;
+<span class="variable">$io</span>-&gt;host(<span class="string">'rdb.example.com'</span>);
+<span class="variable">$io</span>-&gt;<span class="keyword">connect</span>-&gt;repl;
+</code></pre>
+<p>The <code>repl</code> method caches the current connection in to the main program so that
+it is available to for all <a href="/packages/rethinkdb">Rethinkdb</a> queries without specifically specifying&nbsp;one.</p>
+<h3 id="use">use</h3>
+<pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$io</span> = Rethinkdb::<span class="caps">IO</span>-&gt;new;
+<span class="variable">$io</span>-&gt;<span class="keyword">use</span>(<span class="string">'marven'</span>);
+<span class="variable">$io</span>-&gt;<span class="keyword">connect</span>;
+</code></pre>
+<p>The <code>use</code> method sets the default database name to use for all queries that
+use this&nbsp;connection.</p>
+<h3 id="noreply_wait">noreply_wait</h3>
+<pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$io</span> = Rethinkdb::<span class="caps">IO</span>-&gt;new;
+<span class="variable">$io</span>-&gt;noreply_wait;
+</code></pre>
+<p>The <code>noreply_wait</code> method will tell the database to wait until all “no reply”
+have executed before&nbsp;responding.</p>
+<h2 id="see-also"><span class="caps">SEE</span>&nbsp;ALSO</h2>
+<p><a href="/packages/rethinkdb">Rethinkdb</a>, <a href="http://rethinkdb.com">http://rethinkdb.com</a></p>
+</section>
+          </article>
+        </div>
+      </div>
+    </div>
+    <footer>
+      <div class="content-wrap">
+        <div class="nav"><a href="/">« Back</a><a href="#content" id="top">↑ Top</a></div>
+        <section class="about"><p>Unless otherwise noted: Copyright &copy; 2013-2014, <a href="http://njlg.info">Nathan Levin-Greenhaw</a></p>
+<p>A lot of the above documentation herein was taken from the
+<a href="http://rethinkdb.com/api/">official documentation</a>.
+Copyright &copy; 2010-2014 RethinkDB.</p>
+<p>This program is free software, you can redistribute it and/or modify it under
+the terms of the Artistic License version 2.0.</p>
+
+        </section>
+        <section class="copy">
+          <p>
+            &copy; 2014
+            <a href="http://njlg.info">Nathan Levin-Greenhaw</a>
+            &mdash; powered by
+            <a href="https://github.com/jnordberg/wintersmith">Wintersmith</a>
+          </p>
+        </section>
+      </div>
+    </footer>
+  </body>
+</html>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/waypoints/2.0.5/waypoints.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/waypoints/2.0.5/shortcuts/sticky-elements/waypoints-sticky.min.js"></script>
+<script src="/js/p.js"></script>
