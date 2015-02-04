@@ -21,7 +21,7 @@ isa_ok r->db_list, 'Rethinkdb::Query', 'correct class';
 $res = r->db_list->run;
 isa_ok $res, 'Rethinkdb::Response';
 is $res->type, 1, 'Correct status code';
-is_deeply $res->response, ['superheroes'], 'Db was created and listed';
+is_deeply $res->response, ['rethinkdb','superheroes'], 'Db was created and listed';
 
 # drop the database
 isa_ok r->db_drop('superheroes'), 'Rethinkdb::Query', 'Correct class';
