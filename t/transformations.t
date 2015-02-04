@@ -168,7 +168,7 @@ $res = r->table('marvel')->with_fields( 'superhero', 'age' )->run;
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 is $res->type, 2, 'Correct response type';
 is scalar @{ $res->response }, 9, 'Correct number of documents';
-is_deeply [ keys %{ $res->response->[0] } ], [ 'superhero', 'age' ],
+is_deeply [ sort keys %{ $res->response->[0] } ], [ 'age', 'superhero' ],
   'Correct document fields';
 
 # concat_map
