@@ -84,6 +84,19 @@ sub index_list {
   return $q;
 }
 
+sub index_rename {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type    => $self->_termType->index_rename,
+    args    => $args
+  );
+
+  return $q;
+}
+
 sub index_status {
   my $self    = shift;
   my $indices = [@_];
@@ -291,6 +304,15 @@ Delete a previously created secondary index of this table.
   r->table('marvel')->index_list->run;
 
 List all the secondary indexes of this table.
+
+=head2 index_rename
+
+  r->table('marvel')->index_rename('heroId', 'awesomeId')->run;
+
+Rename an existing secondary index on a table. If the optional argument
+C<overwrite> is specified as C<true>, a previously existing index with the new
+name will be deleted and the index will be renamed. If C<overwrite> is C<false>
+(the default) an error will be raised if the new index name already exists.
 
 =head2 index_status
 
