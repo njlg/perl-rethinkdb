@@ -22,7 +22,7 @@ See http://njlg.info/perl-rethinkdb/
 ## Notes
 
 * This is still in alpha stage
-* This version is compatible with RethinkDB 1.14
+* This version is compatible with RethinkDB 1.16.2-1
 * The implementation is close to 100% complete
 * For now, see tests in `t/*.t` for examples
 
