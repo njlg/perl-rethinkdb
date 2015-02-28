@@ -1,0 +1,24 @@
+language: perl
+perl:
+  - "5.20"
+  - "5.18"
+  - "5.16"
+  - "5.14"
+  - "5.12"
+  - "5.10"
+env:
+  - HARNESS_OPTIONS=j9
+  - TEST_POD=1
+  - TEST_ONLINE=1
+before_install:
+  - sudo add-apt-repository ppa:rethinkdb/ppa -y
+  - sudo apt-get update -q
+  - sudo apt-get install rethinkdb
+  - sudo service rethinkdb start
+install:
+  - cpanm -n Test::Pod Test::Pod::Coverage
+  - cpanm -n --installdeps .
+before_script:
+  - until nc -z localhost 28015; do echo Waiting for RethinkDB; sleep 1; done
+notifications:
+  email: false
