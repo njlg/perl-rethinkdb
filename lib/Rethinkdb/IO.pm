@@ -276,7 +276,7 @@ sub _send {
       }
 
       # send what we have
-      $self->_callbacks->{$token}->( $res );
+      $self->_callbacks->{$token}->($res);
 
       # fetch more
       return $self->_send(

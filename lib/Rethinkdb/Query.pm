@@ -285,7 +285,7 @@ sub concat_map {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    _type   => $self->_termType->concatmap,
+    _type   => $self->_termType->concat_map,
     args    => $args,
   );
 
@@ -298,7 +298,7 @@ sub order_by {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    _type   => $self->_termType->orderby,
+    _type   => $self->_termType->order_by,
     args    => $args,
   );
 
@@ -1198,7 +1198,7 @@ sub for_each {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    _type   => $self->_termType->foreach,
+    _type   => $self->_termType->for_each,
     args    => $args,
   );
 
@@ -1236,7 +1236,7 @@ sub type_of {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    _type   => $self->_termType->typeof,
+    _type   => $self->_termType->type_of,
   );
 
   return $q;

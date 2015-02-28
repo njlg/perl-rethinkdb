@@ -1,5 +1,8 @@
 use Test::More;
 
+plan skip_all => 'set TEST_ONLINE to enable this test'
+  unless $ENV{TEST_ONLINE};
+
 use Rethinkdb;
 
 # setup
@@ -124,7 +127,8 @@ is $res->type, 1, 'Correct response type';
 is $res->response->{replaced}, 1, 'Correct response';
 
 # in_timezone
-$res = r->iso8601('1986-11-03T08:30:00-07:00')->in_timezone('-08:00')->hours->run($conn);
+$res = r->iso8601('1986-11-03T08:30:00-07:00')->in_timezone('-08:00')
+  ->hours->run($conn);
 
 is $res->type,     1, 'Correct response type';
 is $res->response, 7, 'Correct response';

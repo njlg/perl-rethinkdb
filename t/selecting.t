@@ -1,5 +1,8 @@
 use Test::More;
 
+plan skip_all => 'set TEST_ONLINE to enable this test'
+  unless $ENV{TEST_ONLINE};
+
 use Rethinkdb;
 
 # setup
@@ -173,7 +176,7 @@ is $res->response->[0]->{superhero}, 'Ant-Man', 'Correct document returned';
 $res = r->table('marvel')->filter( r->row->attr('age')->gt(100) )->run;
 
 is $res->type, 2, 'Correct status code';
-is_deeply [sort { $a->{user_id} cmp $b->{user_id} } @{$res->response}],
+is_deeply [ sort { $a->{user_id} cmp $b->{user_id} } @{ $res->response } ],
   [
   {
     active     => '1',

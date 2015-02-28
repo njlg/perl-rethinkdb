@@ -1,5 +1,8 @@
 use Test::More;
 
+plan skip_all => 'set TEST_ONLINE to enable this test'
+  unless $ENV{TEST_ONLINE};
+
 use Rethinkdb;
 
 # setup
@@ -21,7 +24,8 @@ isa_ok r->db_list, 'Rethinkdb::Query', 'correct class';
 $res = r->db_list->run;
 isa_ok $res, 'Rethinkdb::Response';
 is $res->type, 1, 'Correct status code';
-is_deeply $res->response, ['rethinkdb','superheroes'], 'Db was created and listed';
+is_deeply $res->response, [ 'rethinkdb', 'superheroes' ],
+  'Db was created and listed';
 
 # drop the database
 isa_ok r->db_drop('superheroes'), 'Rethinkdb::Query', 'Correct class';

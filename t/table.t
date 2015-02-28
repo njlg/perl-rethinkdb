@@ -1,5 +1,8 @@
 use Test::More;
 
+plan skip_all => 'set TEST_ONLINE to enable this test'
+  unless $ENV{TEST_ONLINE};
+
 use Rethinkdb;
 
 # setup
@@ -47,7 +50,8 @@ TODO: {
 #
 # table class methods
 #
-isa_ok r->db('test')->table('dcuniverse'), 'Rethinkdb::Query::Table', 'Correct class';
+isa_ok r->db('test')->table('dcuniverse'), 'Rethinkdb::Query::Table',
+  'Correct class';
 isa_ok r->db('test')->table('dcuniverse')->_rdb, 'Rethinkdb',
   'Correctly has reference';
 

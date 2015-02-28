@@ -20,6 +20,7 @@ WriteMakefile(
       repository  => 'https://github.com/njlg/perl-rethinkdb',
       bugtracker  => 'https://github.com/njlg/perl-rethinkdb/issues'
     },
+    no_index => {directory => ['t']}
   },
   test      => { TESTS       => 't/*.t' }
 );

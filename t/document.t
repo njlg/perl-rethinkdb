@@ -1,5 +1,8 @@
 use Test::More;
 
+plan skip_all => 'set TEST_ONLINE to enable this test'
+  unless $ENV{TEST_ONLINE};
+
 use Rethinkdb;
 
 # setup
@@ -270,7 +273,7 @@ is_deeply $res->response, [ 'Iron Man', 'Hulk', 'Thor', 'Spider-Man', ],
 $res = r->expr( [ 'Iron Man', 'Spider-Man' ] )->delete_at(1)->run($conn);
 
 is $res->type, 1, 'Correct response type';
-is_deeply $res->response, [ 'Iron Man' ], 'Correct response type';
+is_deeply $res->response, ['Iron Man'], 'Correct response type';
 
 # same but use a starting and ending index
 $res

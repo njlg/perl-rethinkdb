@@ -1,5 +1,8 @@
 use Test::More;
 
+plan skip_all => 'set TEST_ONLINE to enable this test'
+  unless $ENV{TEST_ONLINE};
+
 use Rethinkdb;
 
 # setup
@@ -226,7 +229,7 @@ is_deeply [ map { $_->{superhero} } @{ $res->response } ],
 $res = r->table('marvel')->order_by('superhero')->skip(7)->run;
 
 is $res->type, 1, 'Correct response type';
-is $res->response->[0]->{superhero}, 'Wasp', 'Correct response';
+is $res->response->[0]->{superhero}, 'Wasp',      'Correct response';
 is $res->response->[1]->{superhero}, 'Wolverine', 'Correct response';
 
 # limit

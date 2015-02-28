@@ -94,8 +94,8 @@ Rethinkdb::Protocol - Rethinkdb Protocol
 
 =head1 SYNOPSIS
 
-my $p = Rethinkdb::Protocol->new;
-$p->term->termType->get_all;
+  my $p = Rethinkdb::Protocol->new;
+  $p->term->termType->get_all;
 
 =head1 DESCRIPTION
 

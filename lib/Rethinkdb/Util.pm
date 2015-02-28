@@ -9,7 +9,7 @@ use Rethinkdb::Query::Datum;
 use Rethinkdb::Protocol;
 
 my $PROTOCOL = Rethinkdb::Protocol->new;
-my $COUNTER = 0;
+my $COUNTER  = 0;
 
 sub _token {
   return $COUNTER++;
@@ -70,7 +70,7 @@ sub _expr {
     return $self->_make_func($value);
   }
   else {
-    return Rethinkdb::Query::Datum->new({ data => $value });
+    return Rethinkdb::Query::Datum->new( { data => $value } );
   }
 
   # to croak or not?
@@ -95,7 +95,7 @@ sub _expr_json {
   if ( !$@ && $retval ) {
     return Rethinkdb::Query->new(
       _type => $PROTOCOL->term->termType->json,
-      args => $retval
+      args  => $retval
     );
   }
   elsif ( ref $value eq 'ARRAY' ) {
@@ -111,7 +111,7 @@ sub _expr_json {
     return $self->_make_func($value);
   }
   else {
-    return Rethinkdb::Query::Datum->new({ data => $value });
+    return Rethinkdb::Query::Datum->new( { data => $value } );
   }
 
   # to croak or not?
@@ -169,7 +169,8 @@ sub _to_datum {
   elsif ( ref $value eq 'Rethinkdb::_True'
     || ref $value eq 'Rethinkdb::_False' )
   {
-    $hash = { type => $PROTOCOL->datum->datumType->r_bool, r_bool => $value == 1 };
+    $hash
+      = { type => $PROTOCOL->datum->datumType->r_bool, r_bool => $value == 1 };
   }
 
   return $hash;
@@ -181,7 +182,7 @@ sub _make_array {
 
   my $obj = Rethinkdb::Query->new(
     _type => $PROTOCOL->term->termType->make_array,
-    args => $args,
+    args  => $args,
   );
 
   return $obj;
@@ -192,7 +193,7 @@ sub _make_obj {
   my $optargs = @_ ? @_ > 1 ? {@_} : { %{ $_[0] } } : {};
 
   my $obj = Rethinkdb::Query->new(
-    _type    => $PROTOCOL->term->termType->make_obj,
+    _type   => $PROTOCOL->term->termType->make_obj,
     optargs => $optargs,
   );
 
@@ -209,7 +210,10 @@ sub _make_func {
 
   foreach ( 1 .. $param_length ) {
     push @{$params},
-      Rethinkdb::Query->new( _type => $PROTOCOL->term->termType->var, args => $_, );
+      Rethinkdb::Query->new(
+      _type => $PROTOCOL->term->termType->var,
+      args  => $_,
+      );
   }
 
   my $body = $func->( @{$params} );
@@ -217,7 +221,7 @@ sub _make_func {
 
   my $obj = Rethinkdb::Query->new(
     _type => $PROTOCOL->term->termType->func,
-    args => [ $args, $body ],
+    args  => [ $args, $body ],
   );
 
   return $obj;
@@ -239,7 +243,8 @@ sub _to_datum_object {
       };
   }
 
-  my $expr = { type => $PROTOCOL->datum->datumType->r_object, r_object => $object };
+  my $expr
+    = { type => $PROTOCOL->datum->datumType->r_object, r_object => $object };
 
   return $expr;
 }
@@ -253,7 +258,8 @@ sub _to_datum_array {
     push @{$list}, $self->_to_datum($_);
   }
 
-  my $expr = { type => $PROTOCOL->datum->datumType->r_array, r_array => $list };
+  my $expr
+    = { type => $PROTOCOL->datum->datumType->r_array, r_array => $list };
 
   return $expr;
 }

@@ -1,5 +1,8 @@
 use Test::More;
 
+plan skip_all => 'set TEST_ONLINE to enable this test'
+  unless $ENV{TEST_ONLINE};
+
 use Rethinkdb;
 
 # setup
@@ -68,6 +71,7 @@ r->table('marvel')->map(
 
     # r->row->attr('victories')->gt(100),
     sub { shift->attr('victories')->gt(1); },
+
     # r->true,
     sub { shift->attr('superhero')->add(' is a superhero'); },
     sub { shift->attr('superhero')->add(' is a hero'); }
@@ -165,13 +169,20 @@ is $res->response, 'STRING', 'Correct response';
 $res = r->table('marvel')->info->run($conn);
 
 is $res->type, 1, 'Correct response type';
+
+$res->response->{db}->{id}            = '';
+$res->response->{id}                  = '';
+$res->response->{doc_count_estimates} = [6];
+
 is_deeply $res->response,
   {
-  primary_key => 'superhero',
-  db          => { name => 'test', type => 'DB' },
-  name        => 'marvel',
-  type        => 'TABLE',
-  indexes     => []
+  primary_key         => 'superhero',
+  db                  => { name => 'test', type => 'DB', id => '' },
+  name                => 'marvel',
+  type                => 'TABLE',
+  id                  => '',
+  indexes             => [],
+  doc_count_estimates => [6]
   },
   'Correct response';
 
@@ -180,6 +191,37 @@ $res = r->json("[1,2,3]")->run($conn);
 
 is $res->type, 1, 'Correct response type';
 is_deeply $res->response, [ '1', '2', '3' ], 'Correct response';
+
+# http
+$res = r->http('http://httpbin.org/get')->run($conn);
+
+is $res->type, 1, 'Correct response type';
+like $res->response->{headers}->{'User-Agent'}, qr/RethinkDB\/\d+\.\d+\.\d+/,
+  'Correct response';
+
+r->db('test')->table_create('posts')->run($conn);
+$res
+  = r->table('posts')->insert( r->http('http://httpbin.org/get') )->run($conn);
+
+is $res->type, 1, 'Correct response type';
+is $res->response->{inserted}, 1, 'Correct response';
+
+my $data = { player => 'Bob', game => 'tic tac toe' };
+
+$res
+  = r->http( 'http://httpbin.org/post', { method => 'POST', data => $data } )
+  ->run($conn);
+
+is $res->type, 1, 'Correct response type';
+is_deeply $res->response->{form}, $data, 'Correct response';
+
+# uuid
+$res = r->uuid->run;
+
+is $res->type, 1, 'Correct response type';
+like $res->response,
+  qr/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/,
+  'Correct response';
 
 # clean up
 r->db('test')->drop->run;
