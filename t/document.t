@@ -270,7 +270,7 @@ is_deeply $res->response, [ 'Iron Man', 'Hulk', 'Thor', 'Spider-Man', ],
 $res = r->expr( [ 'Iron Man', 'Spider-Man' ] )->delete_at(1)->run($conn);
 
 is $res->type, 1, 'Correct response type';
-is_deeply $res->response, [ 'Iron Man' ], 'Correct response type';
+is_deeply $res->response, ['Iron Man'], 'Correct response type';
 
 # same but use a starting and ending index
 $res

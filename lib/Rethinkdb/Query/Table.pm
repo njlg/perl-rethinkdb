@@ -18,8 +18,8 @@ sub create {
   my $optargs = ref $_[0] ? $_[0] : {@_};
 
   my $q = Rethinkdb::Query->new(
-    _rdb     => $self->_rdb,
-    _type    => $self->_termType->table_create,
+    _rdb    => $self->_rdb,
+    _type   => $self->_termType->table_create,
     args    => $self->name,
     optargs => $optargs,
   );
@@ -34,7 +34,7 @@ sub drop {
   my $q = Rethinkdb::Query->new(
     _rdb  => $self->_rdb,
     _type => $self->_termType->table_drop,
-    args => $self->name,
+    args  => $self->name,
   );
 
   weaken $q->{_rdb};
@@ -53,7 +53,7 @@ sub index_create {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    _type    => $self->_termType->index_create,
+    _type   => $self->_termType->index_create,
     args    => $index
   );
 
@@ -66,7 +66,7 @@ sub index_drop {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    _type    => $self->_termType->index_drop,
+    _type   => $self->_termType->index_drop,
     args    => $index
   );
 
@@ -78,7 +78,7 @@ sub index_list {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    _type    => $self->_termType->index_list,
+    _type   => $self->_termType->index_list,
   );
 
   return $q;
@@ -90,7 +90,7 @@ sub index_rename {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    _type    => $self->_termType->index_rename,
+    _type   => $self->_termType->index_rename,
     args    => $args
   );
 
@@ -103,7 +103,7 @@ sub index_status {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    _type    => $self->_termType->index_status,
+    _type   => $self->_termType->index_status,
     args    => $indices,
   );
 
@@ -116,7 +116,7 @@ sub index_wait {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    _type    => $self->_termType->index_wait,
+    _type   => $self->_termType->index_wait,
     args    => $indices,
   );
 
@@ -124,11 +124,11 @@ sub index_wait {
 }
 
 sub changes {
-  my $self    = shift;
+  my $self = shift;
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    _type    => $self->_termType->changes,
+    _type   => $self->_termType->changes,
   );
 
   return $q;
@@ -141,7 +141,7 @@ sub insert {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    _type    => $self->_termType->insert,
+    _type   => $self->_termType->insert,
     args    => Rethinkdb::Util->_expr_json($args),
     optargs => $params,
   );
@@ -154,7 +154,7 @@ sub sync {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    _type    => $self->_termType->sync,
+    _type   => $self->_termType->sync,
   );
 
   return $q;
@@ -168,7 +168,7 @@ sub get {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    _type    => $self->_termType->get,
+    _type   => $self->_termType->get,
     args    => $key,
   );
 
@@ -197,7 +197,7 @@ sub get_all {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    _type    => $self->_termType->get_all,
+    _type   => $self->_termType->get_all,
     args    => $values,
     optargs => $params,
   );
@@ -227,7 +227,7 @@ sub between {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    _type    => $self->_termType->between,
+    _type   => $self->_termType->between,
     args    => [ $lower, $upper ],
     optargs => $optargs,
   );

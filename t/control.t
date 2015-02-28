@@ -68,6 +68,7 @@ r->table('marvel')->map(
 
     # r->row->attr('victories')->gt(100),
     sub { shift->attr('victories')->gt(1); },
+
     # r->true,
     sub { shift->attr('superhero')->add(' is a superhero'); },
     sub { shift->attr('superhero')->add(' is a hero'); }
@@ -166,22 +167,18 @@ $res = r->table('marvel')->info->run($conn);
 
 is $res->type, 1, 'Correct response type';
 
-$res->response->{db}->{id} = '';
-$res->response->{id} = '';
+$res->response->{db}->{id}            = '';
+$res->response->{id}                  = '';
 $res->response->{doc_count_estimates} = [6];
 
 is_deeply $res->response,
   {
-  primary_key => 'superhero',
-  db          => {
-    name => 'test',
-    type => 'DB',
-    id   => ''
-  },
-  name        => 'marvel',
-  type        => 'TABLE',
-  id => '',
-  indexes     => [],
+  primary_key         => 'superhero',
+  db                  => { name => 'test', type => 'DB', id => '' },
+  name                => 'marvel',
+  type                => 'TABLE',
+  id                  => '',
+  indexes             => [],
   doc_count_estimates => [6]
   },
   'Correct response';
@@ -196,23 +193,21 @@ is_deeply $res->response, [ '1', '2', '3' ], 'Correct response';
 $res = r->http('http://httpbin.org/get')->run($conn);
 
 is $res->type, 1, 'Correct response type';
-like $res->response->{headers}->{'User-Agent'}, qr/RethinkDB\/\d+\.\d+\.\d+/, 'Correct response';
+like $res->response->{headers}->{'User-Agent'}, qr/RethinkDB\/\d+\.\d+\.\d+/,
+  'Correct response';
 
 r->db('test')->table_create('posts')->run($conn);
-$res = r->table('posts')->insert(r->http('http://httpbin.org/get'))->run($conn);
+$res
+  = r->table('posts')->insert( r->http('http://httpbin.org/get') )->run($conn);
 
 is $res->type, 1, 'Correct response type';
 is $res->response->{inserted}, 1, 'Correct response';
 
-my $data = {
-  player => 'Bob',
-  game => 'tic tac toe'
-};
+my $data = { player => 'Bob', game => 'tic tac toe' };
 
-$res = r->http('http://httpbin.org/post', {
-  method => 'POST',
-  data => $data
-})->run($conn);
+$res
+  = r->http( 'http://httpbin.org/post', { method => 'POST', data => $data } )
+  ->run($conn);
 
 is $res->type, 1, 'Correct response type';
 is_deeply $res->response->{form}, $data, 'Correct response';
@@ -221,7 +216,9 @@ is_deeply $res->response->{form}, $data, 'Correct response';
 $res = r->uuid->run;
 
 is $res->type, 1, 'Correct response type';
-like $res->response, qr/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/, 'Correct response';
+like $res->response,
+  qr/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/,
+  'Correct response';
 
 # clean up
 r->db('test')->drop->run;

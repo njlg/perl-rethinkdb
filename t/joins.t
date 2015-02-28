@@ -187,8 +187,8 @@ $res = r->table('marvel')->inner_join(
 
 is $res->type, 2, 'Correct response type';
 is scalar @{ $res->response }, 20, 'Correct response';
-foreach( @{$res->response} ) {
-  ok $_->{left}->{strength} < $_->{right}->{strength}, 'Correct response',
+foreach ( @{ $res->response } ) {
+  ok $_->{left}->{strength} < $_->{right}->{strength}, 'Correct response',;
 }
 
 # outer_join
@@ -202,8 +202,8 @@ $res = r->table('marvel')->outer_join(
 
 is $res->type, 2, 'Correct response type';
 is scalar @{ $res->response }, 22, 'Correct response';
-foreach( @{$res->response} ) {
-  if( $_->{right} ) {
+foreach ( @{ $res->response } ) {
+  if ( $_->{right} ) {
     ok $_->{left}->{strength} < $_->{right}->{strength}, 'Correct response';
   }
 }
