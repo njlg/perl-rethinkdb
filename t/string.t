@@ -1,5 +1,8 @@
 use Test::More;
 
+plan skip_all => 'set TEST_ONLINE to enable this test'
+  unless $ENV{TEST_ONLINE};
+
 use Rethinkdb;
 
 my $conn = r->connect->repl;
