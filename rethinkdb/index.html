@@ -74,6 +74,7 @@
 <li><a href="#js">js</a></li>
 <li><a href="#json">json</a></li>
 <li><a href="#http">http</a></li>
+<li><a href="#uuid">uuid</a></li>
 <li><a href="#asc">asc</a></li>
 <li><a href="#desc">desc</a></li>
 <li><a href="#true">true</a></li>
@@ -401,9 +402,21 @@ r-&gt;js(<span class="string">'while(true) {}'</span>, <span class="number">1.3<
 <p>Parse a <span class="caps">JSON</span> string on the&nbsp;server.</p>
 <h3 id="http">http</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'posts'</span>)-&gt;insert(r-&gt;http(<span class="string">'httpbin.org/get'</span>))-&gt;run;
+r-&gt;http(<span class="string">'http://httpbin.org/post'</span>, {
+  <span class="string">method =&gt;</span> <span class="string">'<span class="caps">POST</span>'</span>,
+  <span class="string">data   =&gt;</span> {
+    <span class="string">player =&gt;</span> <span class="string">'Bob'</span>,
+    <span class="string">game   =&gt;</span> <span class="string">'tic tac toe'</span>
+  }
+})-&gt;run(<span class="variable">$conn</span>);
 </code></pre>
 <p>Retrieve data from the specified <span class="caps">URL</span> over HTTP. The return type depends on the
 <code>result_format</code> option, which checks the <code>Content-Type</code> of the response by&nbsp;default.</p>
+<h3 id="uuid">uuid</h3>
+<pre><code class="lang-perl">r-&gt;uuid-&gt;run;
+</code></pre>
+<p>Return a <span class="caps">UUID</span> (universally unique identifier), a string that can be used as a
+unique&nbsp;ID.</p>
 <h3 id="asc">asc</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;order_by(r-&gt;asc(<span class="string">'enemies_vanquished'</span>))-&gt;run;
 </code></pre>
@@ -417,7 +430,7 @@ r-&gt;js(<span class="string">'while(true) {}'</span>, <span class="number">1.3<
 </code></pre>
 <p>Helper literal since Perl does not have a <code>true</code> literal.</p>
 <h3 id="false">false</h3>
-<pre><code class="lang-perl">r-&gt;true-&gt;run;
+<pre><code class="lang-perl">r-&gt;false-&gt;run;
 </code></pre>
 <p>Helper literal since Perl does not have a <code>false</code> literal.</p>
 </section>
@@ -438,7 +451,7 @@ the terms of the Artistic License version 2.0.</p>
         </section>
         <section class="copy">
           <p>
-            &copy; 2014
+            &copy; 2015
             <a href="http://njlg.info">Nathan Levin-Greenhaw</a>
             &mdash; powered by
             <a href="https://github.com/jnordberg/wintersmith">Wintersmith</a>

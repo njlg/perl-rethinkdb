@@ -34,6 +34,7 @@
 <li><a href="#index_create">index_create</a></li>
 <li><a href="#index_drop">index_drop</a></li>
 <li><a href="#index_list">index_list</a></li>
+<li><a href="#index_rename">index_rename</a></li>
 <li><a href="#index_status">index_status</a></li>
 <li><a href="#index_wait">index_wait</a></li>
 <li><a href="#changes">changes</a></li>
@@ -89,6 +90,13 @@ specified table doesn’t exist a <code>runtime_error</code> is&nbsp;returned.</
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;index_list-&gt;run;
 </code></pre>
 <p>List all the secondary indexes of this&nbsp;table.</p>
+<h3 id="index_rename">index_rename</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;index_rename(<span class="string">'heroId'</span>, <span class="string">'awesomeId'</span>)-&gt;run;
+</code></pre>
+<p>Rename an existing secondary index on a table. If the optional argument
+<code>overwrite</code> is specified as <code>true</code>, a previously existing index with the new
+name will be deleted and the index will be renamed. If <code>overwrite</code> is <code>false</code>
+(the default) an error will be raised if the new index name already&nbsp;exists.</p>
 <h3 id="index_status">index_status</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'test'</span>)-&gt;index_status-&gt;run;
 r-&gt;table(<span class="string">'test'</span>)-&gt;index_status(<span class="string">'timestamp'</span>)-&gt;run;
@@ -162,7 +170,7 @@ the terms of the Artistic License version 2.0.</p>
         </section>
         <section class="copy">
           <p>
-            &copy; 2014
+            &copy; 2015
             <a href="http://njlg.info">Nathan Levin-Greenhaw</a>
             &mdash; powered by
             <a href="https://github.com/jnordberg/wintersmith">Wintersmith</a>
