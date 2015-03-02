@@ -7,7 +7,7 @@ perl:
   - "5.12"
   - "5.10"
 env:
-  - "TEST_POD=1 TEST_ONLINE=1"
+  - "TEST_POD=1 TEST_ONLINE=1 HARNESS_PERL_SWITCHES=-MDevel::Cover"
 before_install:
   - source /etc/lsb-release && echo "deb http://download.rethinkdb.com/apt $DISTRIB_CODENAME main" | sudo tee /etc/apt/sources.list.d/rethinkdb.list
   - wget -qO- http://download.rethinkdb.com/apt/pubkey.gpg | sudo apt-key add -
@@ -15,10 +15,13 @@ before_install:
   - sudo apt-get install rethinkdb
 install:
   - cpanm -n Test::Pod Test::Pod::Coverage
+  - cpanm -n Devel::Cover::Report::Coveralls
   - cpanm -n --installdeps .
 before_script:
   - sudo rethinkdb --io-threads 2048 --daemon
   - until nc -z localhost 28015; do echo Waiting for RethinkDB; sleep 1; done
   - ulimit -S -n 2048
+after_success:
+  - cover -report coveralls
 notifications:
   email: false
