@@ -204,24 +204,59 @@ sub _decode {
   my $self   = shift;
   my $data   = shift;
   my $decode = decode_json $data;
-  my $clean  = [];
 
-  foreach ( @{ $decode->{r} } ) {
-    if ( ref $_ eq 'JSON::PP::Boolean' ) {
-      if ($_) {
-        push @{$clean}, $self->_rdb->true;
-      }
-      else {
-        push @{$clean}, $self->_rdb->false;
-      }
+  $decode->{r} = $self->_clean( $decode->{r} );
+  return $decode;
+}
+
+# converts JSON::PP::Boolean in an array to our Booleans
+sub _clean {
+  my $self  = shift;
+  my $data  = shift;
+  my $clean = [];
+
+  if ( ref $data eq 'ARRAY' ) {
+    foreach ( @{$data} ) {
+      push @{$clean}, $self->_real_cleaner($_);
     }
-    else {
-      push @{$clean}, $_;
+
+    return $clean;
+  }
+  elsif ( ref $data eq 'HASH' ) {
+    foreach ( keys %{$data} ) {
+      $data->{$_} = $self->_real_cleaner($data->{$_});
     }
+
+    return $data;
   }
 
-  $decode->{r} = $clean;
-  return $decode;
+  return $data;
+}
+
+sub _real_cleaner {
+  my $self = shift;
+  my $data = shift;
+  my $retval;
+
+  if ( ref $data eq 'JSON::PP::Boolean' ) {
+    if ($data) {
+      $retval = $self->_rdb->true;
+    }
+    else {
+      $retval = $self->_rdb->false;
+    }
+  }
+  elsif ( ref $data eq 'ARRAY' ) {
+    $retval = $self->_clean($data);
+  }
+  elsif ( ref $data eq 'HASH' ) {
+    $retval = $self->_clean($data);
+  }
+  else {
+    $retval = $data;
+  }
+
+  return $retval;
 }
 
 sub _send {
