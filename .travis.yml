@@ -19,5 +19,6 @@ install:
   - cpanm -n --installdeps .
 before_script:
   - until nc -z localhost 28015; do echo Waiting for RethinkDB; sleep 1; done
+  - sleep 10
 notifications:
   email: false
