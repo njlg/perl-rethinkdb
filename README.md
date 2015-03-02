@@ -1,5 +1,7 @@
 # perl-rethinkdb
 
+[![Build Status](https://travis-ci.org/njlg/perl-rethinkdb.svg?branch=master)](https://travis-ci.org/njlg/perl-rethinkdb)
+
 A Pure-Perl RethinkDB Driver
 
 ```perl
