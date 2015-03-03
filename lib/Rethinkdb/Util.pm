@@ -143,9 +143,10 @@ sub _make_func {
   my $self = shift;
   my $func = shift;
 
-  my $params       = [];
-  my $param_length = length prototype $func;
-  $param_length ||= 1;
+  my $params    = [];
+  my $prototype = prototype $func;
+  $prototype ||= '$';
+  my $param_length = length $prototype;
 
   foreach ( 1 .. $param_length ) {
     push @{$params},
