@@ -1,5 +1,4 @@
 use Test::More;
-use Test::Carp;
 
 plan skip_all => 'set TEST_ONLINE to enable this test'
   unless $ENV{TEST_ONLINE};
