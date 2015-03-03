@@ -1,7 +1,8 @@
 # perl-rethinkdb
 
 [![Build Status](https://travis-ci.org/njlg/perl-rethinkdb.svg?branch=master)](https://travis-ci.org/njlg/perl-rethinkdb)
-[![Coverage Status](https://coveralls.io/repos/njlg/perl-rethinkdb/badge.svg?branch=coveralls-init)](https://coveralls.io/r/njlg/perl-rethinkdb?branch=coveralls-init)
+[![Coverage Status](https://coveralls.io/repos/njlg/perl-rethinkdb/badge.svg?branch=master)](https://coveralls.io/r/njlg/perl-rethinkdb?branch=master)
+[![CPAN version](https://badge.fury.io/pl/Rethinkdb.svg)](https://metacpan.org/pod/Rethinkdb)
 
 A Pure-Perl RethinkDB Driver
 
