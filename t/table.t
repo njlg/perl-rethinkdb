@@ -75,14 +75,62 @@ $res = r->db('test')->table('dcuniverse')->index_list->run;
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 is_deeply $res->response, ['alias'], 'Indexes were listed';
 
+# rename index
+$res = r->db('test')->table('dcuniverse')->index_rename('alias', 'pseudonym')->run;
+
+isa_ok $res, 'Rethinkdb::Response', 'Correct class';
+is $res->response->{renamed}, 1, 'Index was renamed';
+
+# index_status - for one particular index
+$res = r->db('test')->table('dcuniverse')->index_status('pseudonym')->run;
+
+isa_ok $res, 'Rethinkdb::Response', 'Correct class';
+isa_ok $res->response, 'ARRAY', 'Correct return type';
+is scalar @{$res->response}, 1, 'Correct return type';
+
+# index_status - for all indexes on table
+$res = r->db('test')->table('dcuniverse')->index_status->run;
+
+isa_ok $res, 'Rethinkdb::Response', 'Correct class';
+isa_ok $res->response, 'ARRAY', 'Correct return type';
+is scalar @{$res->response}, 1, 'Correct return type';
+
+# index_wait - for one particular index
+$res = r->db('test')->table('dcuniverse')->index_wait('pseudonym')->run;
+
+isa_ok $res, 'Rethinkdb::Response', 'Correct class';
+isa_ok $res->response, 'ARRAY', 'Correct return type';
+is scalar @{$res->response}, 1, 'Correct return type';
+
+# index_wait - for all indexes on table
+$res = r->db('test')->table('dcuniverse')->index_wait->run;
+
+isa_ok $res, 'Rethinkdb::Response', 'Correct class';
+isa_ok $res->response, 'ARRAY', 'Correct return type';
+is scalar @{$res->response}, 1, 'Correct return type';
+
 # drop secondary index
-$res = r->db('test')->table('dcuniverse')->index_drop('alias')->run;
+$res = r->db('test')->table('dcuniverse')->index_drop('pseudonym')->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 is $res->response->{dropped}, 1, 'Index was dropped';
 
 # create secondary index with function
-# $res = r->db('test')->table('dcuniverse')->index_create('alias', sub { return 1; })->run;
+local $SIG{__WARN__} = sub { die $_[0] };
+eval {
+  r->db('test')->table('dcuniverse')->index_create('alias', sub { return 1; })->run;
+};
+like (
+    $@,
+    qr/table->index_create does not accept functions yet/,
+    'Abort when using a sub with `index_create`'
+);
+
+# sync
+$res = r->table('dcuniverse')->sync->run;
+
+isa_ok $res, 'Rethinkdb::Response', 'Correct class';
+is $res->response->{synced}, 1, 'Index was dropped';
 
 # drop table
 isa_ok r->db('test')->table('dcuniverse')->drop, 'Rethinkdb::Query',

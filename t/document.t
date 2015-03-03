@@ -306,6 +306,39 @@ is_deeply $res->response,
   ],
   'Correct keys';
 
+# literal
+r->table('marvel')->get('Iron Man')->update(
+  {
+    gear => {
+      boots    => 'rocket mach 2',
+      reactor  => 'triangular',
+      left_arm => 'laser'
+    }
+  }
+)->run;
+
+$res = r->table('marvel')->get('Iron Man')->update(
+  {
+    gear => r->literal(
+      {
+        boots    => 'rocket mach 3',
+        reactor  => 'square',
+        shoulder => 'rocket launcher'
+      }
+    )
+  }
+)->run;
+
+is $res->type, 1, 'Correct response type';
+is $res->response->{replaced}, 1, 'Correct response type';
+
+# object
+$res = r->object( [ 'id', 5, 'data', [ 'foo', 'bar' ] ] )->run($conn);
+
+is $res->type, 1, 'Correct response type';
+is $res->response->{id}, 5, 'Correct response type';
+is_deeply $res->response->{data}, [ 'foo', 'bar' ], 'Correct response type';
+
 # clean up
 r->db('test')->drop->run;
 

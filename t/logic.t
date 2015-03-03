@@ -82,4 +82,29 @@ is $res->response, r->true, 'OR response is okay';
 $res = r->expr( r->true )->not->run($conn);
 is $res->response, r->false, 'NOT response is okay';
 
+# all
+$res = r->all( r->true, r->false )->run($conn);
+is $res->response, r->false, 'ALL response is okay';
+
+# any
+$res = r->any( r->true, r->false )->run($conn);
+is $res->response, r->true, 'ANY response is okay';
+
+# random
+$res = r->random->run($conn);
+cmp_ok $res->response, '>=', 0, 'Random response is okay';
+cmp_ok $res->response, '<',  1, 'Random response is okay';
+
+$res = r->random(100)->run($conn);
+cmp_ok $res->response, '>=', 0,   'Random response is okay';
+cmp_ok $res->response, '<',  100, 'Random response is okay';
+
+$res = r->random( 75, 100 )->run($conn);
+cmp_ok $res->response, '>=', 75,  'Random response is okay';
+cmp_ok $res->response, '<',  100, 'Random response is okay';
+
+$res = r->random( 1.59, -2.24, r->true )->run($conn);
+cmp_ok $res->response, '>',  -2.24, 'Random response is okay';
+cmp_ok $res->response, '<=', 1.59,  'Random response is okay';
+
 done_testing();

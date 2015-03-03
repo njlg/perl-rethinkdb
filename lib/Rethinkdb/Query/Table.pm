@@ -235,6 +235,63 @@ sub between {
   return $q;
 }
 
+sub config {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->config,
+  );
+
+  return $q;
+}
+
+sub rebalance {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->rebalance,
+  );
+
+  return $q;
+}
+
+sub reconfigure {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->reconfigure,
+    optargs => $args
+  );
+
+  return $q;
+}
+
+sub status {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->status,
+  );
+
+  return $q;
+}
+
+sub wait {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->wait,
+  );
+
+  return $q;
+}
+
 1;
 
 =encoding utf8
@@ -388,5 +445,45 @@ is in the specified range (it uses the primary key by default). C<left_bound>
 or C<right_bound> may be set to open or closed to indicate whether or not to
 include that endpoint of the range (by default, C<left_bound> is closed and
 C<right_bound> is open).
+
+=head2 config
+
+  r->table('marvel')->config->run;
+
+Query (read and/or update) the configurations for individual tables.
+
+=head2 rebalance
+
+  r->table('marvel')->rebalance->run;
+
+Rebalances the shards of a table.
+
+=head2 reconfigure
+
+  r->table('marvel')->reconfigure({ shards => 2, replicas => 1 })->run;
+  r->table('marvel')->reconfigure(
+    {
+      shards              => 2,
+      replicas            => { wooster => 1, wayne => 1 },
+      primary_replica_tag => 'wooster'
+    }
+  )->run;
+
+Reconfigure a table's sharding and replication.
+
+=head2 status
+
+  r->table('marvel')->status->run;
+
+Return the status of a table. The return value is an object providing
+information about the table's shards, replicas and replica readiness states
+
+=head2 wait
+
+  r->table('marvel')->wait->run;
+
+Wait for a table to be ready. A table may be temporarily unavailable
+after creation, rebalancing or reconfiguring. The L<wait> command
+blocks until the given table is fully up to date.
 
 =cut

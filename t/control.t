@@ -53,6 +53,16 @@ r->table('villains')->insert(
   ]
 )->run;
 
+my $res;
+
+# args
+$res = r->table('marvel')->get_all( r->args( [ 'Spider-Man', 'Wolverine' ] ),
+  { index => 'superhero' } )->run;
+
+is $res->type, 1, 'Correct response type';
+is_deeply [ sort map { $_->{superhero} } @{ $res->response } ],
+  [ 'Spider-Man', 'Wolverine' ], 'Correct response';
+
 # do
 my $res = r->do(
   r->table('marvel')->get('Iron Man'),

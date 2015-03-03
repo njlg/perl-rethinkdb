@@ -182,40 +182,49 @@ sub object {
 
 # MATH AND LOGIC
 
-sub and {
+sub all {
   my $self = shift;
-  my ($args) = @_;
+  my $args = \@_;
 
   my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    _type   => $self->termType->and,
-    args    => $args,
+    _type => $self->term->termType->all,
+    args  => $args,
   );
 
   return $q;
 }
 
-sub or {
+sub any {
   my $self = shift;
-  my ($args) = @_;
+  my $args = \@_;
 
   my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    _type   => $self->termType->or,
-    args    => $args,
+    _type => $self->term->termType->any,
+    args  => $args,
   );
 
   return $q;
 }
 
 sub random {
-  my $self = shift;
-  my ($args) = @_;
+  my $self    = shift;
+  my $args    = [@_];
+  my $optargs = {};
+
+  if ( ref $args->[2] eq 'HASH' ) {
+    $optargs = $args->[2];
+  }
+  elsif( scalar @{$args} > 2 and $args->[2] ) {
+    $optargs->{float} = r->true;
+  }
+
+  # only keep the first two elements
+  $args = [splice @{$args}, 0, 2];
 
   my $q = Rethinkdb::Query->new(
-    _parent => $self,
-    _type   => $self->termType->random,
+    _type   => $self->term->termType->random,
     args    => $args,
+    optargs => $optargs,
   );
 
   return $q;
@@ -648,6 +657,17 @@ sub desc {
   return $q;
 }
 
+sub wait {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _rdb  => $self,
+    _type => $self->term->termType->wait,
+  );
+
+  return $q;
+}
+
 sub true  { Rethinkdb::_True->new; }
 sub false { Rethinkdb::_False->new; }
 
@@ -814,17 +834,19 @@ Creates an object from a list of key-value pairs, where the keys must be
 strings. C<r.object(A, B, C, D)> is equivalent to
 C<r.expr([[A, B], [C, D]]).coerce_to('OBJECT')>.
 
-=head2 and
+=head2 all
 
-  r->and(true, false)->run;
+  r->all(true, false)->run;
 
-Compute the logical "and" of two or more values.
+Returns true if all of its arguments returns true, otherwise false. L<all> is
+comparable to C<and> in most languages.
 
-=head2 or
+=head2 any
 
-  r->or(true, false)->run;
+  r->any(true, false)->run;
 
-Compute the logical "or" of two or more values.
+Returns true if any of its arguments returns true, otherwise false. L<any> is
+comparable to C<or> in most languages.
 
 =head2 random
 
@@ -1130,6 +1152,16 @@ Specifies that a column should be ordered in ascending order.
   r->table('marvel')->order_by(r->desc('enemies_vanquished'))->run;
 
 Specifies that a column should be ordered in descending order.
+
+=head2 wait
+
+  r->wait->run;
+
+Wait on all the tables in the default database (set with the L<connect>
+command's C<db> parameter, which defaults to C<test>). A table may be
+temporarily unavailable after creation, rebalancing or reconfiguring. The
+L<wait> command blocks until the given all the tables in database is fully up
+to date.
 
 =head2 true
 
