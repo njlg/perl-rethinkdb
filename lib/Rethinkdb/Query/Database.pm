@@ -105,6 +105,52 @@ sub table {
   return $t;
 }
 
+sub config {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->config,
+  );
+
+  return $q;
+}
+
+sub rebalance {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->rebalance,
+  );
+
+  return $q;
+}
+
+sub reconfigure {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->reconfigure,
+    optargs => $args
+  );
+
+  return $q;
+}
+
+sub wait {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->wait,
+  );
+
+  return $q;
+}
+
 1;
 
 =encoding utf8
@@ -199,8 +245,37 @@ specified table doesn't exist a C<runtime_error> is returned.
 
 List all table names in a database. The result is a list of strings.
 
-=head1 SEE ALSO
+=head2 config
 
-L<Rethinkdb>, L<http://rethinkdb.com>
+  r->db('test')->config->run;
+
+Query (read and/or update) the configurations for individual databases.
+
+=head2 rebalance
+
+  r->db('test')->rebalance->run;
+
+Rebalances the shards of all tables in the database.
+
+=head2 reconfigure
+
+  r->db('test')->reconfigure({ shards => 2, replicas => 1 })->run;
+  r->db('test')->reconfigure(
+    {
+      shards              => 2,
+      replicas            => { wooster => 1, wayne => 1 },
+      primary_replica_tag => 'wooster'
+    }
+  )->run;
+
+Reconfigure all table's sharding and replication.
+
+=head2 wait
+
+  r->db('test')->wait->run;
+
+Wait for all the tables in a database to be ready. A table may be
+temporarily unavailable after creation, rebalancing or reconfiguring.
+The L<wait> command blocks until the given database is fully up to date.
 
 =cut

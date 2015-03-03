@@ -19,7 +19,7 @@ r->table('marvel')->insert(
       active     => 1,
       age        => 35,
       villians   => { count => 5 },
-      birthdate  => r->iso8601('1986-11-03T10:01:00-08:00'),
+      birthdate  => r->iso8601('1986-01-06T10:01:00-08:00'),
     },
     {
       user_id    => 2,
@@ -28,7 +28,7 @@ r->table('marvel')->insert(
       active     => 1,
       age        => 35,
       villians   => { count => 6 },
-      birthdate  => r->iso8601('1986-12-01T18:05:00-08:00'),
+      birthdate  => r->iso8601('1986-02-18T18:05:00-08:00'),
     },
     {
       user_id    => 3,
@@ -37,7 +37,7 @@ r->table('marvel')->insert(
       active     => 1,
       age        => 135,
       villians   => { count => 7 },
-      birthdate  => r->iso8601('1986-11-03T06:08:00-08:00'),
+      birthdate  => r->iso8601('1986-03-05T06:08:00-08:00'),
     },
     {
       user_id    => 4,
@@ -46,7 +46,7 @@ r->table('marvel')->insert(
       active     => 1,
       age        => 1035,
       villians   => { count => 8 },
-      birthdate  => r->iso8601('1986-12-09T08:10:00-08:00'),
+      birthdate  => r->iso8601('1986-04-17T08:10:00-08:00'),
     },
     {
       user_id    => 5,
@@ -55,7 +55,7 @@ r->table('marvel')->insert(
       active     => 0,
       age        => 35,
       villians   => { count => 9 },
-      birthdate  => r->iso8601('1986-11-03T08:12:00-08:00'),
+      birthdate  => r->iso8601('1986-05-09T08:12:00-08:00'),
     },
     {
       user_id    => 6,
@@ -64,7 +64,7 @@ r->table('marvel')->insert(
       active     => 0,
       age        => 35,
       villians   => { count => 5 },
-      birthdate  => r->iso8601('1986-11-03T08:30:00-08:00'),
+      birthdate  => r->iso8601('1986-06-14T08:30:00-08:00'),
     },
     {
       user_id    => 7,
@@ -73,7 +73,7 @@ r->table('marvel')->insert(
       active     => 1,
       age        => 35,
       villians   => { count => 10 },
-      birthdate  => r->iso8601('1986-11-03T07:17:00-08:00'),
+      birthdate  => r->iso8601('1986-07-06T07:17:00-08:00'),
     },
     {
       user_id    => 8,
@@ -82,7 +82,7 @@ r->table('marvel')->insert(
       active     => 0,
       age        => 35,
       villians   => { count => 1 },
-      birthdate  => r->iso8601('1986-11-04T08:35:04-08:00'),
+      birthdate  => r->iso8601('1986-08-10T08:35:04-08:00'),
     },
     {
       user_id    => 9,
@@ -91,7 +91,34 @@ r->table('marvel')->insert(
       active     => 0,
       age        => 20,
       villians   => { count => 2 },
+      birthdate  => r->iso8601('1986-09-04T08:55:03-08:00'),
+    },
+    {
+      user_id    => 10,
+      superhero  => 'Quicksilver',
+      superpower => 'Superhuman Speed',
+      active     => 0,
+      age        => 20,
+      villians   => { count => 2 },
+      birthdate  => r->iso8601('1986-10-04T08:55:03-08:00'),
+    },
+    {
+      user_id    => 11,
+      superhero  => 'Scarlet Witch',
+      superpower => 'Chaos Magic',
+      active     => 0,
+      age        => 20,
+      villians   => { count => 2 },
       birthdate  => r->iso8601('1986-11-04T08:55:03-08:00'),
+    },
+    {
+      user_id    => 12,
+      superhero  => 'Vision',
+      superpower => 'Density Control',
+      active     => 0,
+      age        => 20,
+      villians   => { count => 2 },
+      birthdate  => r->iso8601('1986-12-04T08:55:03-08:00'),
     },
   ]
 )->run;
@@ -153,7 +180,7 @@ $res
   ->run;
 
 is $res->type, 2, 'Correct response type';
-is scalar @{ $res->response }, 2, 'Correct response';
+is scalar @{ $res->response }, 1, 'Correct response';
 
 $res = r->table('marvel')->filter(
   r->row->attr('birthdate')->during(
@@ -164,7 +191,7 @@ $res = r->table('marvel')->filter(
 )->run;
 
 is $res->type, 2, 'Correct response type';
-is scalar @{ $res->response }, 2, 'Correct response';
+is scalar @{ $res->response }, 1, 'Correct response';
 
 # date
 $res = r->table('marvel')->filter(
@@ -197,7 +224,7 @@ $res = r->table('marvel')->filter(
 )->run;
 
 is $res->type, 2, 'Correct response type';
-is scalar @{ $res->response }, 10, 'Correct response';
+is scalar @{ $res->response }, 13, 'Correct response';
 
 # month
 $res = r->table('marvel')->filter(
@@ -208,9 +235,119 @@ $res = r->table('marvel')->filter(
 )->run;
 
 is $res->type, 2, 'Correct response type';
+is scalar @{ $res->response }, 1, 'Correct response';
+
+# month / january
+$res = r->table('marvel')->filter(
+  sub {
+    my $hero = shift;
+    $hero->attr('birthdate')->month->eq( r->january );
+  }
+)->run;
+
+is $res->type, 2, 'Correct response type';
+is scalar @{ $res->response }, 1, 'Correct response';
+
+# month / february
+$res = r->table('marvel')->filter(
+  sub {
+    my $hero = shift;
+    $hero->attr('birthdate')->month->eq( r->february );
+  }
+)->run;
+
+is $res->type, 2, 'Correct response type';
+is scalar @{ $res->response }, 1, 'Correct response';
+
+# month / march
+$res = r->table('marvel')->filter(
+  sub {
+    my $hero = shift;
+    $hero->attr('birthdate')->month->eq( r->march );
+  }
+)->run;
+
+is $res->type, 2, 'Correct response type';
+is scalar @{ $res->response }, 1, 'Correct response';
+
+# month / april
+$res = r->table('marvel')->filter(
+  sub {
+    my $hero = shift;
+    $hero->attr('birthdate')->month->eq( r->april );
+  }
+)->run;
+
+is $res->type, 2, 'Correct response type';
+is scalar @{ $res->response }, 1, 'Correct response';
+
+# month / may
+$res = r->table('marvel')->filter(
+  sub {
+    my $hero = shift;
+    $hero->attr('birthdate')->month->eq( r->may );
+  }
+)->run;
+
+is $res->type, 2, 'Correct response type';
+is scalar @{ $res->response }, 1, 'Correct response';
+
+# month / june
+$res = r->table('marvel')->filter(
+  sub {
+    my $hero = shift;
+    $hero->attr('birthdate')->month->eq( r->june );
+  }
+)->run;
+
+is $res->type, 2, 'Correct response type';
+is scalar @{ $res->response }, 1, 'Correct response';
+
+# month / july
+$res = r->table('marvel')->filter(
+  sub {
+    my $hero = shift;
+    $hero->attr('birthdate')->month->eq( r->july );
+  }
+)->run;
+
+is $res->type, 2, 'Correct response type';
+is scalar @{ $res->response }, 1, 'Correct response';
+
+# month / august
+$res = r->table('marvel')->filter(
+  sub {
+    my $hero = shift;
+    $hero->attr('birthdate')->month->eq( r->august );
+  }
+)->run;
+
+is $res->type, 2, 'Correct response type';
+is scalar @{ $res->response }, 1, 'Correct response';
+
+# month / september
+$res = r->table('marvel')->filter(
+  sub {
+    my $hero = shift;
+    $hero->attr('birthdate')->month->eq( r->september );
+  }
+)->run;
+
+is $res->type, 2, 'Correct response type';
+is scalar @{ $res->response }, 1, 'Correct response';
+
+# month / november
+$res = r->table('marvel')->filter(
+  sub {
+    my $hero = shift;
+    $hero->attr('birthdate')->month->eq( r->november );
+  }
+)->run;
+
+is $res->type, 2, 'Correct response type';
 is scalar @{ $res->response }, 2, 'Correct response';
 
-# month with December constant
+# month / december
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
@@ -219,7 +356,18 @@ $res = r->table('marvel')->filter(
 )->run;
 
 is $res->type, 2, 'Correct response type';
-is scalar @{ $res->response }, 2, 'Correct response';
+is scalar @{ $res->response }, 1, 'Correct response';
+
+# month / december
+$res = r->table('marvel')->filter(
+  sub {
+    my $hero = shift;
+    $hero->attr('birthdate')->month->eq( r->december );
+  }
+)->run;
+
+is $res->type, 2, 'Correct response type';
+is scalar @{ $res->response }, 1, 'Correct response';
 
 # day
 $res = r->table('marvel')->filter(
@@ -230,7 +378,7 @@ $res = r->table('marvel')->filter(
 )->run;
 
 is $res->type, 2, 'Correct response type';
-is scalar @{ $res->response }, 2, 'Correct response';
+is scalar @{ $res->response }, 4, 'Correct response';
 
 # day_of_week
 $res = r->table('marvel')->filter(
@@ -241,9 +389,20 @@ $res = r->table('marvel')->filter(
 )->run;
 
 is $res->type, 2, 'Correct response type';
-is scalar @{ $res->response }, 3, 'Correct response';
+is scalar @{ $res->response }, 2, 'Correct response';
 
-# day_of_week with Tuesday constant
+# day_of_week / monday
+$res = r->table('marvel')->filter(
+  sub {
+    my $hero = shift;
+    $hero->attr('birthdate')->day_of_week->eq( r->monday );
+  }
+)->run;
+
+is $res->type, 2, 'Correct response type';
+is scalar @{ $res->response }, 2, 'Correct response';
+
+# day_of_week / tuesday
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
@@ -252,14 +411,69 @@ $res = r->table('marvel')->filter(
 )->run;
 
 is $res->type, 2, 'Correct response type';
+is scalar @{ $res->response }, 2, 'Correct response';
+
+# day_of_week / wednesday
+$res = r->table('marvel')->filter(
+  sub {
+    my $hero = shift;
+    $hero->attr('birthdate')->day_of_week->eq( r->wednesday );
+  }
+)->run;
+
+is $res->type, 2, 'Correct response type';
+is scalar @{ $res->response }, 1, 'Correct response';
+
+# day_of_week / thursday
+$res = r->table('marvel')->filter(
+  sub {
+    my $hero = shift;
+    $hero->attr('birthdate')->day_of_week->eq( r->thursday );
+  }
+)->run;
+
+is $res->type, 2, 'Correct response type';
 is scalar @{ $res->response }, 3, 'Correct response';
+
+# day_of_week / friday
+$res = r->table('marvel')->filter(
+  sub {
+    my $hero = shift;
+    $hero->attr('birthdate')->day_of_week->eq( r->friday );
+  }
+)->run;
+
+is $res->type, 2, 'Correct response type';
+is scalar @{ $res->response }, 1, 'Correct response';
+
+# day_of_week / saturday
+$res = r->table('marvel')->filter(
+  sub {
+    my $hero = shift;
+    $hero->attr('birthdate')->day_of_week->eq( r->saturday );
+  }
+)->run;
+
+is $res->type, 2, 'Correct response type';
+is scalar @{ $res->response }, 2, 'Correct response';
+
+# day_of_week / sunday
+$res = r->table('marvel')->filter(
+  sub {
+    my $hero = shift;
+    $hero->attr('birthdate')->day_of_week->eq( r->sunday );
+  }
+)->run;
+
+is $res->type, 2, 'Correct response type';
+is scalar @{ $res->response }, 2, 'Correct response';
 
 # day_of_year
 $res = r->table('marvel')
   ->filter( r->row->attr('birthdate')->day_of_year->eq(308) )->run;
 
 is $res->type, 2, 'Correct response type';
-is scalar @{ $res->response }, 2, 'Correct response';
+is scalar @{ $res->response }, 1, 'Correct response';
 
 # hours
 $res
@@ -280,7 +494,7 @@ $res = r->table('marvel')->filter( r->row->attr('birthdate')->seconds->gt(1) )
   ->run;
 
 is $res->type, 2, 'Correct response type';
-is scalar @{ $res->response }, 2, 'Correct response';
+is scalar @{ $res->response }, 5, 'Correct response';
 
 # to_iso8601
 $res = r->time( 1986, 11, 3, 'Z' )->to_iso8601->run($conn);
