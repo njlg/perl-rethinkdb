@@ -105,14 +105,14 @@ my $res;
 $res = r->db('test')->config->run;
 
 is $res->type, 1, 'Correct response type';
-is_deeply [ sort keys $res->response ], [ 'id', 'name' ],
+is_deeply [ sort keys %{$res->response} ], [ 'id', 'name' ],
   'Correct structure returned';
 
 # config - table
 $res = r->table('marvel')->config->run;
 
 is $res->type, 1, 'Correct response type';
-is_deeply [ sort keys $res->response ],
+is_deeply [ sort keys %{$res->response} ],
   [ 'db', 'durability', 'id', 'name', 'primary_key', 'shards', 'write_acks' ],
   'Correct structure returned';
 
