@@ -134,6 +134,21 @@ is $res->type,         2,       'Correct status code';
 isa_ok $res->response, 'ARRAY', 'Correct response type';
 is scalar @{ $res->response }, 5, 'Correct number of documents returned';
 
+# Select using special constants
+$res = r->table('marvel')->between( r->minval, 7, 'user_id' )->run;
+
+isa_ok $res, 'Rethinkdb::Response', 'Correct class';
+is $res->type,         2,       'Correct status code';
+isa_ok $res->response, 'ARRAY', 'Correct response type';
+is scalar @{ $res->response }, 6, 'Correct number of documents returned';
+
+$res = r->table('marvel')->between( 2, r->maxval, 'user_id' )->run;
+
+isa_ok $res, 'Rethinkdb::Response', 'Correct class';
+is $res->type,         2,       'Correct status code';
+isa_ok $res->response, 'ARRAY', 'Correct response type';
+is scalar @{ $res->response }, 8, 'Correct number of documents returned';
+
 # Select a couple items with correct key, with parameters
 $res = r->table('marvel')->between( 2, 7, 'user_id', 'open', 'closed' )->run;
 
