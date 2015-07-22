@@ -1,7 +1,5 @@
 language: perl
 perl:
-  - "5.23"
-  - "5.22"
   - "5.20"
   - "5.18"
   - "5.16"
@@ -15,6 +13,7 @@ before_install:
   - wget -qO- http://download.rethinkdb.com/apt/pubkey.gpg | sudo apt-key add -
   - sudo apt-get update
   - sudo apt-get install rethinkdb
+  - perlbrew available
 install:
   - cpanm -n Test::Pod Test::Pod::Coverage
   - cpanm -n Devel::Cover::Report::Coveralls
