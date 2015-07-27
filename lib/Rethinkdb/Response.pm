@@ -15,7 +15,6 @@ sub _init {
     1  => 'success_atom',
     2  => 'success_sequence',
     3  => 'success_partial',
-    5  => 'success_feed',
     4  => 'wait_complete',
     16 => 'client_error',
     17 => 'compile_error',

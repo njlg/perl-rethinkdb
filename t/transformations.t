@@ -254,14 +254,14 @@ $res = r->table('marvel')->nth(1)->run;
 is $res->type,         1,      'Correct response type';
 isa_ok $res->response, 'HASH', 'Correct type of response';
 
-# indexes_of
-$res = r->expr( [ 'a', 'b', 'c' ] )->indexes_of('c')->run($conn);
+# offsets_of
+$res = r->expr( [ 'a', 'b', 'c' ] )->offsets_of('c')->run($conn);
 
 is $res->type, 1, 'Correct response type';
 is_deeply $res->response, [2], 'Correct response';
 
 $res = r->table('marvel')->union( r->table('dc') )->order_by('popularity')
-  ->indexes_of( r->row->attr('superpowers')->contains('invisibility') )->run;
+  ->offsets_of( r->row->attr('superpowers')->contains('invisibility') )->run;
 
 # is_empty
 $res = r->table('marvel')->is_empty->run;

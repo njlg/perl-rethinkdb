@@ -357,13 +357,13 @@ sub nth {
   return $q;
 }
 
-sub indexes_of {
+sub offsets_of {
   my $self = shift;
   my ($args) = @_;
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    _type   => $self->_termType->indexes_of,
+    _type   => $self->_termType->offsets_of,
     args    => Rethinkdb::Util->_wrap_func($args),
   );
 
@@ -895,7 +895,7 @@ sub and {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    _type   => $self->_termType->all,
+    _type   => $self->_termType->and,
     args    => $args,
   );
 
@@ -908,7 +908,7 @@ sub or {
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
-    _type   => $self->_termType->any,
+    _type   => $self->_termType->or,
     args    => $args,
   );
 
@@ -1457,9 +1457,9 @@ Return the elements of a sequence within the specified range.
 
 Get the nth element of a sequence.
 
-=head2 indexes_of
+=head2 offsets_of
 
-  r->expr(['a','b','c'])->indexes_of('c')->run;
+  r->expr(['a','b','c'])->offsets_of('c')->run;
 
 Get the indexes of an element in a sequence. If the argument is a predicate,
 get the indexes of all elements matching it.
@@ -1773,13 +1773,13 @@ Find the remainder when dividing two numbers.
 
   r->expr(r->true)->and(r->false)->run;
 
-Compute the logical "and" of two or more values.
+Compute the logical C<and> of two or more values.
 
 =head2 or
 
   r->expr(r->true)->or(r->false)->run;
 
-Compute the logical "or" of two or more values.
+Compute the logical C<or> of two or more values.
 
 =head2 eq
 

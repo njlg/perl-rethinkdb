@@ -182,24 +182,24 @@ sub object {
 
 # MATH AND LOGIC
 
-sub all {
+sub and {
   my $self = shift;
   my $args = \@_;
 
   my $q = Rethinkdb::Query->new(
-    _type => $self->term->termType->all,
+    _type => $self->term->termType->and,
     args  => $args,
   );
 
   return $q;
 }
 
-sub any {
+sub or {
   my $self = shift;
   my $args = \@_;
 
   my $q = Rethinkdb::Query->new(
-    _type => $self->term->termType->any,
+    _type => $self->term->termType->or,
     args  => $args,
   );
 
@@ -668,6 +668,28 @@ sub wait {
   return $q;
 }
 
+sub minval {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _rdb  => $self,
+    _type => $self->term->termType->minval,
+  );
+
+  return $q;
+}
+
+sub maxval {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _rdb  => $self,
+    _type => $self->term->termType->maxval,
+  );
+
+  return $q;
+}
+
 sub true  { Rethinkdb::_True->new; }
 sub false { Rethinkdb::_False->new; }
 
@@ -834,19 +856,17 @@ Creates an object from a list of key-value pairs, where the keys must be
 strings. C<r.object(A, B, C, D)> is equivalent to
 C<r.expr([[A, B], [C, D]]).coerce_to('OBJECT')>.
 
-=head2 all
+=head2 and
 
-  r->all(true, false)->run;
+  r->and(true, false)->run;
 
-Returns true if all of its arguments returns true, otherwise false. L<all> is
-comparable to C<and> in most languages.
+Compute the logical C<and> of two or more values.
 
-=head2 any
+=head2 or
 
-  r->any(true, false)->run;
+  r->or(true, false)->run;
 
-Returns true if any of its arguments returns true, otherwise false. L<any> is
-comparable to C<or> in most languages.
+Compute the logical C<or> of two or more values.
 
 =head2 random
 
@@ -1162,6 +1182,24 @@ command's C<db> parameter, which defaults to C<test>). A table may be
 temporarily unavailable after creation, rebalancing or reconfiguring. The
 L<wait> command blocks until the given all the tables in database is fully up
 to date.
+
+=head2 minval
+
+  r->table('marvel')->between( r->minval, 7 )->run;
+
+The special constants L<minval> is used for specifying a boundary, which
+represent "less than any index key". For instance, if you use L<minval> as the
+lower key, then L<Table/between> will return all documents whose primary keys
+(or indexes) are less than the specified upper key.
+
+=head2 maxval
+
+  r->table('marvel')->between( 8, r->maxval )->run;
+
+The special constants L<maxval> is used for specifying a boundary, which
+represent "greater than any index key". For instance, if you use L<maxval> as
+the upper key, then L<Table/between> will return all documents whose primary
+keys (or indexes) are greater than the specified lower key.
 
 =head2 true
 

@@ -82,12 +82,12 @@ is $res->response, r->true, 'OR response is okay';
 $res = r->expr( r->true )->not->run($conn);
 is $res->response, r->false, 'NOT response is okay';
 
-# all
-$res = r->all( r->true, r->false )->run($conn);
+# and
+$res = r->and( r->true, r->false )->run($conn);
 is $res->response, r->false, 'ALL response is okay';
 
-# any
-$res = r->any( r->true, r->false )->run($conn);
+# or
+$res = r->or( r->true, r->false )->run($conn);
 is $res->response, r->true, 'ANY response is okay';
 
 # random

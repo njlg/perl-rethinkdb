@@ -25,14 +25,13 @@ See http://njlg.info/perl-rethinkdb/
 
 ## Notes
 
-* This version is compatible with RethinkDB 1.16.2-1
+* This version is compatible with RethinkDB 2.0.4
 * This is still in beta stage
-* For examples see the tests in `t/*.t`
+* For examples see the tests in `t/*.t` or see the documentation (link above)
 
 ## Todo
 
 * Add sugar syntax for `attr` (e.g. `$doc->{attr}`), `slice` (e.g. `$doc->[3..6]`), and `nth` (e.g. `$doc->[3]`)
 * Add sugar syntax for as many operators as possible (e.g. `+`, `-`, `/`, `*`)
 * Performance testing and fixes
-* Submit to [CPAN](http://www.cpan.org/) &mdash; Coming soon!
 * Look into non-blocking IO
