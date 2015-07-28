@@ -483,7 +483,7 @@ information about the table's shards, replicas and replica readiness states
   r->table('marvel')->wait->run;
 
 Wait for a table to be ready. A table may be temporarily unavailable
-after creation, rebalancing or reconfiguring. The L<wait> command
+after creation, rebalancing or reconfiguring. The L</wait> command
 blocks until the given table is fully up to date.
 
 =cut

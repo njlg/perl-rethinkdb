@@ -224,7 +224,7 @@ sub _clean {
   }
   elsif ( ref $data eq 'HASH' ) {
     foreach ( keys %{$data} ) {
-      $data->{$_} = $self->_real_cleaner($data->{$_});
+      $data->{$_} = $self->_real_cleaner( $data->{$_} );
     }
 
     return $data;

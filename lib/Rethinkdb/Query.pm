@@ -1387,8 +1387,8 @@ field's value exists in the specified index on the right-hand side.
   r->table('marvel')->eq_join('main_dc_collaborator',
     r->table('dc'))->zip()->run;
 
-Used to I<zip> up the result of a join by merging the I<right> fields into
-I<left> fields of each member of the sequence.
+Used to zip up the result of a join by merging the right fields into
+left fields of each member of the sequence.
 
 =head2 map
 
@@ -1720,10 +1720,10 @@ with the fields:
 Splits a string into substrings. Splits on whitespace when called with no
 arguments. When called with a separator, splits on that separator. When called
 with a separator and a maximum number of splits, splits on that separator at
-most C<max_splits> times. (Can be called with None as the separator if you want
-to split on whitespace while still specifying C<max_splits>.)
+most C<max_splits> times. (Can be called with C<undef> as the separator if you
+want to split on whitespace while still specifying C<max_splits>.)
 
-Mimics the behavior of Python's string.split in edge cases, except for
+Mimics the behavior of Python's C<string.split> in edge cases, except for
 splitting on the empty string, which instead produces an array of
 single-character strings.
 
