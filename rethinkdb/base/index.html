@@ -69,7 +69,7 @@ has <span class="string">stripes =&gt;</span> <span class="number">42</span>;
 <span class="keyword">say</span> <span class="variable">$rawr</span>-&gt;tap(<span class="sub"><span class="keyword">sub</span> {</span> <span class="variable">$_</span>-&gt;friend-&gt;name(<span class="string">'Tacgnol'</span>) })-&gt;mice;
 </code></pre>
 <h2 id="description"><span class="caps">DESCRIPTION</span></h2>
-<p><a href="/packages/rethinkdb/base">Rethinkdb::Base</a> is a simple base&nbsp;class.</p>
+<p><a href="/perl-rethinkdb/rethinkdb/base">Rethinkdb::Base</a> is a simple base&nbsp;class.</p>
 <pre><code class="lang-perl"><span class="comment">## Automatically enables "strict", "warnings", "utf8" and Perl 5.10 features</span>
 <span class="keyword">use</span> Rethinkdb::Base -strict;
 <span class="keyword">use</span> Rethinkdb::Base -base;
@@ -105,7 +105,7 @@ has <span class="string">stripes =&gt;</span> <span class="number">42</span>;
 <span class="sub"><span class="keyword">sub</span> has {</span> Rethinkdb::Base::attr(__PACKAGE_<span class="number">_</span>, <span class="variable">@_</span>) }
 </code></pre>
 <h2 id="functions"><span class="caps">FUNCTIONS</span></h2>
-<p><a href="/packages/rethinkdb/base">Rethinkdb::Base</a> exports the following functions if imported with the <code>-base</code>
+<p><a href="/perl-rethinkdb/rethinkdb/base">Rethinkdb::Base</a> exports the following functions if imported with the <code>-base</code>
 flag or a base&nbsp;class.</p>
 <h3 id="has">has</h3>
 <pre><code class="lang-perl">has <span class="string">'name'</span>;
@@ -117,7 +117,7 @@ has [<span class="string">qw(name1 name2 name3)</span>] =&gt; <span class="sub">
 </code></pre>
 <p>Create attributes for hash-based objects, just like the <code>attr</code> method.</p>
 <h2 id="methods"><span class="caps">METHODS</span></h2>
-<p><a href="/packages/rethinkdb/base">Rethinkdb::Base</a> implements the following&nbsp;methods.</p>
+<p><a href="/perl-rethinkdb/rethinkdb/base">Rethinkdb::Base</a> implements the following&nbsp;methods.</p>
 <h3 id="new">new</h3>
 <pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$object</span> = BaseSubClass-&gt;new;
 <span class="keyword">my</span> <span class="variable">$object</span> = BaseSubClass-&gt;new(<span class="string">name =&gt;</span> <span class="string">'value'</span>);
@@ -153,7 +153,7 @@ diagnostics information printed to <code>STDERR</code>.</p>
 <p>This package was taken from the Mojolicious&nbsp;project.</p>
 <p>Copyright &copy; 2008-2013, Sebastian&nbsp;Riedel.</p>
 <h2 id="see-also"><span class="caps">SEE</span>&nbsp;ALSO</h2>
-<p><a href="/packages/mojo/base">Mojo::Base</a>, <a href="/packages/mojolicious">Mojolicious</a>, <a href="http://mojolicio.us">http://mojolicio.us</a>.</p>
+<p><a href="http://metacpan.org/pod/Mojo::Base">Mojo::Base</a>, <a href="http://metacpan.org/pod/Mojolicious">Mojolicious</a>, <a href="http://mojolicio.us">http://mojolicio.us</a>.</p>
 </section>
           </article>
         </div>
@@ -161,7 +161,7 @@ diagnostics information printed to <code>STDERR</code>.</p>
     </div>
     <footer>
       <div class="content-wrap">
-        <div class="nav"><a href="/">« Back</a><a href="#content" id="top">↑ Top</a></div>
+        <div class="nav"><a href="/perl-rethinkdb/">« Back</a><a href="#content" id="top">↑ Top</a></div>
         <section class="about"><p>Unless otherwise noted: Copyright &copy; 2013-2014, <a href="http://njlg.info">Nathan Levin-Greenhaw</a></p>
 <p>A lot of the above documentation herein was taken from the
 <a href="http://rethinkdb.com/api/">official documentation</a>.

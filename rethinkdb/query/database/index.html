@@ -36,9 +36,12 @@
 <li><a href="#table_create">table_create</a></li>
 <li><a href="#table_drop">table_drop</a></li>
 <li><a href="#table_list">table_list</a></li>
+<li><a href="#config">config</a></li>
+<li><a href="#rebalance">rebalance</a></li>
+<li><a href="#reconfigure">reconfigure</a></li>
+<li><a href="#wait">wait</a></li>
 </ul>
 </li>
-<li><a href="#see-also">SEE ALSO</a></li>
 </ul>
 </li>
 </ul>
@@ -49,7 +52,7 @@
             <section class="content"><h1 id="rethinkdb-query-database">Rethinkdb::Query::Database</h1>
 <p>Rethinkdb::Query::Database is a type of query that represents a database. This classes contains methods to interact with a database or the underlying&nbsp;tables.</p>
 <h2 id="attributes"><span class="caps">ATTRIBUTES</span></h2>
-<p><a href="/packages/rethinkdb/query/database">Rethinkdb::Query::Database</a> implements the following&nbsp;attributes.</p>
+<p><a href="/perl-rethinkdb/rethinkdb/query/database">Rethinkdb::Query::Database</a> implements the following&nbsp;attributes.</p>
 <h3 id="name">name</h3>
 <pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$db</span> = r-&gt;db(<span class="string">'better'</span>);
 <span class="keyword">say</span> <span class="variable">$db</span>-&gt;name;
@@ -100,8 +103,31 @@ specified table doesn’t exist a <code>runtime_error</code> is&nbsp;returned.</
 <pre><code class="lang-perl">r-&gt;db(<span class="string">'test'</span>)-&gt;table_list-&gt;run;
 </code></pre>
 <p>List all table names in a database. The result is a list of&nbsp;strings.</p>
-<h2 id="see-also"><span class="caps">SEE</span>&nbsp;ALSO</h2>
-<p><a href="/packages/rethinkdb">Rethinkdb</a>, <a href="http://rethinkdb.com">http://rethinkdb.com</a></p>
+<h3 id="config">config</h3>
+<pre><code class="lang-perl">r-&gt;db(<span class="string">'test'</span>)-&gt;config-&gt;run;
+</code></pre>
+<p>Query (read and/or update) the configurations for individual&nbsp;databases.</p>
+<h3 id="rebalance">rebalance</h3>
+<pre><code class="lang-perl">r-&gt;db(<span class="string">'test'</span>)-&gt;rebalance-&gt;run;
+</code></pre>
+<p>Rebalances the shards of all tables in the&nbsp;database.</p>
+<h3 id="reconfigure">reconfigure</h3>
+<pre><code class="lang-perl">r-&gt;db(<span class="string">'test'</span>)-&gt;reconfigure({ <span class="string">shards =&gt;</span> <span class="number">2</span>, <span class="string">replicas =&gt;</span> <span class="number">1</span> })-&gt;run;
+r-&gt;db(<span class="string">'test'</span>)-&gt;reconfigure(
+  {
+    <span class="string">shards              =&gt;</span> <span class="number">2</span>,
+    <span class="string">replicas            =&gt;</span> { <span class="string">wooster =&gt;</span> <span class="number">1</span>, <span class="string">wayne =&gt;</span> <span class="number">1</span> },
+    <span class="string">primary_replica_tag =&gt;</span> <span class="string">'wooster'</span>
+  }
+)-&gt;run;
+</code></pre>
+<p>Reconfigure all table’s sharding and&nbsp;replication.</p>
+<h3 id="wait">wait</h3>
+<pre><code class="lang-perl">r-&gt;db(<span class="string">'test'</span>)-&gt;<span class="keyword">wait</span>-&gt;run;
+</code></pre>
+<p>Wait for all the tables in a database to be ready. A table may be
+temporarily unavailable after creation, rebalancing or reconfiguring.
+The <a href="/perl-rethinkdb/rethinkdb/query/database/#wait">“wait”</a> command blocks until the given database is fully up to&nbsp;date.</p>
 </section>
           </article>
         </div>
@@ -109,7 +135,7 @@ specified table doesn’t exist a <code>runtime_error</code> is&nbsp;returned.</
     </div>
     <footer>
       <div class="content-wrap">
-        <div class="nav"><a href="/">« Back</a><a href="#content" id="top">↑ Top</a></div>
+        <div class="nav"><a href="/perl-rethinkdb/">« Back</a><a href="#content" id="top">↑ Top</a></div>
         <section class="about"><p>Unless otherwise noted: Copyright &copy; 2013-2014, <a href="http://njlg.info">Nathan Levin-Greenhaw</a></p>
 <p>A lot of the above documentation herein was taken from the
 <a href="http://rethinkdb.com/api/">official documentation</a>.

@@ -77,6 +77,9 @@
 <li><a href="#uuid">uuid</a></li>
 <li><a href="#asc">asc</a></li>
 <li><a href="#desc">desc</a></li>
+<li><a href="#wait">wait</a></li>
+<li><a href="#minval">minval</a></li>
+<li><a href="#maxval">maxval</a></li>
 <li><a href="#true">true</a></li>
 <li><a href="#false">false</a></li>
 </ul>
@@ -103,20 +106,20 @@ r-&gt;table(<span class="string">'agents'</span>)-&gt;get(<span class="string">'
 )-&gt;run;
 </code></pre>
 <h2 id="attributes"><span class="caps">ATTRIBUTES</span></h2>
-<p><a href="/packages/rethinkdb">Rethinkdb</a> implements the following&nbsp;attributes.</p>
+<p><a href="/perl-rethinkdb/rethinkdb">Rethinkdb</a> implements the following&nbsp;attributes.</p>
 <h3 id="io">io</h3>
 <pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$io</span> = r-&gt;io;
 r-&gt;io(Rethinkdb::<span class="caps">IO</span>-&gt;new);
 </code></pre>
-<p>The <code>io</code> attribute returns the current <a href="/packages/rethinkdb/io">Rethinkdb::<span class="caps">IO</span></a> instance that
-<a href="/packages/rethinkdb">Rethinkdb</a> is currently set to use. If <code>io</code> is not set by the time <code>run</code>
+<p>The <code>io</code> attribute returns the current <a href="/perl-rethinkdb/rethinkdb/io">Rethinkdb::<span class="caps">IO</span></a> instance that
+<a href="/perl-rethinkdb/rethinkdb">Rethinkdb</a> is currently set to use. If <code>io</code> is not set by the time <code>run</code>
 is called, then an error will&nbsp;occur.</p>
 <h3 id="term">term</h3>
 <pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$term</span> = r-&gt;term;
 </code></pre>
 <p>The <code>term</code> attribute returns an instance of the RethinkDB Query Langague&nbsp;protocol.</p>
 <h2 id="methods"><span class="caps">METHODS</span></h2>
-<p><a href="/packages/rethinkdb">Rethinkdb</a> inherits all methods from <a href="/packages/rethinkdb/base">Rethinkdb::Base</a> and implements the
+<p><a href="/perl-rethinkdb/rethinkdb">Rethinkdb</a> inherits all methods from <a href="/perl-rethinkdb/rethinkdb/base">Rethinkdb::Base</a> and implements the
 following&nbsp;methods.</p>
 <h3 id="r">r</h3>
 <pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$r</span> = r;
@@ -125,7 +128,7 @@ following&nbsp;methods.</p>
 <p><code>r</code> is a factory method to begin a new Rethink <span class="caps">DB</span> query. The <code>r</code> sub is
 exported in the importer’s namespace so that it can be used as short-hand;
 similar to what the official drivers provide. In addition, to creating a
-new instance, if a <a href="/packages/rethinkdb/io">Rethinkdb::<span class="caps">IO</span></a> connection has been repl-ized, then that
+new instance, if a <a href="/perl-rethinkdb/rethinkdb/io">Rethinkdb::<span class="caps">IO</span></a> connection has been repl-ized, then that
 connection will be set via <code>io</code> in the new&nbsp;instance.</p>
 <h3 id="connect">connect</h3>
 <pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$conn1</span> = r-&gt;<span class="keyword">connect</span>;
@@ -186,11 +189,11 @@ strings. <code>r.object(A, B, C, D)</code> is equivalent to
 <h3 id="and">and</h3>
 <pre><code class="lang-perl">r-&gt;<span class="keyword">and</span>(true, false)-&gt;run;
 </code></pre>
-<p>Compute the logical “and” of two or more&nbsp;values.</p>
+<p>Compute the logical <code>and</code> of two or more&nbsp;values.</p>
 <h3 id="or">or</h3>
 <pre><code class="lang-perl">r-&gt;<span class="keyword">or</span>(true, false)-&gt;run;
 </code></pre>
-<p>Compute the logical “or” of two or more&nbsp;values.</p>
+<p>Compute the logical <code>or</code> of two or more&nbsp;values.</p>
 <h3 id="random">random</h3>
 <pre><code class="lang-perl">r-&gt;random()
 r-&gt;random(number[, number], {<span class="string">float =&gt;</span> true})
@@ -235,115 +238,115 @@ about the ISO 8601 format at <a href="http://en.wikipedia.org/wiki/ISO_8601">Wik
   r-&gt;row(<span class="string">'birthdate'</span>)-&gt;day_of_week()-&gt;e<span class="string">q(r-&gt;monday)</span>
 )-&gt;run;
 </code></pre>
-<p><a href="/rethinkdb/#monday">“monday”</a> is a literal day of the week for&nbsp;comparisions.</p>
+<p><a href="/perl-rethinkdb/rethinkdb/#monday">“monday”</a> is a literal day of the week for&nbsp;comparisions.</p>
 <h3 id="tuesday">tuesday</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter(
   r-&gt;row(<span class="string">'birthdate'</span>)-&gt;day_of_week()-&gt;e<span class="string">q(r-&gt;tuesday)</span>
 )-&gt;run;
 </code></pre>
-<p><a href="/rethinkdb/#tuesday">“tuesday”</a> is a literal day of the week for&nbsp;comparisions.</p>
+<p><a href="/perl-rethinkdb/rethinkdb/#tuesday">“tuesday”</a> is a literal day of the week for&nbsp;comparisions.</p>
 <h3 id="wednesday">wednesday</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter(
   r-&gt;row(<span class="string">'birthdate'</span>)-&gt;day_of_week()-&gt;e<span class="string">q(r-&gt;wednesday)</span>
 )-&gt;run;
 </code></pre>
-<p><a href="/rethinkdb/#wednesday">“wednesday”</a> is a literal day of the week for&nbsp;comparisions.</p>
+<p><a href="/perl-rethinkdb/rethinkdb/#wednesday">“wednesday”</a> is a literal day of the week for&nbsp;comparisions.</p>
 <h3 id="thursday">thursday</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter(
   r-&gt;row(<span class="string">'birthdate'</span>)-&gt;day_of_week()-&gt;e<span class="string">q(r-&gt;thursday)</span>
 )-&gt;run;
 </code></pre>
-<p><a href="/packages/thursday">thursday</a> is a literal day of the week for&nbsp;comparisions.</p>
+<p><a href="/perl-rethinkdb/rethinkdb/#thursday">“thursday”</a> is a literal day of the week for&nbsp;comparisions.</p>
 <h3 id="friday">friday</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter(
   r-&gt;row(<span class="string">'birthdate'</span>)-&gt;day_of_week()-&gt;e<span class="string">q(r-&gt;friday)</span>
 )-&gt;run;
 </code></pre>
-<p><a href="/rethinkdb/#friday">“friday”</a> is a literal day of the week for&nbsp;comparisions.</p>
+<p><a href="/perl-rethinkdb/rethinkdb/#friday">“friday”</a> is a literal day of the week for&nbsp;comparisions.</p>
 <h3 id="saturday">saturday</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter(
   r-&gt;row(<span class="string">'birthdate'</span>)-&gt;day_of_week()-&gt;e<span class="string">q(r-&gt;saturday)</span>
 )-&gt;run;
 </code></pre>
-<p><a href="/rethinkdb/#saturday">“saturday”</a> is a literal day of the week for&nbsp;comparisions.</p>
+<p><a href="/perl-rethinkdb/rethinkdb/#saturday">“saturday”</a> is a literal day of the week for&nbsp;comparisions.</p>
 <h3 id="sunday">sunday</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter(
   r-&gt;row(<span class="string">'birthdate'</span>)-&gt;day_of_week()-&gt;e<span class="string">q(r-&gt;sunday)</span>
 )-&gt;run;
 </code></pre>
-<p><a href="/rethinkdb/#sunday">“sunday”</a> is a literal day of the week for&nbsp;comparisions.</p>
+<p><a href="/perl-rethinkdb/rethinkdb/#sunday">“sunday”</a> is a literal day of the week for&nbsp;comparisions.</p>
 <h3 id="january">january</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter(
   r-&gt;row(<span class="string">'birthdate'</span>)-&gt;month()-&gt;e<span class="string">q(r-&gt;january)</span>
 )-&gt;run;
 </code></pre>
-<p><a href="/rethinkdb/#january">“january”</a> is a literal month for&nbsp;comparisions.</p>
+<p><a href="/perl-rethinkdb/rethinkdb/#january">“january”</a> is a literal month for&nbsp;comparisions.</p>
 <h3 id="february">february</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter(
   r-&gt;row(<span class="string">'birthdate'</span>)-&gt;month()-&gt;e<span class="string">q(r-&gt;february)</span>
 )-&gt;run;
 </code></pre>
-<p><a href="/rethinkdb/#february">“february”</a> is a literal month for&nbsp;comparisions.</p>
+<p><a href="/perl-rethinkdb/rethinkdb/#february">“february”</a> is a literal month for&nbsp;comparisions.</p>
 <h3 id="march">march</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter(
   r-&gt;row(<span class="string">'birthdate'</span>)-&gt;month()-&gt;e<span class="string">q(r-&gt;march)</span>
 )-&gt;run;
 </code></pre>
-<p><a href="/rethinkdb/#march">“march”</a> is a literal month for&nbsp;comparisions.</p>
+<p><a href="/perl-rethinkdb/rethinkdb/#march">“march”</a> is a literal month for&nbsp;comparisions.</p>
 <h3 id="april">april</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter(
   r-&gt;row(<span class="string">'birthdate'</span>)-&gt;month()-&gt;e<span class="string">q(r-&gt;april)</span>
 )-&gt;run;
 </code></pre>
-<p><a href="/rethinkdb/#april">“april”</a> is a literal month for&nbsp;comparisions.</p>
+<p><a href="/perl-rethinkdb/rethinkdb/#april">“april”</a> is a literal month for&nbsp;comparisions.</p>
 <h3 id="may">may</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter(
   r-&gt;row(<span class="string">'birthdate'</span>)-&gt;month()-&gt;e<span class="string">q(r-&gt;may)</span>
 )-&gt;run;
 </code></pre>
-<p><a href="/rethinkdb/#may">“may”</a> is a literal month for&nbsp;comparisions.</p>
+<p><a href="/perl-rethinkdb/rethinkdb/#may">“may”</a> is a literal month for&nbsp;comparisions.</p>
 <h3 id="june">june</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter(
   r-&gt;row(<span class="string">'birthdate'</span>)-&gt;month()-&gt;e<span class="string">q(r-&gt;june)</span>
 )-&gt;run;
 </code></pre>
-<p><a href="/rethinkdb/#june">“june”</a> is a literal month for&nbsp;comparisions.</p>
+<p><a href="/perl-rethinkdb/rethinkdb/#june">“june”</a> is a literal month for&nbsp;comparisions.</p>
 <h3 id="july">july</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter(
   r-&gt;row(<span class="string">'birthdate'</span>)-&gt;month()-&gt;e<span class="string">q(r-&gt;july)</span>
 )-&gt;run;
 </code></pre>
-<p><a href="/rethinkdb/#july">“july”</a> is a literal month for&nbsp;comparisions.</p>
+<p><a href="/perl-rethinkdb/rethinkdb/#july">“july”</a> is a literal month for&nbsp;comparisions.</p>
 <h3 id="august">august</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter(
   r-&gt;row(<span class="string">'birthdate'</span>)-&gt;month()-&gt;e<span class="string">q(r-&gt;august)</span>
 )-&gt;run;
 </code></pre>
-<p><a href="/rethinkdb/#august">“august”</a> is a literal month for&nbsp;comparisions.</p>
+<p><a href="/perl-rethinkdb/rethinkdb/#august">“august”</a> is a literal month for&nbsp;comparisions.</p>
 <h3 id="september">september</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter(
   r-&gt;row(<span class="string">'birthdate'</span>)-&gt;month()-&gt;e<span class="string">q(r-&gt;september)</span>
 )-&gt;run;
 </code></pre>
-<p><a href="/rethinkdb/#september">“september”</a> is a literal month for&nbsp;comparisions.</p>
+<p><a href="/perl-rethinkdb/rethinkdb/#september">“september”</a> is a literal month for&nbsp;comparisions.</p>
 <h3 id="october">october</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter(
   r-&gt;row(<span class="string">'birthdate'</span>)-&gt;month()-&gt;e<span class="string">q(r-&gt;october)</span>
 )-&gt;run;
 </code></pre>
-<p><a href="/rethinkdb/#october">“october”</a> is a literal month for&nbsp;comparisions.</p>
+<p><a href="/perl-rethinkdb/rethinkdb/#october">“october”</a> is a literal month for&nbsp;comparisions.</p>
 <h3 id="november">november</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter(
   r-&gt;row(<span class="string">'birthdate'</span>)-&gt;month()-&gt;e<span class="string">q(r-&gt;november)</span>
 )-&gt;run;
 </code></pre>
-<p><a href="/rethinkdb/#november">“november”</a> is a literal month for&nbsp;comparisions.</p>
+<p><a href="/perl-rethinkdb/rethinkdb/#november">“november”</a> is a literal month for&nbsp;comparisions.</p>
 <h3 id="december">december</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter(
   r-&gt;row(<span class="string">'birthdate'</span>)-&gt;month()-&gt;e<span class="string">q(r-&gt;december)</span>
 )-&gt;run;
 </code></pre>
-<p><a href="/rethinkdb/#december">“december”</a> is a literal month for&nbsp;comparisions.</p>
+<p><a href="/perl-rethinkdb/rethinkdb/#december">“december”</a> is a literal month for&nbsp;comparisions.</p>
 <h3 id="args">args</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'people'</span>)-&gt;get_all(<span class="string">'Alice'</span>, <span class="string">'Bob'</span>)-&gt;run;
 <span class="comment"># or</span>
@@ -351,7 +354,7 @@ r-&gt;table(<span class="string">'people'</span>)-&gt;get_all(r-&gt;args([<span 
 </code></pre>
 <p><code>r-&gt;args</code> is a special term that’s used to splice an array of arguments into
 another term. This is useful when you want to call a variadic term such as
-<a href="/packages/rethinkdb/query/table#get_all">“get_all” in Rethinkdb::Query::Table</a> with a set of arguments produced at&nbsp;runtime.</p>
+<a href="/perl-rethinkdb/rethinkdb/query/table#get_all">“get_all” in Rethinkdb::Query::Table</a> with a set of arguments produced at&nbsp;runtime.</p>
 <h3 id="do">do</h3>
 <pre><code class="lang-perl">r-&gt;<span class="keyword">do</span>(r-&gt;table(<span class="string">'marvel'</span>)-&gt;get(<span class="string">'IronMan'</span>), <span class="sub"><span class="keyword">sub</span> {</span>
   <span class="keyword">my</span> <span class="variable">$ironman</span> = <span class="keyword">shift</span>;
@@ -425,6 +428,28 @@ unique&nbsp;ID.</p>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;order_by(r-&gt;desc(<span class="string">'enemies_vanquished'</span>))-&gt;run;
 </code></pre>
 <p>Specifies that a column should be ordered in descending&nbsp;order.</p>
+<h3 id="wait">wait</h3>
+<pre><code class="lang-perl">r-&gt;<span class="keyword">wait</span>-&gt;run;
+</code></pre>
+<p>Wait on all the tables in the default database (set with the <a href="/perl-rethinkdb/rethinkdb/#connect">“connect”</a>
+command’s <code>db</code> parameter, which defaults to <code>test</code>). A table may be
+temporarily unavailable after creation, rebalancing or reconfiguring. The
+<a href="/perl-rethinkdb/rethinkdb/#wait">“wait”</a> command blocks until the given all the tables in database is fully up
+to&nbsp;date.</p>
+<h3 id="minval">minval</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;between( r-&gt;minval, <span class="number">7</span> )-&gt;run;
+</code></pre>
+<p>The special constants <a href="/perl-rethinkdb/rethinkdb/#minval">“minval”</a> is used for specifying a boundary, which
+represent “less than any index key”. For instance, if you use <a href="/perl-rethinkdb/rethinkdb/#minval">“minval”</a> as the
+lower key, then <a href="/perl-rethinkdb/rethinkdb/query/table#between">“between” in Rethinkdb::Query::Table</a> will return all documents
+whose primary keys (or indexes) are less than the specified upper&nbsp;key.</p>
+<h3 id="maxval">maxval</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;between( <span class="number">8</span>, r-&gt;maxval )-&gt;run;
+</code></pre>
+<p>The special constants <a href="/perl-rethinkdb/rethinkdb/#maxval">“maxval”</a> is used for specifying a boundary, which
+represent “greater than any index key”. For instance, if you use <a href="/perl-rethinkdb/rethinkdb/#maxval">“maxval”</a> as
+the upper key, then <a href="/perl-rethinkdb/rethinkdb/query/table#between">“between” in Rethinkdb::Query::Table</a> will return all
+documents whose primary keys (or indexes) are greater than the specified lower&nbsp;key.</p>
 <h3 id="true">true</h3>
 <pre><code class="lang-perl">r-&gt;true-&gt;run;
 </code></pre>
@@ -440,7 +465,7 @@ unique&nbsp;ID.</p>
     </div>
     <footer>
       <div class="content-wrap">
-        <div class="nav"><a href="/">« Back</a><a href="#content" id="top">↑ Top</a></div>
+        <div class="nav"><a href="/perl-rethinkdb/">« Back</a><a href="#content" id="top">↑ Top</a></div>
         <section class="about"><p>Unless otherwise noted: Copyright &copy; 2013-2014, <a href="http://njlg.info">Nathan Levin-Greenhaw</a></p>
 <p>A lot of the above documentation herein was taken from the
 <a href="http://rethinkdb.com/api/">official documentation</a>.

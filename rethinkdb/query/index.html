@@ -48,7 +48,7 @@
 <li><a href="#limit">limit</a></li>
 <li><a href="#slice">slice</a></li>
 <li><a href="#nth">nth</a></li>
-<li><a href="#indexes_of">indexes_of</a></li>
+<li><a href="#offsets_of">offsets_of</a></li>
 <li><a href="#is_empty">is_empty</a></li>
 <li><a href="#union">union</a></li>
 <li><a href="#sample">sample</a></li>
@@ -131,7 +131,7 @@
             <section class="content"><h1 id="rethinkdb-query">Rethinkdb::Query</h1>
 <p>Rethinkdb::Query is a type of&nbsp;query.</p>
 <h2 id="attributes"><span class="caps">ATTRIBUTES</span></h2>
-<p><a href="/packages/rethinkdb/query">Rethinkdb::Query</a> implements the following&nbsp;attributes.</p>
+<p><a href="/perl-rethinkdb/rethinkdb/query">Rethinkdb::Query</a> implements the following&nbsp;attributes.</p>
 <h3 id="args">args</h3>
 <pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$query</span> = r-&gt;table(<span class="string">'marvel'</span>)-&gt;get(<span class="number">1</span>);
 <span class="keyword">say</span> <span class="variable">$query</span>-&gt;args;
@@ -143,7 +143,7 @@
 </code></pre>
 <p>The optional arguments for this instance of a&nbsp;query.</p>
 <h2 id="methods"><span class="caps">METHODS</span></h2>
-<p><a href="/packages/rethinkdb/query">Rethinkdb::Query</a> implements the following&nbsp;methods.</p>
+<p><a href="/perl-rethinkdb/rethinkdb/query">Rethinkdb::Query</a> implements the following&nbsp;methods.</p>
 <h3 id="new">new</h3>
 <p>This is a specialized constructor that enables chaining the queries together
 in a rational way. This constructor should never be called directly by
@@ -179,7 +179,7 @@ same primary key as the original&nbsp;document.</p>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter({<span class="string">'age'</span> =&gt; <span class="number">30</span>})-&gt;run;
 </code></pre>
 <p>Get all the documents for which the given predicate is&nbsp;true.</p>
-<p><a href="/rethinkdb/query/#filter">“filter”</a> can be called on a sequence, selection, or a field containing an
+<p><a href="/perl-rethinkdb/rethinkdb/query/#filter">“filter”</a> can be called on a sequence, selection, or a field containing an
 array of elements. The return type is the same as the type on which the
 function was called&nbsp;on.</p>
 <p>The body of every filter is wrapped in an implicit <code>default(r-&gt;false)</code>,
@@ -211,7 +211,7 @@ match was found in the right&nbsp;table.</p>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'players'</span>)-&gt;eq_join(<span class="string">'gameId'</span>, r-&gt;table(<span class="string">'games'</span>))-&gt;run;
 </code></pre>
 <p>Join tables using a field on the left-hand sequence matching primary keys or
-secondary indexes on the right-hand table. <a href="/rethinkdb/query/#eq_join">“eq_join”</a> is more efficient than
+secondary indexes on the right-hand table. <a href="/perl-rethinkdb/rethinkdb/query/#eq_join">“eq_join”</a> is more efficient than
 other ReQL join types, and operates much faster. Documents in the result set
 consist of pairs of left-hand and right-hand documents, matched when the
 field on the left-hand side exists and is non-null and an entry with that
@@ -220,8 +220,8 @@ field’s value exists in the specified index on the right-hand&nbsp;side.</p>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;eq_join(<span class="string">'main_dc_collaborator'</span>,
   r-&gt;table(<span class="string">'dc'</span>))-&gt;zip()-&gt;run;
 </code></pre>
-<p>Used to <em>zip</em> up the result of a join by merging the <em>right</em> fields into
-<em>left</em> fields of each member of the&nbsp;sequence.</p>
+<p>Used to zip up the result of a join by merging the right fields into
+left fields of each member of the&nbsp;sequence.</p>
 <h3 id="map">map</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;<span class="keyword">map</span>(<span class="sub"><span class="keyword">sub</span> {</span>
   <span class="keyword">my</span> <span class="variable">$hero</span> = <span class="keyword">shift</span>;
@@ -236,7 +236,7 @@ field’s value exists in the specified index on the right-hand&nbsp;side.</p>
 </code></pre>
 <p>Plucks one or more attributes from a sequence of objects, filtering out any
 objects in the sequence that do not have the specified fields. Functionally,
-this is identical to <a href="/rethinkdb/query/#has_fields">“has_fields”</a> followed by <a href="/rethinkdb/query/#pluck">“pluck”</a> on a&nbsp;sequence.</p>
+this is identical to <a href="/perl-rethinkdb/rethinkdb/query/#has_fields">“has_fields”</a> followed by <a href="/perl-rethinkdb/rethinkdb/query/#pluck">“pluck”</a> on a&nbsp;sequence.</p>
 <h3 id="concat_map">concat_map</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;concatMap(<span class="sub"><span class="keyword">sub</span> {</span>
   <span class="keyword">my</span> <span class="variable">$hero</span> = <span class="keyword">shift</span>;
@@ -249,11 +249,11 @@ this is identical to <a href="/rethinkdb/query/#has_fields">“has_fields”</a>
 r-&gt;table(<span class="string">'posts'</span>)-&gt;order_by({<span class="string">index =&gt;</span> r-&gt;desc(<span class="string">'date'</span>)})-&gt;run;
 </code></pre>
 <p>Sort the sequence by document values of the given key(s). To specify the
-ordering, wrap the attribute with either <a href="/packages/rethinkdb#asc"><code>r-&gt;asc</code></a> or
-<a href="/packages/rethinkdb#desc"><code>r-&gt;desc</code></a> (defaults to&nbsp;ascending).</p>
+ordering, wrap the attribute with either <a href="/perl-rethinkdb/rethinkdb#asc"><code>r-&gt;asc</code></a> or
+<a href="/perl-rethinkdb/rethinkdb#desc"><code>r-&gt;desc</code></a> (defaults to&nbsp;ascending).</p>
 <p>Sorting without an index requires the server to hold the sequence in memory,
 and is limited to 100,000 documents. Sorting with an index can be done on
-arbitrarily large tables, or after a <a href="/packages/rethinkdb/query/table#between">“between” in Rethinkdb::Query::Table</a> command
+arbitrarily large tables, or after a <a href="/perl-rethinkdb/rethinkdb/query/table#between">“between” in Rethinkdb::Query::Table</a> command
 using the same&nbsp;index.</p>
 <h3 id="skip">skip</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;order_by(<span class="string">'successMetric'</span>)-&gt;skip(<span class="number">10</span>)-&gt;run;
@@ -271,8 +271,8 @@ using the same&nbsp;index.</p>
 <pre><code class="lang-perl">r-&gt;expr([<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>])-&gt;nth(<span class="number">1</span>)-&gt;run;
 </code></pre>
 <p>Get the nth element of a&nbsp;sequence.</p>
-<h3 id="indexes_of">indexes_of</h3>
-<pre><code class="lang-perl">r-&gt;expr([<span class="string">'a'</span>,<span class="string">'b'</span>,<span class="string">'c'</span>])-&gt;indexes_of(<span class="string">'c'</span>)-&gt;run;
+<h3 id="offsets_of">offsets_of</h3>
+<pre><code class="lang-perl">r-&gt;expr([<span class="string">'a'</span>,<span class="string">'b'</span>,<span class="string">'c'</span>])-&gt;offsets_of(<span class="string">'c'</span>)-&gt;run;
 </code></pre>
 <p>Get the indexes of an element in a sequence. If the argument is a predicate,
 get the indexes of all elements matching&nbsp;it.</p>
@@ -293,7 +293,7 @@ distribution. Selection is done without&nbsp;replacement.</p>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'games'</span>)-&gt;group(<span class="string">'player'</span>)-&gt;max(<span class="string">'points'</span>)-&gt;run;
 </code></pre>
 <p>Takes a stream and partitions it into multiple groups based on the fields or
-functions provided. Commands chained after <a href="/rethinkdb/query/#group">“group”</a> will be called on each of
+functions provided. Commands chained after <a href="/perl-rethinkdb/rethinkdb/query/#group">“group”</a> will be called on each of
 these grouped sub-streams, producing grouped&nbsp;data.</p>
 <h3 id="ungroup">ungroup</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'games'</span>)
@@ -301,7 +301,7 @@ these grouped sub-streams, producing grouped&nbsp;data.</p>
   -&gt;ungroup()-&gt;order_by(r-&gt;desc(<span class="string">'reduction'</span>))-&gt;run;
 </code></pre>
 <p>Takes a grouped stream or grouped data and turns it into an array of objects
-representing the groups. Any commands chained after <a href="/rethinkdb/query/#ungroup">“ungroup”</a> will operate on
+representing the groups. Any commands chained after <a href="/perl-rethinkdb/rethinkdb/query/#ungroup">“ungroup”</a> will operate on
 this array, rather than operating on each group individually. This is useful
 if you want to e.g. order the groups by the value of their&nbsp;reduction.</p>
 <h3 id="reduce">reduce</h3>
@@ -467,9 +467,9 @@ r-&gt;expr(<span class="string">'foo,bar,bax'</span>)-&gt;<span class="keyword">
 <p>Splits a string into substrings. Splits on whitespace when called with no
 arguments. When called with a separator, splits on that separator. When called
 with a separator and a maximum number of splits, splits on that separator at
-most <code>max_splits</code> times. (Can be called with None as the separator if you want
-to split on whitespace while still specifying <code>max_splits</code>.)</p>
-<p>Mimics the behavior of Python’s string.split in edge cases, except for
+most <code>max_splits</code> times. (Can be called with <code>undef</code> as the separator if you
+want to split on whitespace while still specifying <code>max_splits</code>.)</p>
+<p>Mimics the behavior of Python’s <code>string.split</code> in edge cases, except for
 splitting on the empty string, which instead produces an array of
 single-character&nbsp;strings.</p>
 <h3 id="upcase">upcase</h3>
@@ -503,11 +503,11 @@ single-character&nbsp;strings.</p>
 <h3 id="and">and</h3>
 <pre><code class="lang-perl">r-&gt;expr(r-&gt;true)-&gt;<span class="keyword">and</span>(r-&gt;false)-&gt;run;
 </code></pre>
-<p>Compute the logical “and” of two or more&nbsp;values.</p>
+<p>Compute the logical <code>and</code> of two or more&nbsp;values.</p>
 <h3 id="or">or</h3>
 <pre><code class="lang-perl">r-&gt;expr(r-&gt;true)-&gt;<span class="keyword">or</span>(r-&gt;false)-&gt;run;
 </code></pre>
-<p>Compute the logical “or” of two or more&nbsp;values.</p>
+<p>Compute the logical <code>or</code> of two or more&nbsp;values.</p>
 <h3 id="eq">eq</h3>
 <pre><code class="lang-perl">r-&gt;expr(<span class="number">2</span>)-&gt;e<span class="string">q(2)</span>-&gt;run;
 </code></pre>
@@ -540,7 +540,7 @@ single-character&nbsp;strings.</p>
 <pre><code class="lang-perl">r-&gt;now-&gt;in_timezone(<span class="string">'-08:00'</span>)-&gt;hours-&gt;run;
 </code></pre>
 <p>Return a new time object with a different timezone. While the time stays the
-same, the results returned by methods such as <a href="/rethinkdb/query/#hours">“hours”</a> will change since they
+same, the results returned by methods such as <a href="/perl-rethinkdb/rethinkdb/query/#hours">“hours”</a> will change since they
 take the timezone into account. The timezone argument has to be of the <span class="caps">ISO</span> 8601&nbsp;format.</p>
 <h3 id="timezone">timezone</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter(<span class="sub"><span class="keyword">sub</span> {</span>
@@ -569,7 +569,7 @@ start, exclusive for the&nbsp;end).</p>
 day at&nbsp;00:00).</p>
 <h3 id="time_of_day">time_of_day</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'posts'</span>)-&gt;filter(
-  r-&gt;row-&gt;attr(<span class="string">'date'</span>)-&gt;time_of_day-&gt;le(<span class="number">12</span><span class="variable">*60</span><span class="variable">*60</span>)
+  r-&gt;row-&gt;attr(<span class="string">'date'</span>)-&gt;time_of_day-&gt;le(<span class="number">12</span>*<span class="number">60</span>*<span class="number">60</span>)
 )-&gt;run;
 </code></pre>
 <p>Return the number of seconds elapsed since the beginning of the day stored in
@@ -587,8 +587,8 @@ the time&nbsp;object.</p>
 )-&gt;run;
 </code></pre>
 <p>Return the month of a time object as a number between 1 and 12. For your
-convenience, the terms <a href="/packages/rethinkdb#january"><code>r-&gt;january</code></a>,
-<a href="/packages/rethinkdb#february"><code>r-&gt;february</code></a> etc. are defined and map to the
+convenience, the terms <a href="/perl-rethinkdb/rethinkdb#january"><code>r-&gt;january</code></a>,
+<a href="/perl-rethinkdb/rethinkdb#february"><code>r-&gt;february</code></a> etc. are defined and map to the
 appropriate&nbsp;integer.</p>
 <h3 id="day">day</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter(
@@ -683,7 +683,7 @@ either the text of the non-existence error or <code>null</code>.)</p>
 </code></pre>
 <p>Get information about a ReQL&nbsp;value.</p>
 <h2 id="see-also"><span class="caps">SEE</span>&nbsp;ALSO</h2>
-<p><a href="/packages/rethinkdb">Rethinkdb</a>, <a href="http://rethinkdb.com">http://rethinkdb.com</a></p>
+<p><a href="/perl-rethinkdb/rethinkdb">Rethinkdb</a>, <a href="http://rethinkdb.com">http://rethinkdb.com</a></p>
 </section>
           </article>
         </div>
@@ -691,7 +691,7 @@ either the text of the non-existence error or <code>null</code>.)</p>
     </div>
     <footer>
       <div class="content-wrap">
-        <div class="nav"><a href="/">« Back</a><a href="#content" id="top">↑ Top</a></div>
+        <div class="nav"><a href="/perl-rethinkdb/">« Back</a><a href="#content" id="top">↑ Top</a></div>
         <section class="about"><p>Unless otherwise noted: Copyright &copy; 2013-2014, <a href="http://njlg.info">Nathan Levin-Greenhaw</a></p>
 <p>A lot of the above documentation herein was taken from the
 <a href="http://rethinkdb.com/api/">official documentation</a>.

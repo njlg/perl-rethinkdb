@@ -43,6 +43,11 @@
 <li><a href="#get">get</a></li>
 <li><a href="#get_all">get_all</a></li>
 <li><a href="#between">between</a></li>
+<li><a href="#config">config</a></li>
+<li><a href="#rebalance">rebalance</a></li>
+<li><a href="#reconfigure">reconfigure</a></li>
+<li><a href="#status">status</a></li>
+<li><a href="#wait">wait</a></li>
 </ul>
 </li>
 </ul>
@@ -55,14 +60,14 @@
             <section class="content"><h1 id="rethinkdb-query-table">Rethinkdb::Query::Table</h1>
 <p>Rethinkdb::Query::Table is a type of query that represents a table in a database. This classes contains methods to interact with said&nbsp;table.</p>
 <h2 id="attributes"><span class="caps">ATTRIBUTES</span></h2>
-<p><a href="/packages/rethinkdb/query/table">Rethinkdb::Query::Table</a> implements the following&nbsp;attributes.</p>
+<p><a href="/perl-rethinkdb/rethinkdb/query/table">Rethinkdb::Query::Table</a> implements the following&nbsp;attributes.</p>
 <h3 id="name">name</h3>
 <pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$table</span> = r-&gt;db(<span class="string">'comics'</span>)-&gt;table(<span class="string">'superheros'</span>);
 <span class="keyword">say</span> <span class="variable">$table</span>-&gt;name;
 </code></pre>
 <p>The name of the&nbsp;table.</p>
 <h2 id="methods"><span class="caps">METHODS</span></h2>
-<p><a href="/packages/rethinkdb/query/table">Rethinkdb::Query::Table</a> implements the following&nbsp;methods.</p>
+<p><a href="/perl-rethinkdb/rethinkdb/query/table">Rethinkdb::Query::Table</a> implements the following&nbsp;methods.</p>
 <h3 id="create">create</h3>
 <pre><code class="lang-perl">r-&gt;db(<span class="string">'test'</span>)-&gt;table(<span class="string">'dc_universe'</span>)-&gt;create-&gt;run;
 </code></pre>
@@ -129,7 +134,7 @@ to the stream. For an <code>insert</code>, <code>old_val</code> will be <code>nu
 </code></pre>
 <p>Insert documents into a table. Accepts a single document or an array of&nbsp;documents.</p>
 <h3 id="sync">sync</h3>
-<p><a href="/rethinkdb/query/table/#sync">“sync”</a> ensures that writes on a given table are written to permanent storage.
+<p><a href="/perl-rethinkdb/rethinkdb/query/table/#sync">“sync”</a> ensures that writes on a given table are written to permanent storage.
 Queries that specify soft durability <code>{durability =&gt; &#39;soft&#39;}</code> do not give
 such guarantees, so sync can be used to ensure the state of these queries. A
 call to sync does not return until all previous writes to the table are&nbsp;persisted.</p>
@@ -137,7 +142,7 @@ call to sync does not return until all previous writes to the table are&nbsp;per
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'posts'</span>)-&gt;get(<span class="string">'a9849eef-7176-4411-935b-79a6e3c56a74'</span>)-&gt;run;
 </code></pre>
 <p>Get a document by primary&nbsp;key.</p>
-<p>If no document exists with that primary key, <a href="/rethinkdb/query/table/#get">“get”</a> will return <code>null</code>.</p>
+<p>If no document exists with that primary key, <a href="/perl-rethinkdb/rethinkdb/query/table/#get">“get”</a> will return <code>null</code>.</p>
 <h3 id="get_all">get_all</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;get_all(<span class="string">'man_of_steel'</span>, { <span class="string">index =&gt;</span> <span class="string">'code_name'</span> })-&gt;run;
 </code></pre>
@@ -147,11 +152,41 @@ call to sync does not return until all previous writes to the table are&nbsp;per
 </code></pre>
 <p>Get all documents between two keys. Accepts three optional arguments: <code>index</code>,
 <code>left_bound</code>, and <code>right_bound</code>. If <code>index</code> is set to the name of a
-secondary index, <a href="/rethinkdb/query/table/#between">“between”</a> will return all documents where that index’s value
+secondary index, <a href="/perl-rethinkdb/rethinkdb/query/table/#between">“between”</a> will return all documents where that index’s value
 is in the specified range (it uses the primary key by default). <code>left_bound</code>
 or <code>right_bound</code> may be set to open or closed to indicate whether or not to
 include that endpoint of the range (by default, <code>left_bound</code> is closed and
 <code>right_bound</code> is&nbsp;open).</p>
+<h3 id="config">config</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;config-&gt;run;
+</code></pre>
+<p>Query (read and/or update) the configurations for individual&nbsp;tables.</p>
+<h3 id="rebalance">rebalance</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;rebalance-&gt;run;
+</code></pre>
+<p>Rebalances the shards of a&nbsp;table.</p>
+<h3 id="reconfigure">reconfigure</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;reconfigure({ <span class="string">shards =&gt;</span> <span class="number">2</span>, <span class="string">replicas =&gt;</span> <span class="number">1</span> })-&gt;run;
+r-&gt;table(<span class="string">'marvel'</span>)-&gt;reconfigure(
+  {
+    <span class="string">shards              =&gt;</span> <span class="number">2</span>,
+    <span class="string">replicas            =&gt;</span> { <span class="string">wooster =&gt;</span> <span class="number">1</span>, <span class="string">wayne =&gt;</span> <span class="number">1</span> },
+    <span class="string">primary_replica_tag =&gt;</span> <span class="string">'wooster'</span>
+  }
+)-&gt;run;
+</code></pre>
+<p>Reconfigure a table’s sharding and&nbsp;replication.</p>
+<h3 id="status">status</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;status-&gt;run;
+</code></pre>
+<p>Return the status of a table. The return value is an object providing
+information about the table’s shards, replicas and replica readiness&nbsp;states</p>
+<h3 id="wait">wait</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;<span class="keyword">wait</span>-&gt;run;
+</code></pre>
+<p>Wait for a table to be ready. A table may be temporarily unavailable
+after creation, rebalancing or reconfiguring. The <a href="/perl-rethinkdb/rethinkdb/query/table/#wait">“wait”</a> command
+blocks until the given table is fully up to&nbsp;date.</p>
 </section>
           </article>
         </div>
@@ -159,7 +194,7 @@ include that endpoint of the range (by default, <code>left_bound</code> is close
     </div>
     <footer>
       <div class="content-wrap">
-        <div class="nav"><a href="/">« Back</a><a href="#content" id="top">↑ Top</a></div>
+        <div class="nav"><a href="/perl-rethinkdb/">« Back</a><a href="#content" id="top">↑ Top</a></div>
         <section class="about"><p>Unless otherwise noted: Copyright &copy; 2013-2014, <a href="http://njlg.info">Nathan Levin-Greenhaw</a></p>
 <p>A lot of the above documentation herein was taken from the
 <a href="http://rethinkdb.com/api/">official documentation</a>.
