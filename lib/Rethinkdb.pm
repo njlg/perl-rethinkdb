@@ -214,12 +214,12 @@ sub random {
   if ( ref $args->[2] eq 'HASH' ) {
     $optargs = $args->[2];
   }
-  elsif( scalar @{$args} > 2 and $args->[2] ) {
+  elsif ( scalar @{$args} > 2 and $args->[2] ) {
     $optargs->{float} = r->true;
   }
 
   # only keep the first two elements
-  $args = [splice @{$args}, 0, 2];
+  $args = [ splice @{$args}, 0, 2 ];
 
   my $q = Rethinkdb::Query->new(
     _type   => $self->term->termType->random,
@@ -947,7 +947,7 @@ L</wednesday> is a literal day of the week for comparisions.
     r->row('birthdate')->day_of_week()->eq(r->thursday)
   )->run;
 
-L<thursday> is a literal day of the week for comparisions.
+L</thursday> is a literal day of the week for comparisions.
 
 =head2 friday
 
@@ -1177,29 +1177,30 @@ Specifies that a column should be ordered in descending order.
 
   r->wait->run;
 
-Wait on all the tables in the default database (set with the L<connect>
+Wait on all the tables in the default database (set with the L</connect>
 command's C<db> parameter, which defaults to C<test>). A table may be
 temporarily unavailable after creation, rebalancing or reconfiguring. The
-L<wait> command blocks until the given all the tables in database is fully up
+L</wait> command blocks until the given all the tables in database is fully up
 to date.
 
 =head2 minval
 
   r->table('marvel')->between( r->minval, 7 )->run;
 
-The special constants L<minval> is used for specifying a boundary, which
-represent "less than any index key". For instance, if you use L<minval> as the
-lower key, then L<Table/between> will return all documents whose primary keys
-(or indexes) are less than the specified upper key.
+The special constants L</minval> is used for specifying a boundary, which
+represent "less than any index key". For instance, if you use L</minval> as the
+lower key, then L<Rethinkdb::Query::Table/between> will return all documents
+whose primary keys (or indexes) are less than the specified upper key.
 
 =head2 maxval
 
   r->table('marvel')->between( 8, r->maxval )->run;
 
-The special constants L<maxval> is used for specifying a boundary, which
-represent "greater than any index key". For instance, if you use L<maxval> as
-the upper key, then L<Table/between> will return all documents whose primary
-keys (or indexes) are greater than the specified lower key.
+The special constants L</maxval> is used for specifying a boundary, which
+represent "greater than any index key". For instance, if you use L</maxval> as
+the upper key, then L<Rethinkdb::Query::Table/between> will return all
+documents whose primary keys (or indexes) are greater than the specified lower
+key.
 
 =head2 true
 

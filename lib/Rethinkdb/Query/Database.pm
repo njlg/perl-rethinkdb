@@ -276,6 +276,6 @@ Reconfigure all table's sharding and replication.
 
 Wait for all the tables in a database to be ready. A table may be
 temporarily unavailable after creation, rebalancing or reconfiguring.
-The L<wait> command blocks until the given database is fully up to date.
+The L</wait> command blocks until the given database is fully up to date.
 
 =cut
