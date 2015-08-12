@@ -631,6 +631,87 @@ sub uuid {
   return $q;
 }
 
+# GEO
+
+sub circle {
+  my $self    = shift;
+  my $point   = shift;
+  my $radius  = shift;
+  my $optargs = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _type => $self->term->termType->circle,
+    args    => [ $point, $radius ],
+    optargs => $optargs,
+  );
+
+  return $q;
+}
+
+sub distance {
+  my $self    = shift;
+  my $point1  = shift;
+  my $point2  = shift;
+  my $optargs = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _type => $self->term->termType->distance,
+    args    => [ $point1, $point2 ],
+    optargs => $optargs,
+  );
+
+  return $q;
+}
+
+sub geojson {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _type => $self->term->termType->geojson,
+    args  => $args,
+  );
+
+  return $q;
+}
+
+sub line {
+  my $self = shift;
+  my $args = \@_;
+
+  my $q = Rethinkdb::Query->new(
+    _type => $self->term->termType->line,
+    args  => $args,
+  );
+
+  return $q;
+}
+
+sub point {
+  my $self = shift;
+  my $args = \@_;
+
+  my $q = Rethinkdb::Query->new(
+    _type => $self->term->termType->point,
+    args  => $args,
+  );
+
+  return $q;
+}
+
+sub polygon {
+  my $self = shift;
+  my $args = \@_;
+
+  my $q = Rethinkdb::Query->new(
+    _type => $self->term->termType->polygon,
+    args  => $args,
+  );
+
+  return $q;
+}
+
+
 # MISC
 
 sub asc {
@@ -1160,6 +1241,65 @@ default.
 
 Return a UUID (universally unique identifier), a string that can be used as a
 unique ID.
+
+=head2 circle
+
+  r->circle( [ -122.423246, 37.770378359 ], 10, { unit => 'mi' } )
+
+Construct a circular line or polygon. A circle in RethinkDB is a polygon or
+line approximating a circle of a given radius around a given center,
+consisting of a specified number of vertices (default 32).
+
+=head2 distance
+
+  r->distance(
+    r->point( -122.423246, 37.779388 ),
+    r->point( -117.220406, 32.719464 ),
+    { unit => 'km' }
+  )->run;
+
+Compute the distance between a point and another geometry object. At least
+one of the geometry objects specified must be a point.
+
+=head2 geojson
+
+  r->geojson(
+    { 'type' => 'Point', 'coordinates' => [ -122.423246, 37.779388 ] } )
+
+Convert a L<GeoJSON|http://geojson.org/> object to a ReQL geometry object.
+
+=head2 line
+
+  r->line( [ -122.423246, 37.779388 ], [ -121.886420, 37.329898 ] )
+
+Construct a geometry object of type Line. The line can be specified in one of
+two ways:
+(1) Two or more two-item arrays, specifying latitude and longitude numbers of
+the line's vertices;
+(2) Two or more L</point> objects specifying the line's vertices.
+
+=head2 point
+
+  r->point( -122.423246, 37.779388 )
+
+Construct a geometry object of type Point. The point is specified by two
+floating point numbers, the longitude (-180 to 180) and latitude (-90 to 90)
+of the point on a perfect sphere.
+
+=head2 polygon
+
+  r->polygon(
+    [ -122.423246, 37.779388 ],
+    [ -122.423246, 37.329898 ],
+    [ -121.886420, 37.329898 ],
+    [ -121.886420, 37.779388 ]
+  )
+
+Construct a geometry object of type Polygon. The Polygon can be specified in
+one of two ways:
+(1) Three or more two-item arrays, specifying longitude and latitude numbers
+of the polygon's vertices;
+(2) Three or more L</point> objects specifying the polygon's vertices.
 
 =head2 asc
 

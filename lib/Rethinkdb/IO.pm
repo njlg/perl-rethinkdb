@@ -184,7 +184,10 @@ sub _encode_recurse {
     push @{$json}, $args;
   }
 
-  if ( $data->{optargs} ) {
+  if ( $data->{optargs} && ref $data->{optargs} eq 'HASH' ) {
+    push @{$json}, $data->{optargs};
+  }
+  elsif ( $data->{optargs} ) {
     my $args = {};
     foreach ( @{ $data->{optargs} } ) {
       $args->{ $_->{key} } = $self->_encode_recurse( $_->{val} );
@@ -345,6 +348,7 @@ sub _send {
 
   if ( $ENV{RDB_DEBUG} ) {
     say {*STDERR} 'RECEIVED:';
+    say {*STDERR} Dumper $res_data;
     say {*STDERR} Dumper $res;
   }
 

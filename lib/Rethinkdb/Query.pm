@@ -33,7 +33,6 @@ sub new {
 
 sub _build {
   my $self = shift;
-
   my $q = { type => $self->_type };
 
   if ( $self->args ) {
@@ -149,7 +148,7 @@ sub update {
   my $q = Rethinkdb::Query->new(
     _parent => $self,
     _type   => $self->_termType->update,
-    args    => $args,
+    args    => Rethinkdb::Util->_wrap_func( $args, 1 ),
     optargs => $optargs,
   );
 
@@ -164,7 +163,7 @@ sub replace {
   my $q = Rethinkdb::Query->new(
     _parent => $self,
     _type   => $self->_termType->replace,
-    args    => $args,
+    args    => Rethinkdb::Util->_wrap_func($args),
     optargs => $optargs,
   );
 
@@ -1253,6 +1252,67 @@ sub info {
   return $q;
 }
 
+sub fill {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->fill,
+  );
+
+  return $q;
+}
+
+sub to_geojson {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->to_geojson,
+  );
+
+  return $q;
+}
+
+sub includes {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->includes,
+    args    => $args,
+  );
+
+  return $q;
+}
+
+sub intersects {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->intersects,
+    args    => $args,
+  );
+
+  return $q;
+}
+
+sub polygon_sub {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->polygon_sub,
+    args    => $args,
+  );
+
+  return $q;
+}
+
 1;
 
 =encoding utf8
@@ -2013,6 +2073,74 @@ Gets the type of a value.
   r->table('marvel')->info->run;
 
 Get information about a ReQL value.
+
+=head2 fill
+
+  r->table('geo')->insert(
+    {
+      'id'        => 201,
+      'rectangle' => r->line(
+        [ -122.423246, 37.779388 ],
+        [ -122.423246, 37.329898 ],
+        [ -121.886420, 37.329898 ],
+        [ -121.886420, 37.779388 ]
+      )
+    }
+  )->run;
+
+  r->table('geo')->get(201)
+    ->update( { 'rectangle' => r->row->bracket('rectangle')->fill },
+    { non_atomic => r->true } )->run;
+
+
+Convert a C<Line> object into a C<Polygon> object. If the last point does not
+specify the same coordinates as the first point, C<polygon> will close the
+polygon by connecting them.
+
+=head2 includes
+
+  r->circle( r->point( -117.220406, 32.719464 ), 2000 )
+    ->includes( r->point( -117.206201, 32.725186 ) )->run($conn);
+
+Tests whether a geometry object is completely contained within another. When
+applied to a sequence of geometry objects, L</includes> acts as a L</filter>,
+returning a sequence of objects from the sequence that include the argument.
+
+=head2 intersects
+
+  r->circle( r->point( -117.220406, 32.719464 ), 2000 )
+    ->intersects( r->point( -117.206201, 32.725186 ) )->run($conn);
+
+Tests whether two geometry objects intersect with one another. When applied
+to a sequence of geometry objects, L</intersects> acts as a L</filter>,
+returning a sequence of objects from the sequence that intersect with the
+argument.
+
+=head2 polygon_sub
+
+  r->polygon(
+    [ -122.4, 37.7 ],
+    [ -122.4, 37.3 ],
+    [ -121.8, 37.3 ],
+    [ -121.8, 37.7 ]
+    )->polygon_sub(
+    r->polygon(
+      [ -122.3, 37.4 ],
+      [ -122.3, 37.6 ],
+      [ -122.0, 37.6 ],
+      [ -122.0, 37.4 ]
+    )
+    )->run($conn);
+
+Use C<polygon2> to "punch out" a hole in C<polygon1>. C<polygon2> must be
+completely contained within C<polygon1> and must have no holes itself (it must
+not be the output of L</polygon_sub> itself).
+
+=head2 to_geojson
+
+  r->table('geo')->get('sfo')->bracket('location')->to_geojson->run;
+
+Convert a ReQL geometry object to a L<GeoJSON|http://geojson.org/> object.
 
 =head1 SEE ALSO
 
