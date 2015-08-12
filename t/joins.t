@@ -183,7 +183,8 @@ $res = r->table('marvel')->inner_join(
   r->table('dc'),
   sub ($$) {
     my ( $marvel_row, $dc_row ) = @_;
-    return $marvel_row->attr('strength')->lt( $dc_row->attr('strength') );
+    return $marvel_row->bracket('strength')->
+      lt( $dc_row->bracket('strength') );
   }
 )->run;
 
@@ -198,7 +199,8 @@ $res = r->table('marvel')->outer_join(
   r->table('dc'),
   sub ($$) {
     my ( $marvel_row, $dc_row ) = @_;
-    return $marvel_row->attr('strength')->lt( $dc_row->attr('strength') );
+    return $marvel_row->bracket('strength')->
+      lt( $dc_row->bracket('strength') );
   }
 )->run;
 

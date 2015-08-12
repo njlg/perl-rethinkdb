@@ -162,7 +162,7 @@ r->table('dc')->insert(
 )->run;
 
 # reduce
-$res = r->table('marvel')->map( r->row->attr('age') )->reduce(
+$res = r->table('marvel')->map( r->row->bracket('age') )->reduce(
   sub ($$) {
     my ( $acc, $val ) = @_;
     $acc->add($val);
@@ -182,7 +182,7 @@ is $res->response, '9', 'Correct number of documents';
 $res = r->table('marvel')->concat_map(
   sub {
     my $row = shift;
-    $row->attr('dc_buddies');
+    $row->bracket('dc_buddies');
   }
 )->count('Batman')->run;
 
@@ -192,7 +192,7 @@ is $res->response, '4', 'Correct number of documents';
 $res = r->table('marvel')->count(
   sub {
     my $hero = shift;
-    $hero->attr('dc_buddies')->contains('Batman');
+    $hero->bracket('dc_buddies')->contains('Batman');
   }
 )->run;
 
@@ -225,7 +225,7 @@ is_deeply $res->response,
   'Correct response';
 
 # contains
-$res = r->table('marvel')->get('Iron Man')->attr('dc_buddies')
+$res = r->table('marvel')->get('Iron Man')->bracket('dc_buddies')
   ->contains('Superman')->run;
 
 is $res->type, 1, 'Correct response type';

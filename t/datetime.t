@@ -164,7 +164,7 @@ is $res->response, 7, 'Correct response';
 $res = r->table("marvel")->filter(
   sub {
     my $hero = shift;
-    $hero->attr('birthdate')->timezone->eq('-07:00');
+    $hero->bracket('birthdate')->timezone->eq('-07:00');
   }
 )->run;
 
@@ -175,7 +175,7 @@ is $res->response->[0]->{superhero}, 'Bob', 'Correct response';
 # during
 $res
   = r->table('marvel')
-  ->filter( r->row->attr('birthdate')
+  ->filter( r->row->bracket('birthdate')
     ->during( r->time( 1986, 12, 1, 'Z' ), r->time( 1986, 12, 10, 'Z' ) ) )
   ->run;
 
@@ -183,7 +183,7 @@ is $res->type, 2, 'Correct response type';
 is scalar @{ $res->response }, 1, 'Correct response';
 
 $res = r->table('marvel')->filter(
-  r->row->attr('birthdate')->during(
+  r->row->bracket('birthdate')->during(
     r->time( 1986, 12, 1,  'Z' ),
     r->time( 1986, 12, 10, 'Z' ),
     { left_bound => "open", right_bound => "closed" }
@@ -197,7 +197,7 @@ is scalar @{ $res->response }, 1, 'Correct response';
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    $hero->attr('birthdate')->date->eq( r->now->date );
+    $hero->bracket('birthdate')->date->eq( r->now->date );
   }
 )->run;
 
@@ -208,7 +208,7 @@ is_deeply $res->response, [], 'Correct response';
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    $hero->attr('birthdate')->time_of_day->le( 12 * 60 * 60 );
+    $hero->bracket('birthdate')->time_of_day->le( 12 * 60 * 60 );
   }
 )->run;
 
@@ -219,7 +219,7 @@ is_deeply $res->response, [], 'Correct response';
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    $hero->attr('birthdate')->year->eq(1986);
+    $hero->bracket('birthdate')->year->eq(1986);
   }
 )->run;
 
@@ -230,7 +230,7 @@ is scalar @{ $res->response }, 13, 'Correct response';
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    $hero->attr('birthdate')->month->eq(12);
+    $hero->bracket('birthdate')->month->eq(12);
   }
 )->run;
 
@@ -241,7 +241,7 @@ is scalar @{ $res->response }, 1, 'Correct response';
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    $hero->attr('birthdate')->month->eq( r->january );
+    $hero->bracket('birthdate')->month->eq( r->january );
   }
 )->run;
 
@@ -252,7 +252,7 @@ is scalar @{ $res->response }, 1, 'Correct response';
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    $hero->attr('birthdate')->month->eq( r->february );
+    $hero->bracket('birthdate')->month->eq( r->february );
   }
 )->run;
 
@@ -263,7 +263,7 @@ is scalar @{ $res->response }, 1, 'Correct response';
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    $hero->attr('birthdate')->month->eq( r->march );
+    $hero->bracket('birthdate')->month->eq( r->march );
   }
 )->run;
 
@@ -274,7 +274,7 @@ is scalar @{ $res->response }, 1, 'Correct response';
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    $hero->attr('birthdate')->month->eq( r->april );
+    $hero->bracket('birthdate')->month->eq( r->april );
   }
 )->run;
 
@@ -285,7 +285,7 @@ is scalar @{ $res->response }, 1, 'Correct response';
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    $hero->attr('birthdate')->month->eq( r->may );
+    $hero->bracket('birthdate')->month->eq( r->may );
   }
 )->run;
 
@@ -296,7 +296,7 @@ is scalar @{ $res->response }, 1, 'Correct response';
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    $hero->attr('birthdate')->month->eq( r->june );
+    $hero->bracket('birthdate')->month->eq( r->june );
   }
 )->run;
 
@@ -307,7 +307,7 @@ is scalar @{ $res->response }, 1, 'Correct response';
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    $hero->attr('birthdate')->month->eq( r->july );
+    $hero->bracket('birthdate')->month->eq( r->july );
   }
 )->run;
 
@@ -318,7 +318,7 @@ is scalar @{ $res->response }, 1, 'Correct response';
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    $hero->attr('birthdate')->month->eq( r->august );
+    $hero->bracket('birthdate')->month->eq( r->august );
   }
 )->run;
 
@@ -329,7 +329,7 @@ is scalar @{ $res->response }, 1, 'Correct response';
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    $hero->attr('birthdate')->month->eq( r->september );
+    $hero->bracket('birthdate')->month->eq( r->september );
   }
 )->run;
 
@@ -340,7 +340,7 @@ is scalar @{ $res->response }, 1, 'Correct response';
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    $hero->attr('birthdate')->month->eq( r->november );
+    $hero->bracket('birthdate')->month->eq( r->november );
   }
 )->run;
 
@@ -351,7 +351,7 @@ is scalar @{ $res->response }, 2, 'Correct response';
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    $hero->attr('birthdate')->month->eq( r->december );
+    $hero->bracket('birthdate')->month->eq( r->december );
   }
 )->run;
 
@@ -362,7 +362,7 @@ is scalar @{ $res->response }, 1, 'Correct response';
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    $hero->attr('birthdate')->month->eq( r->december );
+    $hero->bracket('birthdate')->month->eq( r->december );
   }
 )->run;
 
@@ -373,7 +373,7 @@ is scalar @{ $res->response }, 1, 'Correct response';
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    $hero->attr('birthdate')->day->eq(4);
+    $hero->bracket('birthdate')->day->eq(4);
   }
 )->run;
 
@@ -384,7 +384,7 @@ is scalar @{ $res->response }, 4, 'Correct response';
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    $hero->attr('birthdate')->day_of_week->eq(2);
+    $hero->bracket('birthdate')->day_of_week->eq(2);
   }
 )->run;
 
@@ -395,7 +395,7 @@ is scalar @{ $res->response }, 2, 'Correct response';
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    $hero->attr('birthdate')->day_of_week->eq( r->monday );
+    $hero->bracket('birthdate')->day_of_week->eq( r->monday );
   }
 )->run;
 
@@ -406,7 +406,7 @@ is scalar @{ $res->response }, 2, 'Correct response';
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    $hero->attr('birthdate')->day_of_week->eq( r->tuesday );
+    $hero->bracket('birthdate')->day_of_week->eq( r->tuesday );
   }
 )->run;
 
@@ -417,7 +417,7 @@ is scalar @{ $res->response }, 2, 'Correct response';
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    $hero->attr('birthdate')->day_of_week->eq( r->wednesday );
+    $hero->bracket('birthdate')->day_of_week->eq( r->wednesday );
   }
 )->run;
 
@@ -428,7 +428,7 @@ is scalar @{ $res->response }, 1, 'Correct response';
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    $hero->attr('birthdate')->day_of_week->eq( r->thursday );
+    $hero->bracket('birthdate')->day_of_week->eq( r->thursday );
   }
 )->run;
 
@@ -439,7 +439,7 @@ is scalar @{ $res->response }, 3, 'Correct response';
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    $hero->attr('birthdate')->day_of_week->eq( r->friday );
+    $hero->bracket('birthdate')->day_of_week->eq( r->friday );
   }
 )->run;
 
@@ -450,7 +450,7 @@ is scalar @{ $res->response }, 1, 'Correct response';
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    $hero->attr('birthdate')->day_of_week->eq( r->saturday );
+    $hero->bracket('birthdate')->day_of_week->eq( r->saturday );
   }
 )->run;
 
@@ -461,7 +461,7 @@ is scalar @{ $res->response }, 2, 'Correct response';
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    $hero->attr('birthdate')->day_of_week->eq( r->sunday );
+    $hero->bracket('birthdate')->day_of_week->eq( r->sunday );
   }
 )->run;
 
@@ -470,27 +470,28 @@ is scalar @{ $res->response }, 2, 'Correct response';
 
 # day_of_year
 $res = r->table('marvel')
-  ->filter( r->row->attr('birthdate')->day_of_year->eq(308) )->run;
+  ->filter( r->row->bracket('birthdate')->day_of_year->eq(308) )->run;
 
 is $res->type, 2, 'Correct response type';
 is scalar @{ $res->response }, 1, 'Correct response';
 
 # hours
-$res
-  = r->table('marvel')->filter( r->row->attr('birthdate')->hours->lt(7) )->run;
+$res = r->table('marvel')->filter( r->row->bracket('birthdate')->hours->lt(7) )
+  ->run;
 
 is $res->type, 2, 'Correct response type';
 is scalar @{ $res->response }, 1, 'Correct response';
 
 # minutes
-$res = r->table('marvel')->filter( r->row->attr('birthdate')->minutes->lt(10) )
-  ->run;
+$res = r->table('marvel')
+  ->filter( r->row->bracket('birthdate')->minutes->lt(10) )->run;
 
 is $res->type, 2, 'Correct response type';
 is scalar @{ $res->response }, 3, 'Correct response';
 
 # seconds
-$res = r->table('marvel')->filter( r->row->attr('birthdate')->seconds->gt(1) )
+$res
+  = r->table('marvel')->filter( r->row->bracket('birthdate')->seconds->gt(1) )
   ->run;
 
 is $res->type, 2, 'Correct response type';

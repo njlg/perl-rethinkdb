@@ -68,7 +68,7 @@ my $res = r->do(
   r->table('marvel')->get('Iron Man'),
   sub ($) {
     my $ironman = shift;
-    $ironman->attr('superpower');
+    $ironman->bracket('superpower');
   }
 )->run;
 
@@ -79,12 +79,12 @@ is $res->response, 'Arc Reactor', 'Correct response';
 r->table('marvel')->map(
   r->branch(
 
-    # r->row->attr('victories')->gt(100),
-    sub { shift->attr('victories')->gt(1); },
+    # r->row->bracket('victories')->gt(100),
+    sub { shift->bracket('victories')->gt(1); },
 
     # r->true,
-    sub { shift->attr('superhero')->add(' is a superhero'); },
-    sub { shift->attr('superhero')->add(' is a hero'); }
+    sub { shift->bracket('superhero')->add(' is a superhero'); },
+    sub { shift->bracket('superhero')->add(' is a hero'); }
   )
 )->run;
 
@@ -92,7 +92,8 @@ r->table('marvel')->map(
 $res = r->table('marvel')->for_each(
   sub {
     my $hero = shift;
-    return r->table('villains')->get( $hero->attr('villainDefeated') )->delete;
+    return r->table('villains')->get( $hero->bracket('villainDefeated') )
+      ->delete;
   }
 )->run;
 
@@ -103,7 +104,8 @@ is $res->response->{deleted}, 3, 'Correct response';
 $res = r->table('marvel')->get('Iron Man')->do(
   sub {
     my $ironman = shift;
-    r->branch( $ironman->attr('victories')->lt( $ironman->attr('battles') ),
+    r->branch(
+      $ironman->bracket('victories')->lt( $ironman->bracket('battles') ),
       r->error('impossible code path'), $ironman );
   }
 )->run;
@@ -115,8 +117,8 @@ is $res->response->[0], 'impossible code path', 'Correct response';
 $res = r->table('marvel')->map(
   sub {
     my $stuff = shift;
-    $stuff->attr('outfits')->default(0)
-      ->add( $stuff->attr('active')->default(0) );
+    $stuff->bracket('outfits')->default(0)
+      ->add( $stuff->bracket('active')->default(0) );
   }
 )->run;
 

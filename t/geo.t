@@ -48,7 +48,7 @@ r->table('geo')->insert(
 
 $res
   = r->table('geo')->get(201)
-  ->update( { 'rectangle' => r->row->attr('rectangle')->fill },
+  ->update( { 'rectangle' => r->row->bracket('rectangle')->fill },
   { non_atomic => r->true } )->run;
 
 is $res->type, 1, 'Correct response type';
@@ -70,7 +70,7 @@ is $res->type, 1, 'Correct response type';
 is $res->response->{inserted}, 1, 'Correct response';
 
 # to_geojson
-$res = r->table('geo')->get('sfo')->attr('location')->to_geojson->run;
+$res = r->table('geo')->get('sfo')->bracket('location')->to_geojson->run;
 
 is $res->type, 1, 'Correct response type';
 is_deeply $res->response, $geo_json, 'Correct response';

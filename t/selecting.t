@@ -188,7 +188,7 @@ is $res->response->[0]->{superhero}, 'Ant-Man', 'Correct document returned';
 
 # Filter with EXPR predicate
 # $res = r->table('marvel')->filter(r->true)->run;
-$res = r->table('marvel')->filter( r->row->attr('age')->gt(100) )->run;
+$res = r->table('marvel')->filter( r->row->bracket('age')->gt(100) )->run;
 
 is $res->type, 2, 'Correct status code';
 is_deeply [ sort { $a->{user_id} cmp $b->{user_id} } @{ $res->response } ],
@@ -214,7 +214,7 @@ is_deeply [ sort { $a->{user_id} cmp $b->{user_id} } @{ $res->response } ],
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    return $hero->attr('age')->gt(100);
+    return $hero->bracket('age')->gt(100);
   }
 )->order_by('user_id')->run;
 

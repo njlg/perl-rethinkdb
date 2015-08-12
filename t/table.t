@@ -9,6 +9,7 @@ use Rethinkdb;
 r->connect->repl;
 r->db('test')->drop->run;
 r->db('test')->create->run;
+r->db('test')->table_create('geo')->run;
 
 #
 # db class methods for table
@@ -63,7 +64,7 @@ $res = r->db('test')->table('dcuniverse')->create->run;
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 is $res->type, 1, 'Correct status code';
 
-# create secondary index
+# create a simple secondary index
 $res = r->db('test')->table('dcuniverse')->index_create('alias')->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
@@ -76,7 +77,8 @@ isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 is_deeply $res->response, ['alias'], 'Indexes were listed';
 
 # rename index
-$res = r->db('test')->table('dcuniverse')->index_rename('alias', 'pseudonym')->run;
+$res = r->db('test')->table('dcuniverse')->index_rename( 'alias', 'pseudonym' )
+  ->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 is $res->response->{renamed}, 1, 'Index was renamed';
@@ -86,28 +88,28 @@ $res = r->db('test')->table('dcuniverse')->index_status('pseudonym')->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 isa_ok $res->response, 'ARRAY', 'Correct return type';
-is scalar @{$res->response}, 1, 'Correct return type';
+is scalar @{ $res->response }, 1, 'Correct return type';
 
 # index_status - for all indexes on table
 $res = r->db('test')->table('dcuniverse')->index_status->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 isa_ok $res->response, 'ARRAY', 'Correct return type';
-is scalar @{$res->response}, 1, 'Correct return type';
+is scalar @{ $res->response }, 1, 'Correct return type';
 
 # index_wait - for one particular index
 $res = r->db('test')->table('dcuniverse')->index_wait('pseudonym')->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 isa_ok $res->response, 'ARRAY', 'Correct return type';
-is scalar @{$res->response}, 1, 'Correct return type';
+is scalar @{ $res->response }, 1, 'Correct return type';
 
 # index_wait - for all indexes on table
 $res = r->db('test')->table('dcuniverse')->index_wait->run;
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 isa_ok $res->response, 'ARRAY', 'Correct return type';
-is scalar @{$res->response}, 1, 'Correct return type';
+is scalar @{ $res->response }, 1, 'Correct return type';
 
 # drop secondary index
 $res = r->db('test')->table('dcuniverse')->index_drop('pseudonym')->run;
@@ -115,16 +117,71 @@ $res = r->db('test')->table('dcuniverse')->index_drop('pseudonym')->run;
 isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 is $res->response->{dropped}, 1, 'Index was dropped';
 
-# create secondary index with function
-local $SIG{__WARN__} = sub { die $_[0] };
-eval {
-  r->db('test')->table('dcuniverse')->index_create('alias', sub { return 1; })->run;
-};
-like (
-    $@,
-    qr/table->index_create does not accept functions yet/,
-    'Abort when using a sub with `index_create`'
-);
+# create a simple index based on the field
+$res
+  = r->db('test')->table('dcuniverse')
+  ->index_create( 'alias_name', r->row->bracket('alias')->bracket('name') )
+  ->run;
+
+is $res->response->{created}, 1, 'Index was created';
+
+# create a geospatial index
+$res = r->db('test')->table('dcuniverse')
+  ->index_create( 'last_seen', { geo => r->true } )->run;
+
+is $res->response->{created}, 1, 'Index was created';
+
+# create a compound index based on the fields post_id and date
+$res
+  = r->db('test')->table('dcuniverse')
+  ->index_create( 'location_and_date',
+  [ r->row->bracket('location'), r->row->bracket('date') ] )->run;
+
+is $res->response->{created}, 1, 'Index was created';
+
+# create a multi index
+$res = r->db('test')->table('dcuniverse')
+  ->index_create( 'friends', { multi => r->true } )->run;
+
+is $res->response->{created}, 1, 'Index was created';
+
+# create a geospatial multi index based on the field
+$res = r->db('test')->table('dcuniverse')
+  ->index_create( 'cities', { multi => r->true, geo => r->true } )->run;
+
+is $res->response->{created}, 1, 'Index was created';
+
+# create an index based on an arbitrary expression
+$res = r->table('dcuniverse')->index_create(
+  'authors',
+  sub {
+    my $doc = shift;
+    return r->branch(
+      $doc->has_fields('updated_at'),
+      $doc->bracket('updated_at'),
+      $doc->bracket('created_at')
+    );
+  }
+)->run;
+
+is $res->response->{created}, 1, 'Index was created';
+
+# create a new secondary index based on an existing one
+$res = r->table('dcuniverse')->index_status('authors')->nth(0)
+  ->bracket('function')->run;
+$res = r->table('dcuniverse')->index_create( 'authors_bkup', $res->response )
+  ->run;
+
+is $res->response->{created}, 1, 'Index was created';
+
+# changes
+TODO: {
+  local $TODO = 'Need to write tests for table changes';
+
+  # r->table('dcuniverse')->changes->run(sub {
+  #   my $res = shift;
+  # });
+}
 
 # sync
 $res = r->table('dcuniverse')->sync->run;
@@ -147,5 +204,8 @@ TODO: {
 # r->db('test')->table('dcuniverse', { primary_key => 'name', cache_size => 500 })->create->run;
 # r->db('test')->table('dcuniverse', { primary_key => 'name', durability => 'soft' })->create->run;
 }
+
+# clean up
+r->db('test')->drop->run;
 
 done_testing();

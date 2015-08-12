@@ -676,10 +676,7 @@ sub set_difference {
   return $q;
 }
 
-# TODO: replace this with AUTOLOAD or overload %{}
-# to get something like r->table->get()->{attr}->run;
-# or like r->table->get()->attr->run;
-sub attr {
+sub get_field {
   my $self = shift;
   my $args = shift;
 
@@ -691,6 +688,25 @@ sub attr {
 
   return $q;
 }
+
+# TODO: replace this with AUTOLOAD or overload %{}
+# to get something like r->table->get()->{attr}->run;
+# or like r->table->get()->attr->run;
+sub bracket {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->bracket,
+    args    => $args
+  );
+
+  return $q;
+}
+
+# for backwards compatibility
+sub attr { bracket(@_) }
 
 sub has_fields {
   my $self = shift;
@@ -1714,12 +1730,29 @@ array with distinct values).
 Remove the elements of one array from another and return them as a set (an
 array with distinct values).
 
-=head2 attr
+=head2 get_field
 
-  r->table('marvel')->get('IronMan')->attr('firstAppearance')->run;
+  r->table('marvel')->get('IronMan')->get_field('firstAppearance')->run;
 
 Get a single field from an object. If called on a sequence, gets that field
 from every object in the sequence, skipping objects that lack it.
+
+=head2 bracket
+
+  r->table('marvel')->get('IronMan')->bracket('firstAppearance')->run;
+  r->expr([10, 20, 30, 40, 50])->bracket(3)->run;
+
+Get a single field from an object or a single element from a sequence.
+
+=head2 attr
+
+  r->table('marvel')->get('IronMan')->attr('firstAppearance')->run;
+  r->expr([10, 20, 30, 40, 50])->attr(3)->run;
+
+Get a single field from an object or a single element from a sequence.
+
+DEPERCATED: This method has been renamed to L</bracket>, but L</attr> will
+remain for a number of releases for backwards compatibility.
 
 =head2 has_fields
 

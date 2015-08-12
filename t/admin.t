@@ -105,14 +105,14 @@ my $res;
 $res = r->db('test')->config->run;
 
 is $res->type, 1, 'Correct response type';
-is_deeply [ sort keys %{$res->response} ], [ 'id', 'name' ],
+is_deeply [ sort keys %{ $res->response } ], [ 'id', 'name' ],
   'Correct structure returned';
 
 # config - table
 $res = r->table('marvel')->config->run;
 
 is $res->type, 1, 'Correct response type';
-is_deeply [ sort keys %{$res->response} ],
+is_deeply [ sort keys %{ $res->response } ],
   [ 'db', 'durability', 'id', 'name', 'primary_key', 'shards', 'write_acks' ],
   'Correct structure returned';
 
@@ -163,9 +163,9 @@ is $res->response->{reconfigured},       1,       'Correct structure returned';
 $res = r->table('marvel')->status->run;
 
 is $res->type, 1, 'Correct response type';
-isa_ok $res->response->{shards},   'ARRAY',   'Correct structure returned';
-is $res->response->{db},   'test',   'Correct structure returned';
-is $res->response->{name}, 'marvel', 'Correct structure returned';
+isa_ok $res->response->{shards}, 'ARRAY',  'Correct structure returned';
+is $res->response->{db},         'test',   'Correct structure returned';
+is $res->response->{name},       'marvel', 'Correct structure returned';
 is_deeply $res->response->{status},
   {
   ready_for_reads          => r->true,
@@ -179,21 +179,21 @@ is_deeply $res->response->{status},
 $res = r->wait->run;
 
 is $res->type, 1, 'Correct response type';
-is $res->response->{ready}, 1, 'Correct response type';
+is $res->response->{ready},              1,       'Correct response type';
 isa_ok $res->response->{status_changes}, 'ARRAY', 'Correct response type';
 
 # wait - database
 $res = r->db('test')->wait->run;
 
 is $res->type, 1, 'Correct response type';
-is $res->response->{ready}, 1, 'Correct response type';
+is $res->response->{ready},              1,       'Correct response type';
 isa_ok $res->response->{status_changes}, 'ARRAY', 'Correct response type';
 
 # wait - table
 $res = r->table('marvel')->wait->run;
 
 is $res->type, 1, 'Correct response type';
-is $res->response->{ready}, 1, 'Correct response type';
+is $res->response->{ready},              1,       'Correct response type';
 isa_ok $res->response->{status_changes}, 'ARRAY', 'Correct response type';
 
 done_testing();

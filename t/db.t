@@ -25,8 +25,8 @@ $res = r->db_list->run;
 isa_ok $res, 'Rethinkdb::Response';
 is $res->type, 1, 'Correct status code';
 
-my %dbs = map { $_ => 1 } @{$res->response};
-ok $dbs{rethinkdb}, 'Db was created and listed';
+my %dbs = map { $_ => 1 } @{ $res->response };
+ok $dbs{rethinkdb},   'Db was created and listed';
 ok $dbs{superheroes}, 'Db was created and listed';
 
 # drop the database
