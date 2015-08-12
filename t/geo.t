@@ -75,6 +75,9 @@ $res = r->table('geo')->get('sfo')->bracket('location')->to_geojson->run;
 is $res->type, 1, 'Correct response type';
 is_deeply $res->response, $geo_json, 'Correct response';
 
+# wait on the index since these next few tests require the index to be ready
+r->table('geo')->index_wait('location')->run;
+
 # get_intersecting
 my $circle1 = r->circle( [ -122.423246, 37.770378359 ], 10, { unit => 'mi' } );
 $res = r->table('geo')->get_intersecting( $circle1, { index => 'location' } )

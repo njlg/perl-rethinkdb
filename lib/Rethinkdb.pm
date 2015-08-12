@@ -771,6 +771,45 @@ sub maxval {
   return $q;
 }
 
+sub round {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _rdb  => $self,
+    _type => $self->term->termType->round,
+    args  => $args
+  );
+
+  return $q;
+}
+
+sub ceil {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _rdb  => $self,
+    _type => $self->term->termType->ceil,
+    args  => $args
+  );
+
+  return $q;
+}
+
+sub floor {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _rdb  => $self,
+    _type => $self->term->termType->floor,
+    args  => $args
+  );
+
+  return $q;
+}
+
 sub true  { Rethinkdb::_True->new; }
 sub false { Rethinkdb::_False->new; }
 
@@ -1341,6 +1380,28 @@ represent "greater than any index key". For instance, if you use L</maxval> as
 the upper key, then L<Rethinkdb::Query::Table/between> will return all
 documents whose primary keys (or indexes) are greater than the specified lower
 key.
+
+=head2 round
+
+  r->round(-12.567)->run;
+
+Rounds the given value to the nearest whole integer. For example, values of
+1.0 up to but not including 1.5 will return 1.0, similar to L</floor>; values
+of 1.5 up to 2.0 will return 2.0, similar to L</ceil>.
+
+=head2 ceil
+
+  r->ceil(-12.567)->run;
+
+Rounds the given value up, returning the smallest integer value greater than
+or equal to the given value (the value's ceiling).
+
+=head2 floor
+
+  r->floor(-12.567)->run;
+
+Rounds the given value down, returning the largest integer value less than or
+equal to the given value (the value's floor).
 
 =head2 true
 

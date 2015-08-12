@@ -1329,6 +1329,45 @@ sub polygon_sub {
   return $q;
 }
 
+sub round {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent  => $self,
+    _type => $self->_termType->round,
+    args  => $args
+  );
+
+  return $q;
+}
+
+sub ceil {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent  => $self,
+    _type => $self->_termType->ceil,
+    args  => $args
+  );
+
+  return $q;
+}
+
+sub floor {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent  => $self,
+    _type => $self->_termType->floor,
+    args  => $args
+  );
+
+  return $q;
+}
+
 1;
 
 =encoding utf8
@@ -2174,6 +2213,28 @@ not be the output of L</polygon_sub> itself).
   r->table('geo')->get('sfo')->bracket('location')->to_geojson->run;
 
 Convert a ReQL geometry object to a L<GeoJSON|http://geojson.org/> object.
+
+=head2 round
+
+  r->expr(-12.567)->round->run($conn);
+
+Rounds the given value to the nearest whole integer. For example, values of
+1.0 up to but not including 1.5 will return 1.0, similar to L</floor>; values
+of 1.5 up to 2.0 will return 2.0, similar to L</ceil>.
+
+=head2 ceil
+
+  r->expr(-12.567)->ceil->run($conn);
+
+Rounds the given value up, returning the smallest integer value greater than
+or equal to the given value (the value's ceiling).
+
+=head2 floor
+
+  r->expr(-12.567)->floor->run($conn);
+
+Rounds the given value down, returning the largest integer value less than or
+equal to the given value (the value's floor).
 
 =head1 SEE ALSO
 

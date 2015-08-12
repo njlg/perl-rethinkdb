@@ -113,7 +113,7 @@ $res = r->table('marvel')->config->run;
 
 is $res->type, 1, 'Correct response type';
 is_deeply [ sort keys %{ $res->response } ],
-  [ 'db', 'durability', 'id', 'name', 'primary_key', 'shards', 'write_acks' ],
+  [ 'db', 'durability', 'id', 'indexes', 'name', 'primary_key', 'shards', 'write_acks' ],
   'Correct structure returned';
 
 # rebalance - database
@@ -180,20 +180,17 @@ $res = r->wait->run;
 
 is $res->type, 1, 'Correct response type';
 is $res->response->{ready},              1,       'Correct response type';
-isa_ok $res->response->{status_changes}, 'ARRAY', 'Correct response type';
 
 # wait - database
 $res = r->db('test')->wait->run;
 
 is $res->type, 1, 'Correct response type';
 is $res->response->{ready},              1,       'Correct response type';
-isa_ok $res->response->{status_changes}, 'ARRAY', 'Correct response type';
 
 # wait - table
 $res = r->table('marvel')->wait->run;
 
 is $res->type, 1, 'Correct response type';
 is $res->response->{ready},              1,       'Correct response type';
-isa_ok $res->response->{status_changes}, 'ARRAY', 'Correct response type';
 
 done_testing();

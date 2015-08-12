@@ -109,6 +109,10 @@ isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 is $res->type, 1, 'Correct status code';
 is $res->response->{superhero}, 'Spider-Man', 'Correct response';
 
+# wait for indexes to be ready_for_reads
+r->table('marvel')->index_wait('superpower')->run;
+r->table('marvel')->index_wait('user_id')->run;
+
 # get all Documents with correct key
 $res
   = r->table('marvel')->get_all( 'Size', 'Smash', { index => 'superpower' } )

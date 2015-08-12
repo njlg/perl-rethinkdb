@@ -208,12 +208,13 @@ is_deeply $res->response, [], 'Correct response';
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    $hero->bracket('birthdate')->time_of_day->le( 12 * 60 * 60 );
+    $hero->bracket('birthdate')->time_of_day->ge( 12 * 60 * 60 );
   }
 )->run;
 
 is $res->type, 2, 'Correct response type';
-is_deeply $res->response, [], 'Correct response';
+is @{$res->response}, 1, 'Correct response';
+is $res->response->[0]->{superhero}, 'Hulk', 'Correct response';
 
 # year
 $res = r->table('marvel')->filter(
