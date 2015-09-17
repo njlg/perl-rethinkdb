@@ -48,8 +48,8 @@ sub connect {
   $response =~ s/^\s//;
   $response =~ s/\s$//;
 
-  if ( $response eq 'SUCCESS' ) {
-    croak 'ERROR: Unable to connect to the database';
+  if ( $response =~ /^ERROR/ ) {
+    croak $response;
   }
 
   $self->_callbacks( {} );
