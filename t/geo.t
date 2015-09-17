@@ -31,7 +31,7 @@ my $point2 = r->point( -117.220406, 32.719464 );
 $res = r->distance( $point1, $point2, { unit => 'km' } )->run($conn);
 
 is $res->type, 1, 'Correct response type';
-is $res->response, '734.125249602184', 'Correct response';
+like $res->response, qr/734.125/, 'Correct response';
 
 # fill
 r->table('geo')->insert(
