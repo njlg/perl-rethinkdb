@@ -23,6 +23,8 @@ sub import {
 
   no strict;
   *{"$package\::r"} = \&r;
+
+  return;
 }
 
 sub r {
@@ -235,7 +237,7 @@ sub random {
 sub now {
   my $self = shift;
 
-  my $q = Rethinkdb::Query->new( _type => $self->term->termType->now, );
+  my $q = Rethinkdb::Query->new( _type => $self->term->termType->now );
 
   return $q;
 }
@@ -810,8 +812,8 @@ sub floor {
   return $q;
 }
 
-sub true  { Rethinkdb::_True->new; }
-sub false { Rethinkdb::_False->new; }
+sub true  { return Rethinkdb::_True->new; }
+sub false { return Rethinkdb::_False->new; }
 
 package Rethinkdb::_True;
 
@@ -822,7 +824,7 @@ use overload
   '=='   => sub { $_[1] == 1 ? 1 : 0; },
   fallback => 1;
 
-sub new { bless {}, $_[0] }
+sub new { return bless {}, $_[0] }
 
 package Rethinkdb::_False;
 
@@ -833,9 +835,11 @@ use overload
   '=='   => sub { $_[1] == 0 ? 1 : 0; },
   fallback => 1;
 
-sub new { bless {}, $_[0] }
+sub new { return bless {}, $_[0] }
 
 1;
+
+__END__
 
 =encoding utf8
 

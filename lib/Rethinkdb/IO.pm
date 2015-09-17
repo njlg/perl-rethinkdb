@@ -11,11 +11,11 @@ use Rethinkdb::Protocol;
 use Rethinkdb::Response;
 
 has host       => 'localhost';
-has port       => 28015;
+has port       => 28_015;
 has default_db => 'test';
-has auth_key   => '';
+has auth_key   => q{};
 has timeout    => 20;
-has [ '_rdb', '_handle', '_callbacks' ];
+has [ '_rdb', '_handle', '_callbacks', '_responder' ];
 has '_protocol' => sub { Rethinkdb::Protocol->new; };
 
 sub connect {
@@ -27,7 +27,7 @@ sub connect {
     Reuse    => 1,
     Timeout  => $self->timeout,
     )
-    or croak 'ERROR: Could not connect to ' . $self->host . ':' . $self->port;
+    or croak 'ERROR: Could not connect to ' . $self->host . q{:} . $self->port;
 
   $self->_handle->send( pack 'L<',
     $self->_protocol->versionDummy->version->v0_3 );
@@ -38,7 +38,7 @@ sub connect {
     $self->_protocol->versionDummy->protocol->json );
 
   my $response;
-  my $char = '';
+  my $char = q{};
   do {
     $self->_handle->recv( $char, 1 );
     $response .= $char;
@@ -49,7 +49,7 @@ sub connect {
   $response =~ s/\s$//;
 
   if ( $response eq 'SUCCESS' ) {
-    croak "ERROR: Unable to connect to the database";
+    croak 'ERROR: Unable to connect to the database';
   }
 
   $self->_callbacks( {} );
@@ -157,6 +157,11 @@ sub _encode_recurse {
       else {
         return JSON::PP::false;
       }
+    }
+    elsif ( defined $data->{datum}->{type}
+      && $data->{datum}->{type} == $self->_protocol->datum->datumType->r_null )
+    {
+      return JSON::PP::null;
     }
     else {
       foreach ( keys %{ $data->{datum} } ) {

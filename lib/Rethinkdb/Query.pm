@@ -45,6 +45,9 @@ sub _build {
       }
     }
   }
+  # else {
+  #   push @{ $q->{args} }, undef;
+  # }
 
   if ( $self->optargs ) {
     foreach ( keys %{ $self->optargs } ) {
@@ -1224,6 +1227,10 @@ sub default {
   my $self = shift;
   my $args = shift;
 
+  if ( !defined $args ) {
+    $args = Rethinkdb::Query::Datum->new( { data => undef } );
+  }
+
   my $q = Rethinkdb::Query->new(
     _parent => $self,
     _type   => $self->_termType->default,
@@ -1334,9 +1341,9 @@ sub round {
   my $args = shift;
 
   my $q = Rethinkdb::Query->new(
-    _parent  => $self,
-    _type => $self->_termType->round,
-    args  => $args
+    _parent => $self,
+    _type   => $self->_termType->round,
+    args    => $args
   );
 
   return $q;
@@ -1347,9 +1354,9 @@ sub ceil {
   my $args = shift;
 
   my $q = Rethinkdb::Query->new(
-    _parent  => $self,
-    _type => $self->_termType->ceil,
-    args  => $args
+    _parent => $self,
+    _type   => $self->_termType->ceil,
+    args    => $args
   );
 
   return $q;
@@ -1360,9 +1367,9 @@ sub floor {
   my $args = shift;
 
   my $q = Rethinkdb::Query->new(
-    _parent  => $self,
-    _type => $self->_termType->floor,
-    args  => $args
+    _parent => $self,
+    _type   => $self->_termType->floor,
+    args    => $args
   );
 
   return $q;

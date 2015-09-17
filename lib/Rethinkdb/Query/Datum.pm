@@ -14,8 +14,8 @@ sub _build {
 
   my $hash = {};
 
-  if ( !ref $data && !$data && $data != '0' ) {
-    $hash = { type => $self->datumType->r_null, };
+  if ( !defined $data ) {
+    $hash = { type => $self->datumType->r_null };
   }
   elsif ( looks_like_number $data ) {
     $hash = { type => $self->datumType->r_num, r_num => $data };
