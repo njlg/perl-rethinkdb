@@ -51,12 +51,12 @@ sub connect {
   my $timeout  = shift || 20;
 
   my $io = Rethinkdb::IO->new(
-    _rdb     => $self,
-    host     => $host,
-    port     => $port,
-    db       => $db,
-    auth_key => $auth_key,
-    timeout  => $timeout
+    _rdb       => $self,
+    host       => $host,
+    port       => $port,
+    default_db => $db,
+    auth_key   => $auth_key,
+    timeout    => $timeout
   );
 
   weaken $io->{_rdb};
