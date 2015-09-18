@@ -294,7 +294,7 @@ sub _send {
   $self->_handle->send( $header . $serial );
 
   # receive message
-  my $data;
+  my $data = q{};
 
   $self->_handle->recv( $token, 8 );
   $token = unpack 'Q<', $token;
@@ -302,7 +302,11 @@ sub _send {
   $self->_handle->recv( $length, 4 );
   $length = unpack 'L<', $length;
 
-  $self->_handle->recv( $data, $length );
+  my $_data;
+  do {
+    $self->_handle->recv( $_data, 4096 );
+    $data = $data . $_data;
+  } until ( length($data) eq $length );
 
   # decode RQL data
   my $res_data = $self->_decode($data);
