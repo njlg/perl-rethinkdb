@@ -124,23 +124,56 @@ sub _start {
     $self->_callbacks->{ $q->{token} } = $callback;
   }
 
-  return $self->_send($q);
+  return $self->_send( $q, $args );
 }
 
 sub _encode {
   my $self = shift;
   my $data = shift;
+  my $args = shift || {};
 
   # only QUERY->START needs these:
   if ( $data->{type} == 1 ) {
     $data = $self->_encode_recurse($data);
-    push @{$data}, {};
+    push @{$data}, _simple_encode_hash($args);
   }
   else {
     $data = [ $data->{type} ];
   }
 
   return encode_json $data;
+}
+
+# temporarily: clean up global optional arguments
+sub _simple_encode_hash {
+  my $data = shift;
+  my $json = {};
+
+  foreach ( keys %{$data} ) {
+    $json->{$_} = _simple_encode( $data->{$_} );
+  }
+
+  if ( $json->{db} ) {
+    $json->{db} = Rethinkdb::IO->_encode_recurse(Rethinkdb::Query::Database->new(
+      name => $json->{db},
+      args => $json->{db},
+    )->_build);
+  }
+
+  return $json;
+}
+
+sub _simple_encode {
+  my $data = shift;
+
+  if ( ref $data eq 'Rethinkdb::_True' ) {
+    return JSON::PP::true;
+  }
+  elsif ( ref $data eq 'Rethinkdb::_False' ) {
+    return JSON::PP::false;
+  }
+
+  return $data;
 }
 
 sub _encode_recurse {
@@ -190,7 +223,7 @@ sub _encode_recurse {
   }
 
   if ( $data->{optargs} && ref $data->{optargs} eq 'HASH' ) {
-    push @{$json}, $data->{optargs};
+    push @{$json}, $self->_encode_recurse( $data->{optargs} );
   }
   elsif ( $data->{optargs} ) {
     my $args = {};
@@ -270,6 +303,7 @@ sub _real_cleaner {
 sub _send {
   my $self  = shift;
   my $query = shift;
+  my $args  = shift || {};
 
   if ( $ENV{RDB_DEBUG} ) {
     use feature ':5.10';
@@ -282,16 +316,21 @@ sub _send {
   my $token;
   my $length;
 
-  # croak 'dying';
-  my $serial = $self->_encode($query);
+  my $serial = $self->_encode( $query, $args );
   my $header = pack 'QL<', $query->{token}, length $serial;
 
   if ( $ENV{RDB_DEBUG} ) {
+    say 'SENDING:';
     say {*STDERR} Dumper $serial;
   }
 
   # send message
   $self->_handle->send( $header . $serial );
+
+  # noreply should just return
+  if ( $args->{noreply} ) {
+    return;
+  }
 
   # receive message
   my $data = q{};
@@ -315,7 +354,7 @@ sub _send {
   # handle partial and feed responses
   if ( $res_data->{t} == 3 or $res_data->{t} == 5 ) {
     if ( $self->_callbacks->{$token} ) {
-      my $res = Rethinkdb::Response->_init($res_data);
+      my $res = Rethinkdb::Response->_init( $res_data, $args );
 
       if ( $ENV{RDB_DEBUG} ) {
         say {*STDERR} 'RECEIVED:';
@@ -353,7 +392,7 @@ sub _send {
   }
 
   # put data in response
-  my $res = Rethinkdb::Response->_init($res_data);
+  my $res = Rethinkdb::Response->_init( $res_data, $args );
 
   if ( $ENV{RDB_DEBUG} ) {
     say {*STDERR} 'RECEIVED:';

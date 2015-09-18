@@ -7,9 +7,10 @@ use Rethinkdb::Protocol;
 has [qw{ type type_description response token error_type backtrace profile }];
 
 sub _init {
-  my $class = shift;
-  my $data  = shift;
-  my $args  = { type => $data->{t}, token => $data->{token}, };
+  my $class   = shift;
+  my $data    = shift;
+  my $optargs = shift || {};
+  my $args    = { type => $data->{t}, token => $data->{token}, };
 
   my $types = {
     1  => 'success_atom',
@@ -35,17 +36,20 @@ sub _init {
     $response = $response->[0];
   }
 
-  if ( ref $response eq 'HASH'
-    && $response->{'$reql_type$'}
-    && $response->{'$reql_type$'} eq 'GROUPED_DATA' )
-  {
-    my $group = {};
+  # group the data into a hash
+  if ( !($optargs->{group_format} && $optargs->{group_format} eq 'raw') ) {
+    if ( ref $response eq 'HASH'
+      && $response->{'$reql_type$'}
+      && $response->{'$reql_type$'} eq 'GROUPED_DATA' )
+    {
+      my $group = {};
 
-    foreach ( @{ $response->{data} } ) {
-      $group->{ $_->[0] } = $_->[1];
+      foreach ( @{ $response->{data} } ) {
+        $group->{ $_->[0] } = $_->[1];
+      }
+
+      $response = $group;
     }
-
-    $response = $group;
   }
 
   $args->{response} = $response;
