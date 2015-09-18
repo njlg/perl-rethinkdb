@@ -111,7 +111,6 @@ sub db {
 
   my $db = Rethinkdb::Query::Database->new(
     _rdb  => $self,
-    _type => $self->term->termType->db,
     name  => $name,
     args  => $name,
   );

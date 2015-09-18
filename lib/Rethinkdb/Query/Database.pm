@@ -4,6 +4,7 @@ use Rethinkdb::Base 'Rethinkdb::Query';
 use Scalar::Util 'weaken';
 
 has [qw{ _rdb name }];
+has '_type' => sub { return Rethinkdb::Protocol->new->term->termType->db; };
 
 sub create {
   my $self = shift;
