@@ -400,6 +400,13 @@ sub _send {
     say {*STDERR} Dumper $res;
   }
 
+  # if there is callback return data to that
+  if ( $self->_callbacks->{$token} ) {
+    my $cb = $self->_callbacks->{$token};
+    delete $self->_callbacks->{$token};
+    return $cb->($res);
+  }
+
   return $res;
 }
 

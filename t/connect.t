@@ -46,6 +46,12 @@ eval { r->connect( 'localhost', 28015, 'better', 'hiddenkey' ); } or do {
 my $r = r->connect( 'localhost', 28015, 'better', '', 100 );
 is $r->timeout, 100, 'Correct timeout set';
 
+# query without connection should throw an error
+eval { r->db('test')->create->run; } or do {
+  like $@, qr/ERROR: run\(\) was not given a connection/,
+    'Correct error on `run` without connection';
+};
+
 # internal stuff
 r->connect;
 is r->io, undef;
@@ -148,6 +154,14 @@ r->db('test')->table('battle')->run({array_limit => 2});
 # noreply
 $res = r->db('test')->table('battle')->run({noreply => 1});
 is $res, undef, 'Correct response for noreply';
+
+# test a callback
+$res = r->db('test')->table('battle')->run(sub {
+  my $res = shift;
+  isa_ok $res, 'Rethinkdb::Response', 'Correct response for callback';
+});
+
+isa_ok $res, 'Rethinkdb::Response', 'Correct response for callback return';
 
 # clean up
 r->db('test')->drop->run;
