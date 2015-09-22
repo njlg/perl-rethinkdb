@@ -25,7 +25,7 @@ See http://njlg.info/perl-rethinkdb/
 
 ## Notes
 
-* This version is compatible with RethinkDB 2.0.4
+* This version is compatible with RethinkDB 2.1.3
 * This is still in beta stage
 * For examples see the tests in `t/*.t` or see the documentation (link above)
 
