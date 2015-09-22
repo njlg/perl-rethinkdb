@@ -226,6 +226,54 @@ $res = r->table('marvel')->get('Iron Man')->bracket('equipment')
 is $res->type, 1, 'Correct response type';
 is_deeply $res->response, ['oldHelm'];
 
+# get_field
+$res = r->table('marvel')->get('Iron Man')->get_field('reactorState')->run;
+
+is $res->type,     1,        'Correct response type';
+is $res->response, 'medium', 'Correct response';
+
+$res = r->table('marvel')->get_field('superpower')->run;
+
+is $res->type, 2, 'Correct response type';
+is_deeply [sort @{$res->response}],
+  [
+  'Adamantium', 'Bio-lasers', 'Bow-n-arrow', 'God-like powers',
+  'Size',       'Smash',      'Spidy Sense', 'Super Strength',
+  ],
+  'Correct response';
+
+# bracket
+$res = r->table('marvel')->get('Iron Man')->bracket('reactorState')->run;
+
+is $res->type,     1,        'Correct response type';
+is $res->response, 'medium', 'Correct response';
+
+$res = r->table('marvel')->bracket('superpower')->run;
+
+is $res->type, 2, 'Correct response type';
+is_deeply [sort @{$res->response}],
+  [
+  'Adamantium', 'Bio-lasers', 'Bow-n-arrow', 'God-like powers',
+  'Size',       'Smash',      'Spidy Sense', 'Super Strength',
+  ],
+  'Correct response';
+
+# attr - depercated
+$res = r->table('marvel')->get('Iron Man')->attr('reactorState')->run;
+
+is $res->type,     1,        'Correct response type';
+is $res->response, 'medium', 'Correct response';
+
+$res = r->table('marvel')->attr('superpower')->run;
+
+is $res->type, 2, 'Correct response type';
+is_deeply [sort @{$res->response}],
+  [
+  'Adamantium', 'Bio-lasers', 'Bow-n-arrow', 'God-like powers',
+  'Size',       'Smash',      'Spidy Sense', 'Super Strength',
+  ],
+  'Correct response';
+
 # Plucks out one or more attributes from either an object or a sequence of
 # objects (projection).
 $res = r->table('marvel')->get('Iron Man')

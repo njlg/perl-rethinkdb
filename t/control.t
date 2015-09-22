@@ -22,6 +22,7 @@ r->table('marvel')->insert(
       battles         => 3,
       villainDefeated => 'Mandarin',
       outfits         => 12,
+      gadget          => 'Shoulder-mounted rocket launcher'
     },
     {
       user_id         => 8,
@@ -40,7 +41,8 @@ r->table('marvel')->insert(
       age             => 20,
       victories       => 24,
       battles         => 3,
-      villainDefeated => 'Green Goblin'
+      villainDefeated => 'Green Goblin',
+      gadget          => 'Web-slinger'
     }
   ]
 )->run;
@@ -125,6 +127,13 @@ $res = r->table('marvel')->map(
 is $res->type, 2, 'Correct response type';
 is_deeply [ sort { $a <=> $b } @{ $res->response } ], [ '0', '2', '13' ],
   'Correct response';
+
+$res = r->table('marvel')->map(r->row->bracket('gadget')->default)->run;
+
+is $res->type, 2, 'Correct response type';
+is_deeply [ sort @{ $res->response } ], [ undef, 'Shoulder-mounted rocket launcher', 'Web-slinger' ],
+  'Correct response';
+
 
 # expr
 $res = r->expr( { 'a' => 'b' } )->merge( { 'b' => [ 1, 2, 3 ] } )->run($conn);

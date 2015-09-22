@@ -414,17 +414,21 @@ sub sample {
 sub group {
   my $self = shift;
   my $args = [@_];
+  my $optargs = {};
 
-  my $reductor;
-  if ( ref $args->[ $#{$args} ] ) {
-    $reductor = pop @{$args};
-    $args = [ $args, $reductor ];
+  if ( ref $args->[ $#{$args} ] eq 'HASH' ) {
+    $optargs = pop @{$args};
+  }
+
+  if( ref $args->[0] && ref $args->[0] ne 'CODE' ) {
+    $args = Rethinkdb::Util->_wrap_func($args->[0]);
   }
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
     _type   => $self->_termType->group,
-    args    => $args
+    args    => $args,
+    optargs => $optargs
   );
 
   return $q;
@@ -469,7 +473,7 @@ sub count {
 
 sub sum {
   my $self = shift;
-  my $args = {@_};
+  my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
@@ -495,7 +499,7 @@ sub avg {
 
 sub min {
   my $self = shift;
-  my $args = {@_};
+  my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
@@ -508,7 +512,7 @@ sub min {
 
 sub max {
   my $self = shift;
-  my $args = {@_};
+  my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
