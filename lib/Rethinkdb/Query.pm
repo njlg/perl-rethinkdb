@@ -33,7 +33,6 @@ sub new {
 
 sub _build {
   my $self = shift;
-
   my $q = { type => $self->_type };
 
   if ( $self->args ) {
@@ -46,6 +45,9 @@ sub _build {
       }
     }
   }
+  # else {
+  #   push @{ $q->{args} }, undef;
+  # }
 
   if ( $self->optargs ) {
     foreach ( keys %{ $self->optargs } ) {
@@ -149,7 +151,7 @@ sub update {
   my $q = Rethinkdb::Query->new(
     _parent => $self,
     _type   => $self->_termType->update,
-    args    => $args,
+    args    => Rethinkdb::Util->_wrap_func( $args, 1 ),
     optargs => $optargs,
   );
 
@@ -164,7 +166,7 @@ sub replace {
   my $q = Rethinkdb::Query->new(
     _parent => $self,
     _type   => $self->_termType->replace,
-    args    => $args,
+    args    => Rethinkdb::Util->_wrap_func($args),
     optargs => $optargs,
   );
 
@@ -412,17 +414,21 @@ sub sample {
 sub group {
   my $self = shift;
   my $args = [@_];
+  my $optargs = {};
 
-  my $reductor;
-  if ( ref $args->[ $#{$args} ] ) {
-    $reductor = pop @{$args};
-    $args = [ $args, $reductor ];
+  if ( ref $args->[ $#{$args} ] eq 'HASH' ) {
+    $optargs = pop @{$args};
+  }
+
+  if( ref $args->[0] && ref $args->[0] ne 'CODE' ) {
+    $args = Rethinkdb::Util->_wrap_func($args->[0]);
   }
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
     _type   => $self->_termType->group,
-    args    => $args
+    args    => $args,
+    optargs => $optargs
   );
 
   return $q;
@@ -467,7 +473,7 @@ sub count {
 
 sub sum {
   my $self = shift;
-  my $args = {@_};
+  my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
@@ -493,7 +499,7 @@ sub avg {
 
 sub min {
   my $self = shift;
-  my $args = {@_};
+  my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
@@ -506,7 +512,7 @@ sub min {
 
 sub max {
   my $self = shift;
-  my $args = {@_};
+  my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
@@ -677,10 +683,7 @@ sub set_difference {
   return $q;
 }
 
-# TODO: replace this with AUTOLOAD or overload %{}
-# to get something like r->table->get()->{attr}->run;
-# or like r->table->get()->attr->run;
-sub attr {
+sub get_field {
   my $self = shift;
   my $args = shift;
 
@@ -692,6 +695,25 @@ sub attr {
 
   return $q;
 }
+
+# TODO: replace this with AUTOLOAD or overload %{}
+# to get something like r->table->get()->{attr}->run;
+# or like r->table->get()->attr->run;
+sub bracket {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->bracket,
+    args    => $args
+  );
+
+  return $q;
+}
+
+# for backwards compatibility
+sub attr { bracket(@_) }
 
 sub has_fields {
   my $self = shift;
@@ -1209,6 +1231,10 @@ sub default {
   my $self = shift;
   my $args = shift;
 
+  if ( !defined $args ) {
+    $args = Rethinkdb::Query::Datum->new( { data => undef } );
+  }
+
   my $q = Rethinkdb::Query->new(
     _parent => $self,
     _type   => $self->_termType->default,
@@ -1248,6 +1274,106 @@ sub info {
   my $q = Rethinkdb::Query->new(
     _parent => $self,
     _type   => $self->_termType->info,
+  );
+
+  return $q;
+}
+
+sub fill {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->fill,
+  );
+
+  return $q;
+}
+
+sub to_geojson {
+  my $self = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->to_geojson,
+  );
+
+  return $q;
+}
+
+sub includes {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->includes,
+    args    => $args,
+  );
+
+  return $q;
+}
+
+sub intersects {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->intersects,
+    args    => $args,
+  );
+
+  return $q;
+}
+
+sub polygon_sub {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->polygon_sub,
+    args    => $args,
+  );
+
+  return $q;
+}
+
+sub round {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->round,
+    args    => $args
+  );
+
+  return $q;
+}
+
+sub ceil {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->ceil,
+    args    => $args
+  );
+
+  return $q;
+}
+
+sub floor {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->floor,
+    args    => $args
   );
 
   return $q;
@@ -1654,12 +1780,29 @@ array with distinct values).
 Remove the elements of one array from another and return them as a set (an
 array with distinct values).
 
-=head2 attr
+=head2 get_field
 
-  r->table('marvel')->get('IronMan')->attr('firstAppearance')->run;
+  r->table('marvel')->get('IronMan')->get_field('firstAppearance')->run;
 
 Get a single field from an object. If called on a sequence, gets that field
 from every object in the sequence, skipping objects that lack it.
+
+=head2 bracket
+
+  r->table('marvel')->get('IronMan')->bracket('firstAppearance')->run;
+  r->expr([10, 20, 30, 40, 50])->bracket(3)->run;
+
+Get a single field from an object or a single element from a sequence.
+
+=head2 attr
+
+  r->table('marvel')->get('IronMan')->attr('firstAppearance')->run;
+  r->expr([10, 20, 30, 40, 50])->attr(3)->run;
+
+Get a single field from an object or a single element from a sequence.
+
+DEPERCATED: This method has been renamed to L</bracket>, but L</attr> will
+remain for a number of releases for backwards compatibility.
 
 =head2 has_fields
 
@@ -2013,6 +2156,96 @@ Gets the type of a value.
   r->table('marvel')->info->run;
 
 Get information about a ReQL value.
+
+=head2 fill
+
+  r->table('geo')->insert(
+    {
+      'id'        => 201,
+      'rectangle' => r->line(
+        [ -122.423246, 37.779388 ],
+        [ -122.423246, 37.329898 ],
+        [ -121.886420, 37.329898 ],
+        [ -121.886420, 37.779388 ]
+      )
+    }
+  )->run;
+
+  r->table('geo')->get(201)
+    ->update( { 'rectangle' => r->row->bracket('rectangle')->fill },
+    { non_atomic => r->true } )->run;
+
+
+Convert a C<Line> object into a C<Polygon> object. If the last point does not
+specify the same coordinates as the first point, C<polygon> will close the
+polygon by connecting them.
+
+=head2 includes
+
+  r->circle( r->point( -117.220406, 32.719464 ), 2000 )
+    ->includes( r->point( -117.206201, 32.725186 ) )->run($conn);
+
+Tests whether a geometry object is completely contained within another. When
+applied to a sequence of geometry objects, L</includes> acts as a L</filter>,
+returning a sequence of objects from the sequence that include the argument.
+
+=head2 intersects
+
+  r->circle( r->point( -117.220406, 32.719464 ), 2000 )
+    ->intersects( r->point( -117.206201, 32.725186 ) )->run($conn);
+
+Tests whether two geometry objects intersect with one another. When applied
+to a sequence of geometry objects, L</intersects> acts as a L</filter>,
+returning a sequence of objects from the sequence that intersect with the
+argument.
+
+=head2 polygon_sub
+
+  r->polygon(
+    [ -122.4, 37.7 ],
+    [ -122.4, 37.3 ],
+    [ -121.8, 37.3 ],
+    [ -121.8, 37.7 ]
+    )->polygon_sub(
+    r->polygon(
+      [ -122.3, 37.4 ],
+      [ -122.3, 37.6 ],
+      [ -122.0, 37.6 ],
+      [ -122.0, 37.4 ]
+    )
+    )->run($conn);
+
+Use C<polygon2> to "punch out" a hole in C<polygon1>. C<polygon2> must be
+completely contained within C<polygon1> and must have no holes itself (it must
+not be the output of L</polygon_sub> itself).
+
+=head2 to_geojson
+
+  r->table('geo')->get('sfo')->bracket('location')->to_geojson->run;
+
+Convert a ReQL geometry object to a L<GeoJSON|http://geojson.org/> object.
+
+=head2 round
+
+  r->expr(-12.567)->round->run($conn);
+
+Rounds the given value to the nearest whole integer. For example, values of
+1.0 up to but not including 1.5 will return 1.0, similar to L</floor>; values
+of 1.5 up to 2.0 will return 2.0, similar to L</ceil>.
+
+=head2 ceil
+
+  r->expr(-12.567)->ceil->run($conn);
+
+Rounds the given value up, returning the smallest integer value greater than
+or equal to the given value (the value's ceiling).
+
+=head2 floor
+
+  r->expr(-12.567)->floor->run($conn);
+
+Rounds the given value down, returning the largest integer value less than or
+equal to the given value (the value's floor).
 
 =head1 SEE ALSO
 

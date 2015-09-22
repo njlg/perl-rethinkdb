@@ -4,12 +4,13 @@ use Rethinkdb::Base -base;
 use JSON::PP;
 use Rethinkdb::Protocol;
 
-has [qw{ type type_description response token error_message backtrace }];
+has [qw{ type type_description response token error_type backtrace profile }];
 
 sub _init {
-  my $class = shift;
-  my $data  = shift;
-  my $args  = { type => $data->{t}, token => $data->{token}, };
+  my $class   = shift;
+  my $data    = shift;
+  my $optargs = shift || {};
+  my $args    = { type => $data->{t}, token => $data->{token}, };
 
   my $types = {
     1  => 'success_atom',
@@ -35,23 +36,34 @@ sub _init {
     $response = $response->[0];
   }
 
-  if ( ref $response eq 'HASH'
-    && $response->{'$reql_type$'}
-    && $response->{'$reql_type$'} eq 'GROUPED_DATA' )
-  {
-    my $group = {};
+  # group the data into a hash
+  if ( !($optargs->{group_format} && $optargs->{group_format} eq 'raw') ) {
+    if ( ref $response eq 'HASH'
+      && $response->{'$reql_type$'}
+      && $response->{'$reql_type$'} eq 'GROUPED_DATA' )
+    {
+      my $group = {};
 
-    foreach ( @{ $response->{data} } ) {
-      $group->{ $_->[0] } = $_->[1];
+      foreach ( @{ $response->{data} } ) {
+        $group->{ $_->[0] } = $_->[1];
+      }
+
+      $response = $group;
     }
-
-    $response = $group;
   }
 
   $args->{response} = $response;
 
   if ( $data->{b} ) {
     $args->{backtrace} = $data->{b};
+  }
+
+  if ( $data->{p} ) {
+    $args->{profile} = $data->{p};
+  }
+
+  if ( $data->{e} ) {
+    $args->{error_type} = $data->{e};
   }
 
   return $class->new($args);
@@ -75,7 +87,8 @@ Rethinkdb::Response - RethinkDB Response
   say $res->type_description;
   say $res->response;
   say $res->token;
-  say $res->error_message;
+  say $res->error_type;
+  say $res->profile;
   say $res->backtrace;
 
 =head1 DESCRIPTION
@@ -125,10 +138,10 @@ The actual response value from the database.
 Each request made to the database must have a unique token. The response from
 the database includes that token incase further actions are required.
 
-=head2 error_message
+=head2 error_type
 
   my $res = r->table('marvel')->run;
-  say $res->error_message;
+  say $res->error_type;
 
 If the request cause an error, this attribute will contain the error message
 from the database.
@@ -140,6 +153,14 @@ from the database.
 
 If the request cause an error, this attribute will contain a backtrace for the
 error.
+
+=head2 profile
+
+  my $res = r->table('marvel')->run;
+  say $res->profile;
+
+If profiling information was requested as a global argument for a query, then
+this attribute will contain that profiling data.
 
 =head1 SEE ALSO
 

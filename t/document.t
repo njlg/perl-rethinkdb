@@ -99,13 +99,13 @@ r->table('prizes')->insert( { status => 'winner', name => 'Hulk' } )->run;
 my $res;
 
 # row
-$res = r->table('marvel')->filter( r->row->attr('age')->gt(50) )->run;
+$res = r->table('marvel')->filter( r->row->bracket('age')->gt(50) )->run;
 
 is $res->type, 2, 'Correct response type';
 is scalar @{ $res->response }, 2, 'Correct number of documents';
 
 $res = r->table('marvel')
-  ->filter( r->row->attr('villians')->attr('count')->ge(10) )->run;
+  ->filter( r->row->bracket('villians')->bracket('count')->ge(10) )->run;
 
 is $res->type, 2, 'Correct response type';
 is scalar @{ $res->response }, 1, 'Correct number of documents';
@@ -119,8 +119,8 @@ is_deeply $res->response, [ '2', '3', '4' ], 'Correct response';
 $res = r->table('marvel')->filter(
   sub ($) {
     my $doc = shift;
-    return $doc->attr('superhero')->eq
-      ( r->table('prizes')->nth(0)->attr('name') );
+    return $doc->bracket('superhero')->eq
+      ( r->table('prizes')->nth(0)->bracket('name') );
   }
 )->run;
 
@@ -160,7 +160,7 @@ is $res->type, 1, 'Correct response type';
 is $res->response, r->true, 'Correct response';
 
 # get one attribute value
-$res = r->table('marvel')->get('Iron Man')->attr('age')->run;
+$res = r->table('marvel')->get('Iron Man')->bracket('age')->run;
 
 isa_ok $res, 'Rethinkdb::Response';
 is $res->type,     1,  'Correct response type';
@@ -178,55 +178,101 @@ r->table('marvel')->get('Iron Man')->update(
 )->run;
 
 # append a value
-$res
-  = r->table('marvel')->get('Iron Man')->attr('equipment')->append('newBoots')
-  ->run;
+$res = r->table('marvel')->get('Iron Man')->bracket('equipment')
+  ->append('newBoots')->run;
 
 is $res->type, 1, 'Correct response type';
 is_deeply $res->response, [ 'oldBoots', 'oldHelm', 'newBoots' ];
 
 # prepend a value
-$res
-  = r->table('marvel')->get('Iron Man')->attr('equipment')->prepend('newHelm')
-  ->run;
+$res = r->table('marvel')->get('Iron Man')->bracket('equipment')
+  ->prepend('newHelm')->run;
 
 is $res->type, 1, 'Correct response type';
 is_deeply $res->response, [ 'newHelm', 'oldBoots', 'oldHelm' ];
 
 # get the difference between to arrays
-$res = r->table('marvel')->get('Iron Man')->attr('equipment')
+$res = r->table('marvel')->get('Iron Man')->bracket('equipment')
   ->difference( ['oldBoots'] )->run;
 
 is $res->type, 1, 'Correct response type';
 is_deeply $res->response, ['oldHelm'];
 
 # Add a value to an array and return it as a set (an array with distinct values).
-$res = r->table('marvel')->get('Iron Man')->attr('equipment')
+$res = r->table('marvel')->get('Iron Man')->bracket('equipment')
   ->set_insert( ['newBoots'] )->run;
 
 is $res->type, 1, 'Correct response type';
 is_deeply $res->response, [ 'oldBoots', 'oldHelm', 'newBoots' ];
 
 # Add a several values to an array and return it as a set (an array with distinct values)
-$res = r->table('marvel')->get('Iron Man')->attr('equipment')
+$res = r->table('marvel')->get('Iron Man')->bracket('equipment')
   ->set_union( [ 'newBoots', 'arc_reactor' ] )->run;
 
 is $res->type, 1, 'Correct response type';
 is_deeply $res->response, [ 'oldBoots', 'oldHelm', 'newBoots', 'arc_reactor' ];
 
 # Intersect two arrays returning values that occur in both of them as a set (an array with distinct values).
-$res = r->table('marvel')->get('Iron Man')->attr('equipment')
+$res = r->table('marvel')->get('Iron Man')->bracket('equipment')
   ->set_intersection( [ 'newBoots', 'arc_reactor', 'oldBoots' ] )->run;
 
 is $res->type, 1, 'Correct response type';
 is_deeply $res->response, ['oldBoots'];
 
 # Remove the elements of one array from another and return them as a set (an array with distinct values).
-$res = r->table('marvel')->get('Iron Man')->attr('equipment')
+$res = r->table('marvel')->get('Iron Man')->bracket('equipment')
   ->set_difference( [ 'newBoots', 'arc_reactor', 'oldBoots' ] )->run;
 
 is $res->type, 1, 'Correct response type';
 is_deeply $res->response, ['oldHelm'];
+
+# get_field
+$res = r->table('marvel')->get('Iron Man')->get_field('reactorState')->run;
+
+is $res->type,     1,        'Correct response type';
+is $res->response, 'medium', 'Correct response';
+
+$res = r->table('marvel')->get_field('superpower')->run;
+
+is $res->type, 2, 'Correct response type';
+is_deeply [sort @{$res->response}],
+  [
+  'Adamantium', 'Bio-lasers', 'Bow-n-arrow', 'God-like powers',
+  'Size',       'Smash',      'Spidy Sense', 'Super Strength',
+  ],
+  'Correct response';
+
+# bracket
+$res = r->table('marvel')->get('Iron Man')->bracket('reactorState')->run;
+
+is $res->type,     1,        'Correct response type';
+is $res->response, 'medium', 'Correct response';
+
+$res = r->table('marvel')->bracket('superpower')->run;
+
+is $res->type, 2, 'Correct response type';
+is_deeply [sort @{$res->response}],
+  [
+  'Adamantium', 'Bio-lasers', 'Bow-n-arrow', 'God-like powers',
+  'Size',       'Smash',      'Spidy Sense', 'Super Strength',
+  ],
+  'Correct response';
+
+# attr - depercated
+$res = r->table('marvel')->get('Iron Man')->attr('reactorState')->run;
+
+is $res->type,     1,        'Correct response type';
+is $res->response, 'medium', 'Correct response';
+
+$res = r->table('marvel')->attr('superpower')->run;
+
+is $res->type, 2, 'Correct response type';
+is_deeply [sort @{$res->response}],
+  [
+  'Adamantium', 'Bio-lasers', 'Bow-n-arrow', 'God-like powers',
+  'Size',       'Smash',      'Spidy Sense', 'Super Strength',
+  ],
+  'Correct response';
 
 # Plucks out one or more attributes from either an object or a sequence of
 # objects (projection).

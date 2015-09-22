@@ -55,6 +55,7 @@ use Rethinkdb::Base -base;
 package Rethinkdb::Protocol::Response;
 use Rethinkdb::Base -base;
 has 'responseType' => sub { Rethinkdb::Protocol::ResponseType->new; };
+has 'errorType' => sub { Rethinkdb::Protocol::ErrorType->new; };
 has 'responseNote' => sub { Rethinkdb::Protocol::ResponseNote->new; };
 
 package Rethinkdb::Protocol::ResponseType;
@@ -66,6 +67,16 @@ has 'wait_complete' => 4;
 has 'client_error' => 16;
 has 'compile_error' => 17;
 has 'runtime_error' => 18;
+
+package Rethinkdb::Protocol::ErrorType;
+use Rethinkdb::Base -base;
+has 'internal' => 1000000;
+has 'resource_limit' => 2000000;
+has 'query_logic' => 3000000;
+has 'non_existence' => 3100000;
+has 'op_failed' => 4100000;
+has 'op_indeterminate' => 4200000;
+has 'user' => 5000000;
 
 package Rethinkdb::Protocol::ResponseNote;
 use Rethinkdb::Base -base;
@@ -120,6 +131,9 @@ has 'sub' => 25;
 has 'mul' => 26;
 has 'div' => 27;
 has 'mod' => 28;
+has 'floor' => 183;
+has 'ceil' => 184;
+has 'round' => 185;
 has 'append' => 29;
 has 'prepend' => 80;
 has 'difference' => 95;

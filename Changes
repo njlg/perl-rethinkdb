@@ -1,3 +1,10 @@
+0.11  2015-09-17
+  - RethinkDB 2.1.0-1 compatibility
+  - Geospatial functionality
+  - `index_create` now takes all possible parameters
+  - Deprecating `attr` in favor of `bracket`
+  - Cleaning & formatting
+
 0.10  2015-07-28
   - 2.0.4 compatibility
   - Cleaning & formatting

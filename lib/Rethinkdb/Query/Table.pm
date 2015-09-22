@@ -42,19 +42,24 @@ sub drop {
 }
 
 sub index_create {
-  my $self  = shift;
-  my $index = shift;
-  my $func  = shift;
-  my $multi = shift;
+  my $self    = shift;
+  my $args    = shift;
+  my $optargs = ref $_[0] ? $_[0] : {@_};
 
-  if ($func) {
-    carp 'table->index_create does not accept functions yet';
+  if ( ref $optargs ne 'HASH' ) {
+    $args = [ $args, Rethinkdb::Util->_wrap_func($optargs) ];
+    $optargs = undef;
+  }
+  elsif ( $optargs->{'$reql_type$'} ) {
+    $args = [ $args, $optargs ];
+    $optargs = undef;
   }
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
     _type   => $self->_termType->index_create,
-    args    => $index
+    args    => $args,
+    optargs => $optargs,
   );
 
   return $q;
@@ -235,6 +240,36 @@ sub between {
   return $q;
 }
 
+sub get_intersecting {
+  my $self    = shift;
+  my $args    = shift;
+  my $optargs = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->get_intersecting,
+    args    => $args,
+    optargs => $optargs,
+  );
+
+  return $q;
+}
+
+sub get_nearest {
+  my $self    = shift;
+  my $args    = shift;
+  my $optargs = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->get_nearest,
+    args    => $args,
+    optargs => $optargs,
+  );
+
+  return $q;
+}
+
 sub config {
   my $self = shift;
 
@@ -389,10 +424,10 @@ this table to be ready if no indexes are specified.
 
 =head2 changes
 
-  my $stream = r->table('games')->changes->run;
-  foreach( @{$stream} ) {
+  my $stream = r->table('games')->changes(sub {
+    my $item;
     say Dumper $_;
-  }
+  })->run;
 
 Return an infinite stream of objects representing changes to a table. Whenever
 an C<insert>, C<delete>, C<update> or C<replace> is performed on the table, an
@@ -445,6 +480,26 @@ is in the specified range (it uses the primary key by default). C<left_bound>
 or C<right_bound> may be set to open or closed to indicate whether or not to
 include that endpoint of the range (by default, C<left_bound> is closed and
 C<right_bound> is open).
+
+=head2 get_intersecting
+
+  r->table('geo')
+    ->get_intersecting(
+    r->circle( [ -122.423246, 37.770378359 ], 10, { unit => 'mi' } ),
+    { index => 'location' } )->run;
+
+Get all documents where the given geometry object intersects the geometry
+object of the requested geospatial index.
+
+=head2 get_nearest
+
+  r->table('geo')->get_nearest(
+    r->point( -122.422876, 37.777128 ),
+    { index => 'location', max_dist => 5000 }
+  )->run;
+
+Get all documents where the specified geospatial index is within a certain
+distance of the specified point (default 100 kilometers).
 
 =head2 config
 

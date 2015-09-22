@@ -109,6 +109,10 @@ isa_ok $res, 'Rethinkdb::Response', 'Correct class';
 is $res->type, 1, 'Correct status code';
 is $res->response->{superhero}, 'Spider-Man', 'Correct response';
 
+# wait for indexes to be ready_for_reads
+r->table('marvel')->index_wait('superpower')->run;
+r->table('marvel')->index_wait('user_id')->run;
+
 # get all Documents with correct key
 $res
   = r->table('marvel')->get_all( 'Size', 'Smash', { index => 'superpower' } )
@@ -188,7 +192,7 @@ is $res->response->[0]->{superhero}, 'Ant-Man', 'Correct document returned';
 
 # Filter with EXPR predicate
 # $res = r->table('marvel')->filter(r->true)->run;
-$res = r->table('marvel')->filter( r->row->attr('age')->gt(100) )->run;
+$res = r->table('marvel')->filter( r->row->bracket('age')->gt(100) )->run;
 
 is $res->type, 2, 'Correct status code';
 is_deeply [ sort { $a->{user_id} cmp $b->{user_id} } @{ $res->response } ],
@@ -214,7 +218,7 @@ is_deeply [ sort { $a->{user_id} cmp $b->{user_id} } @{ $res->response } ],
 $res = r->table('marvel')->filter(
   sub {
     my $hero = shift;
-    return $hero->attr('age')->gt(100);
+    return $hero->bracket('age')->gt(100);
   }
 )->order_by('user_id')->run;
 

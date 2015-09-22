@@ -11,11 +11,11 @@ use Rethinkdb::Protocol;
 use Rethinkdb::Response;
 
 has host       => 'localhost';
-has port       => 28015;
+has port       => 28_015;
 has default_db => 'test';
-has auth_key   => '';
+has auth_key   => q{};
 has timeout    => 20;
-has [ '_rdb', '_handle', '_callbacks' ];
+has [ '_rdb', '_handle', '_callbacks', '_responder' ];
 has '_protocol' => sub { Rethinkdb::Protocol->new; };
 
 sub connect {
@@ -27,7 +27,7 @@ sub connect {
     Reuse    => 1,
     Timeout  => $self->timeout,
     )
-    or croak 'ERROR: Could not connect to ' . $self->host . ':' . $self->port;
+    or croak 'ERROR: Could not connect to ' . $self->host . q{:} . $self->port;
 
   $self->_handle->send( pack 'L<',
     $self->_protocol->versionDummy->version->v0_3 );
@@ -38,7 +38,7 @@ sub connect {
     $self->_protocol->versionDummy->protocol->json );
 
   my $response;
-  my $char = '';
+  my $char = q{};
   do {
     $self->_handle->recv( $char, 1 );
     $response .= $char;
@@ -48,8 +48,8 @@ sub connect {
   $response =~ s/^\s//;
   $response =~ s/\s$//;
 
-  if ( $response eq 'SUCCESS' ) {
-    croak "ERROR: Unable to connect to the database";
+  if ( $response =~ /^ERROR/ ) {
+    croak $response;
   }
 
   $self->_callbacks( {} );
@@ -124,23 +124,56 @@ sub _start {
     $self->_callbacks->{ $q->{token} } = $callback;
   }
 
-  return $self->_send($q);
+  return $self->_send( $q, $args );
 }
 
 sub _encode {
   my $self = shift;
   my $data = shift;
+  my $args = shift || {};
 
   # only QUERY->START needs these:
   if ( $data->{type} == 1 ) {
     $data = $self->_encode_recurse($data);
-    push @{$data}, {};
+    push @{$data}, _simple_encode_hash($args);
   }
   else {
     $data = [ $data->{type} ];
   }
 
   return encode_json $data;
+}
+
+# temporarily: clean up global optional arguments
+sub _simple_encode_hash {
+  my $data = shift;
+  my $json = {};
+
+  foreach ( keys %{$data} ) {
+    $json->{$_} = _simple_encode( $data->{$_} );
+  }
+
+  if ( $json->{db} ) {
+    $json->{db} = Rethinkdb::IO->_encode_recurse(Rethinkdb::Query::Database->new(
+      name => $json->{db},
+      args => $json->{db},
+    )->_build);
+  }
+
+  return $json;
+}
+
+sub _simple_encode {
+  my $data = shift;
+
+  if ( ref $data eq 'Rethinkdb::_True' ) {
+    return JSON::PP::true;
+  }
+  elsif ( ref $data eq 'Rethinkdb::_False' ) {
+    return JSON::PP::false;
+  }
+
+  return $data;
 }
 
 sub _encode_recurse {
@@ -157,6 +190,11 @@ sub _encode_recurse {
       else {
         return JSON::PP::false;
       }
+    }
+    elsif ( defined $data->{datum}->{type}
+      && $data->{datum}->{type} == $self->_protocol->datum->datumType->r_null )
+    {
+      return JSON::PP::null;
     }
     else {
       foreach ( keys %{ $data->{datum} } ) {
@@ -184,7 +222,10 @@ sub _encode_recurse {
     push @{$json}, $args;
   }
 
-  if ( $data->{optargs} ) {
+  if ( $data->{optargs} && ref $data->{optargs} eq 'HASH' ) {
+    push @{$json}, $self->_encode_recurse( $data->{optargs} );
+  }
+  elsif ( $data->{optargs} ) {
     my $args = {};
     foreach ( @{ $data->{optargs} } ) {
       $args->{ $_->{key} } = $self->_encode_recurse( $_->{val} );
@@ -262,6 +303,7 @@ sub _real_cleaner {
 sub _send {
   my $self  = shift;
   my $query = shift;
+  my $args  = shift || {};
 
   if ( $ENV{RDB_DEBUG} ) {
     use feature ':5.10';
@@ -274,19 +316,24 @@ sub _send {
   my $token;
   my $length;
 
-  # croak 'dying';
-  my $serial = $self->_encode($query);
+  my $serial = $self->_encode( $query, $args );
   my $header = pack 'QL<', $query->{token}, length $serial;
 
   if ( $ENV{RDB_DEBUG} ) {
+    say 'SENDING:';
     say {*STDERR} Dumper $serial;
   }
 
   # send message
   $self->_handle->send( $header . $serial );
 
+  # noreply should just return
+  if ( $args->{noreply} ) {
+    return;
+  }
+
   # receive message
-  my $data;
+  my $data = q{};
 
   $self->_handle->recv( $token, 8 );
   $token = unpack 'Q<', $token;
@@ -294,7 +341,11 @@ sub _send {
   $self->_handle->recv( $length, 4 );
   $length = unpack 'L<', $length;
 
-  $self->_handle->recv( $data, $length );
+  my $_data;
+  do {
+    $self->_handle->recv( $_data, 4096 );
+    $data = $data . $_data;
+  } until ( length($data) eq $length );
 
   # decode RQL data
   my $res_data = $self->_decode($data);
@@ -303,7 +354,7 @@ sub _send {
   # handle partial and feed responses
   if ( $res_data->{t} == 3 or $res_data->{t} == 5 ) {
     if ( $self->_callbacks->{$token} ) {
-      my $res = Rethinkdb::Response->_init($res_data);
+      my $res = Rethinkdb::Response->_init( $res_data, $args );
 
       if ( $ENV{RDB_DEBUG} ) {
         say {*STDERR} 'RECEIVED:';
@@ -341,11 +392,19 @@ sub _send {
   }
 
   # put data in response
-  my $res = Rethinkdb::Response->_init($res_data);
+  my $res = Rethinkdb::Response->_init( $res_data, $args );
 
   if ( $ENV{RDB_DEBUG} ) {
     say {*STDERR} 'RECEIVED:';
+    say {*STDERR} Dumper $res_data;
     say {*STDERR} Dumper $res;
+  }
+
+  # if there is callback return data to that
+  if ( $self->_callbacks->{$token} ) {
+    my $cb = $self->_callbacks->{$token};
+    delete $self->_callbacks->{$token};
+    return $cb->($res);
   }
 
   return $res;

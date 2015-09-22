@@ -107,4 +107,25 @@ $res = r->random( 1.59, -2.24, r->true )->run($conn);
 cmp_ok $res->response, '>',  -2.24, 'Random response is okay';
 cmp_ok $res->response, '<=', 1.59,  'Random response is okay';
 
+# round
+$res = r->round(12.345)->run;
+is $res->response, 12, 'Round response is okay';
+
+$res = r->expr(-12.645)->round->run($conn);
+is $res->response, -13, 'Round response is okay';
+
+# ceil
+$res = r->ceil(12.345)->run;
+is $res->response, 13, 'Round response is okay';
+
+$res = r->expr(-12.645)->ceil->run($conn);
+is $res->response, -12, 'Round response is okay';
+
+# floor
+$res = r->floor(12.345)->run;
+is $res->response, 12, 'Round response is okay';
+
+$res = r->expr(-12.645)->floor->run($conn);
+is $res->response, -13, 'Round response is okay';
+
 done_testing();

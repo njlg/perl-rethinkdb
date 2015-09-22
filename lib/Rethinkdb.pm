@@ -11,7 +11,7 @@ use Rethinkdb::Query::Table;
 use Rethinkdb::Query;
 use Rethinkdb::Util;
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 # this is set only when connect->repl()
 has 'io';
@@ -23,6 +23,8 @@ sub import {
 
   no strict;
   *{"$package\::r"} = \&r;
+
+  return;
 }
 
 sub r {
@@ -49,12 +51,12 @@ sub connect {
   my $timeout  = shift || 20;
 
   my $io = Rethinkdb::IO->new(
-    _rdb     => $self,
-    host     => $host,
-    port     => $port,
-    db       => $db,
-    auth_key => $auth_key,
-    timeout  => $timeout
+    _rdb       => $self,
+    host       => $host,
+    port       => $port,
+    default_db => $db,
+    auth_key   => $auth_key,
+    timeout    => $timeout
   );
 
   weaken $io->{_rdb};
@@ -109,7 +111,6 @@ sub db {
 
   my $db = Rethinkdb::Query::Database->new(
     _rdb  => $self,
-    _type => $self->term->termType->db,
     name  => $name,
     args  => $name,
   );
@@ -235,7 +236,7 @@ sub random {
 sub now {
   my $self = shift;
 
-  my $q = Rethinkdb::Query->new( _type => $self->term->termType->now, );
+  my $q = Rethinkdb::Query->new( _type => $self->term->termType->now );
 
   return $q;
 }
@@ -631,6 +632,87 @@ sub uuid {
   return $q;
 }
 
+# GEO
+
+sub circle {
+  my $self    = shift;
+  my $point   = shift;
+  my $radius  = shift;
+  my $optargs = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _type => $self->term->termType->circle,
+    args    => [ $point, $radius ],
+    optargs => $optargs,
+  );
+
+  return $q;
+}
+
+sub distance {
+  my $self    = shift;
+  my $point1  = shift;
+  my $point2  = shift;
+  my $optargs = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _type => $self->term->termType->distance,
+    args    => [ $point1, $point2 ],
+    optargs => $optargs,
+  );
+
+  return $q;
+}
+
+sub geojson {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _type => $self->term->termType->geojson,
+    args  => $args,
+  );
+
+  return $q;
+}
+
+sub line {
+  my $self = shift;
+  my $args = \@_;
+
+  my $q = Rethinkdb::Query->new(
+    _type => $self->term->termType->line,
+    args  => $args,
+  );
+
+  return $q;
+}
+
+sub point {
+  my $self = shift;
+  my $args = \@_;
+
+  my $q = Rethinkdb::Query->new(
+    _type => $self->term->termType->point,
+    args  => $args,
+  );
+
+  return $q;
+}
+
+sub polygon {
+  my $self = shift;
+  my $args = \@_;
+
+  my $q = Rethinkdb::Query->new(
+    _type => $self->term->termType->polygon,
+    args  => $args,
+  );
+
+  return $q;
+}
+
+
 # MISC
 
 sub asc {
@@ -690,8 +772,47 @@ sub maxval {
   return $q;
 }
 
-sub true  { Rethinkdb::_True->new; }
-sub false { Rethinkdb::_False->new; }
+sub round {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _rdb  => $self,
+    _type => $self->term->termType->round,
+    args  => $args
+  );
+
+  return $q;
+}
+
+sub ceil {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _rdb  => $self,
+    _type => $self->term->termType->ceil,
+    args  => $args
+  );
+
+  return $q;
+}
+
+sub floor {
+  my $self = shift;
+  my $args = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _rdb  => $self,
+    _type => $self->term->termType->floor,
+    args  => $args
+  );
+
+  return $q;
+}
+
+sub true  { return Rethinkdb::_True->new; }
+sub false { return Rethinkdb::_False->new; }
 
 package Rethinkdb::_True;
 
@@ -702,7 +823,7 @@ use overload
   '=='   => sub { $_[1] == 1 ? 1 : 0; },
   fallback => 1;
 
-sub new { bless {}, $_[0] }
+sub new { return bless {}, $_[0] }
 
 package Rethinkdb::_False;
 
@@ -713,9 +834,11 @@ use overload
   '=='   => sub { $_[1] == 0 ? 1 : 0; },
   fallback => 1;
 
-sub new { bless {}, $_[0] }
+sub new { return bless {}, $_[0] }
 
 1;
+
+__END__
 
 =encoding utf8
 
@@ -1161,6 +1284,65 @@ default.
 Return a UUID (universally unique identifier), a string that can be used as a
 unique ID.
 
+=head2 circle
+
+  r->circle( [ -122.423246, 37.770378359 ], 10, { unit => 'mi' } )
+
+Construct a circular line or polygon. A circle in RethinkDB is a polygon or
+line approximating a circle of a given radius around a given center,
+consisting of a specified number of vertices (default 32).
+
+=head2 distance
+
+  r->distance(
+    r->point( -122.423246, 37.779388 ),
+    r->point( -117.220406, 32.719464 ),
+    { unit => 'km' }
+  )->run;
+
+Compute the distance between a point and another geometry object. At least
+one of the geometry objects specified must be a point.
+
+=head2 geojson
+
+  r->geojson(
+    { 'type' => 'Point', 'coordinates' => [ -122.423246, 37.779388 ] } )
+
+Convert a L<GeoJSON|http://geojson.org/> object to a ReQL geometry object.
+
+=head2 line
+
+  r->line( [ -122.423246, 37.779388 ], [ -121.886420, 37.329898 ] )
+
+Construct a geometry object of type Line. The line can be specified in one of
+two ways:
+(1) Two or more two-item arrays, specifying latitude and longitude numbers of
+the line's vertices;
+(2) Two or more L</point> objects specifying the line's vertices.
+
+=head2 point
+
+  r->point( -122.423246, 37.779388 )
+
+Construct a geometry object of type Point. The point is specified by two
+floating point numbers, the longitude (-180 to 180) and latitude (-90 to 90)
+of the point on a perfect sphere.
+
+=head2 polygon
+
+  r->polygon(
+    [ -122.423246, 37.779388 ],
+    [ -122.423246, 37.329898 ],
+    [ -121.886420, 37.329898 ],
+    [ -121.886420, 37.779388 ]
+  )
+
+Construct a geometry object of type Polygon. The Polygon can be specified in
+one of two ways:
+(1) Three or more two-item arrays, specifying longitude and latitude numbers
+of the polygon's vertices;
+(2) Three or more L</point> objects specifying the polygon's vertices.
+
 =head2 asc
 
   r->table('marvel')->order_by(r->asc('enemies_vanquished'))->run;
@@ -1201,6 +1383,28 @@ represent "greater than any index key". For instance, if you use L</maxval> as
 the upper key, then L<Rethinkdb::Query::Table/between> will return all
 documents whose primary keys (or indexes) are greater than the specified lower
 key.
+
+=head2 round
+
+  r->round(-12.567)->run;
+
+Rounds the given value to the nearest whole integer. For example, values of
+1.0 up to but not including 1.5 will return 1.0, similar to L</floor>; values
+of 1.5 up to 2.0 will return 2.0, similar to L</ceil>.
+
+=head2 ceil
+
+  r->ceil(-12.567)->run;
+
+Rounds the given value up, returning the smallest integer value greater than
+or equal to the given value (the value's ceiling).
+
+=head2 floor
+
+  r->floor(-12.567)->run;
+
+Rounds the given value down, returning the largest integer value less than or
+equal to the given value (the value's floor).
 
 =head2 true
 

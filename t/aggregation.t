@@ -161,8 +161,51 @@ r->table('dc')->insert(
   ]
 )->run;
 
+# group
+$res = r->table('marvel')->group('age')->avg('strength')->run;
+
+is $res->type, 1, 'Correct response type';
+is_deeply $res->response,
+  {
+  '1035' => '2035',
+  '35'   => '543.166666666667',
+  '135'  => '1035',
+  '20'   => '200',
+  },
+  'Correct response';
+
+# group by more than one field (we have to use `group_format=>'raw'`)
+$res = r->table('marvel')->group( 'age', 'active' )
+  ->run( { group_format => 'raw' } );
+
+is_deeply $res->response->{data}->[0][0], [ 20, 0 ];
+is $res->response->{data}->[0][1][0]->{superhero}, 'Spider-Man';
+
+# group using a function
+$res = r->table('marvel')->group(
+  sub {
+    my $row = shift;
+    return $row->pluck( 'age', 'active' );
+  }
+)->run( { group_format => 'raw' } );
+
+is_deeply $res->response->{data}->[0][0], { age => 20, active => 0 };
+is $res->response->{data}->[0][1][0]->{superhero}, 'Spider-Man';
+
+# group `multi=true`
+# r.table('games2').group(r.row['matches'].keys(), multi=True).run()
+$res = r->table('marvel')
+  ->group( r->row->bracket('dc_buddies'), { multi => r->true } )->run;
+
+is $#{ $res->response->{Batman} }, 3, 'Correct `multi=true` response';
+
+# ungroup
+$res = r->table('marvel')->group('age')->avg('strength')->ungroup->run;
+
+is_deeply [ sort keys %{ $res->response->[0] } ], [ 'group', 'reduction' ];
+
 # reduce
-$res = r->table('marvel')->map( r->row->attr('age') )->reduce(
+$res = r->table('marvel')->map( r->row->bracket('age') )->reduce(
   sub ($$) {
     my ( $acc, $val ) = @_;
     $acc->add($val);
@@ -182,7 +225,7 @@ is $res->response, '9', 'Correct number of documents';
 $res = r->table('marvel')->concat_map(
   sub {
     my $row = shift;
-    $row->attr('dc_buddies');
+    $row->bracket('dc_buddies');
   }
 )->count('Batman')->run;
 
@@ -192,12 +235,90 @@ is $res->response, '4', 'Correct number of documents';
 $res = r->table('marvel')->count(
   sub {
     my $hero = shift;
-    $hero->attr('dc_buddies')->contains('Batman');
+    $hero->bracket('dc_buddies')->contains('Batman');
   }
 )->run;
 
 is $res->type,     1,   'Correct response type';
 is $res->response, '4', 'Correct number of documents';
+
+# sum
+$res = r->expr( [ 3, 5, 7 ] )->sum->run($conn);
+
+is $res->response, 15, 'Correct response';
+
+# sum - document attributes
+$res = r->table('marvel')->sum('age')->run;
+
+is $res->response, 1400, 'Correct response';
+
+# sum - documents based on function
+$res = r->table('marvel')->sum(
+  sub {
+    my $row = shift;
+    return $row->bracket('strength')->mul( $row->bracket('active') );
+  }
+)->run;
+
+is $res->response, 6132, 'Correct response';
+
+# avg
+$res = r->expr( [ 3, 5, 7 ] )->avg->run($conn);
+
+is $res->response, 5, 'Correct response';
+
+# avg - document attributes
+$res = r->table('marvel')->avg('age')->run;
+
+is substr( $res->response, 0, 7 ), '155.555', 'Correct response';
+
+# avg - documents based on function
+$res = r->table('marvel')->avg(
+  sub {
+    my $row = shift;
+    return $row->bracket('strength')->mul( $row->bracket('active') );
+  }
+)->run;
+
+is substr( $res->response, 0, 7 ), '681.333', 'Correct response';
+
+# min
+$res = r->expr( [ 3, 5, 7 ] )->min->run($conn);
+
+is $res->response, 3, 'Correct response';
+
+# min - document attributes
+$res = r->table('marvel')->min('age')->run;
+is $res->response->{age}, 20, 'Correct response';
+
+# min - documents based on function
+$res = r->table('marvel')->min(
+  sub {
+    my $row = shift;
+    return $row->bracket('strength')->mul( $row->bracket('active') );
+  }
+)->run;
+
+is $res->response->{age}, 20, 'Correct response';
+
+# max
+$res = r->expr( [ 3, 5, 7 ] )->max->run($conn);
+
+is $res->response, 7, 'Correct response';
+
+# max - document attributes
+$res = r->table('marvel')->max('age')->run;
+is $res->response->{age}, 1035, 'Correct response';
+
+# max - documents based on function
+$res = r->table('marvel')->max(
+  sub {
+    my $row = shift;
+    return $row->bracket('strength')->mul( $row->bracket('active') );
+  }
+)->run;
+
+is $res->response->{age}, 1035, 'Correct response';
 
 # distinct (on table)
 $res = r->table('marvel')->distinct->run;
@@ -211,25 +332,23 @@ $res = r->expr( [ 1, 1, 1, 1, 1, 2, 3 ] )->distinct->run($conn);
 is $res->type, 1, 'Correct response type';
 is scalar @{ $res->response }, 3, 'Correct number of documents';
 
-# group_by
-$res = r->table('marvel')->group('age')->avg('strength')->run;
-
-is $res->type, 1, 'Correct response type';
-is_deeply $res->response,
-  {
-  '1035' => '2035',
-  '35'   => '543.166666666667',
-  '135'  => '1035',
-  '20'   => '200',
-  },
-  'Correct response';
-
 # contains
-$res = r->table('marvel')->get('Iron Man')->attr('dc_buddies')
+$res = r->table('marvel')->get('Iron Man')->bracket('dc_buddies')
   ->contains('Superman')->run;
 
 is $res->type, 1, 'Correct response type';
 is $res->response, r->true, 'Correct response value';
+
+$res = r->table('marvel')->filter(
+  sub {
+    my $hero = shift;
+    return r->expr( [ 'Smash', 'Size' ] )
+      ->contains( $hero->bracket('superpower') );
+  }
+)->bracket('superhero')->run;
+
+is_deeply sort $res->response, [ 'Ant-Man', 'Hulk' ],
+  'Correct filter & contains response';
 
 # clean up
 r->db('test')->drop->run;

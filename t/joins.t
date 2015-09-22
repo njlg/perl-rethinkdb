@@ -183,7 +183,8 @@ $res = r->table('marvel')->inner_join(
   r->table('dc'),
   sub ($$) {
     my ( $marvel_row, $dc_row ) = @_;
-    return $marvel_row->attr('strength')->lt( $dc_row->attr('strength') );
+    return $marvel_row->bracket('strength')->
+      lt( $dc_row->bracket('strength') );
   }
 )->run;
 
@@ -198,7 +199,8 @@ $res = r->table('marvel')->outer_join(
   r->table('dc'),
   sub ($$) {
     my ( $marvel_row, $dc_row ) = @_;
-    return $marvel_row->attr('strength')->lt( $dc_row->attr('strength') );
+    return $marvel_row->bracket('strength')->
+      lt( $dc_row->bracket('strength') );
   }
 )->run;
 
@@ -215,6 +217,9 @@ $res = r->table('marvel')->eq_join( 'dc_partner', r->table('dc') )->run;
 
 is $res->type, 2, 'Correct response type';
 is scalar @{ $res->response }, 8, 'Correct number of documents returned';
+
+# wait for index to be available
+r->db('test')->table('dc')->index_wait('name')->run;
 
 # eq_join with secondary index
 $res = r->table('marvel')

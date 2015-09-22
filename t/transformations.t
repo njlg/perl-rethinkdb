@@ -155,7 +155,7 @@ my $res;
 $res = r->table('marvel')->map(
   sub {
     my $hero = shift;
-    return $hero->attr('user_id')->add( $hero->attr('age')->mul(2) );
+    return $hero->bracket('user_id')->add( $hero->bracket('age')->mul(2) );
   }
 )->run;
 
@@ -178,7 +178,7 @@ is_deeply [ sort keys %{ $res->response->[0] } ], [ 'age', 'superhero' ],
 $res = r->table('marvel')->concat_map(
   sub {
     my $hero = shift;
-    return $hero->attr('monsters');
+    return $hero->bracket('monsters');
   }
 )->run;
 
@@ -260,8 +260,10 @@ $res = r->expr( [ 'a', 'b', 'c' ] )->offsets_of('c')->run($conn);
 is $res->type, 1, 'Correct response type';
 is_deeply $res->response, [2], 'Correct response';
 
-$res = r->table('marvel')->union( r->table('dc') )->order_by('popularity')
-  ->offsets_of( r->row->attr('superpowers')->contains('invisibility') )->run;
+$res
+  = r->table('marvel')->union( r->table('dc') )->order_by('popularity')
+  ->offsets_of( r->row->bracket('superpowers')->contains('invisibility') )
+  ->run;
 
 # is_empty
 $res = r->table('marvel')->is_empty->run;

@@ -1,7 +1,7 @@
 package Rethinkdb::Util;
 use Rethinkdb::Base -base;
 
-use Scalar::Util qw{ blessed looks_like_number };
+use Scalar::Util 'blessed';
 use JSON::PP 'encode_json';
 use Carp 'croak';
 
@@ -43,10 +43,14 @@ sub _wrap_func_helper {
 sub _wrap_func {
   my $self = shift;
   my $arg  = shift;
+  my $force  = shift;
 
   my $val = $self->_expr($arg);
 
   if ( _wrap_func_helper $val ) {
+    return $self->_make_func( sub ($) { $val; } );
+  }
+  elsif( $force ) {
     return $self->_make_func( sub ($) { $val; } );
   }
 
@@ -85,9 +89,6 @@ sub _expr_json {
   if ( blessed($value) && $value->can('_build') ) {
     return $value;
   }
-
-  use feature ':5.10';
-  use Data::Dumper;
 
   my $retval;
   eval { $retval = encode_json $value; };
