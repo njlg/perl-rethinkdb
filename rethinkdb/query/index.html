@@ -72,6 +72,8 @@
 <li><a href="#set_union">set_union</a></li>
 <li><a href="#set_intersection">set_intersection</a></li>
 <li><a href="#set_difference">set_difference</a></li>
+<li><a href="#get_field">get_field</a></li>
+<li><a href="#bracket">bracket</a></li>
 <li><a href="#attr">attr</a></li>
 <li><a href="#has_fields">has_fields</a></li>
 <li><a href="#insert_at">insert_at</a></li>
@@ -118,6 +120,14 @@
 <li><a href="#coerce_to">coerce_to</a></li>
 <li><a href="#type_of">type_of</a></li>
 <li><a href="#info">info</a></li>
+<li><a href="#fill">fill</a></li>
+<li><a href="#includes">includes</a></li>
+<li><a href="#intersects">intersects</a></li>
+<li><a href="#polygon_sub">polygon_sub</a></li>
+<li><a href="#to_geojson">to_geojson</a></li>
+<li><a href="#round">round</a></li>
+<li><a href="#ceil">ceil</a></li>
+<li><a href="#floor">floor</a></li>
 </ul>
 </li>
 <li><a href="#see-also">SEE ALSO</a></li>
@@ -419,11 +429,23 @@ array with distinct&nbsp;values).</p>
 </code></pre>
 <p>Remove the elements of one array from another and return them as a set (an
 array with distinct&nbsp;values).</p>
-<h3 id="attr">attr</h3>
-<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;get(<span class="string">'IronMan'</span>)-&gt;attr(<span class="string">'firstAppearance'</span>)-&gt;run;
+<h3 id="get_field">get_field</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;get(<span class="string">'IronMan'</span>)-&gt;get_field(<span class="string">'firstAppearance'</span>)-&gt;run;
 </code></pre>
 <p>Get a single field from an object. If called on a sequence, gets that field
 from every object in the sequence, skipping objects that lack&nbsp;it.</p>
+<h3 id="bracket">bracket</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;get(<span class="string">'IronMan'</span>)-&gt;bracket(<span class="string">'firstAppearance'</span>)-&gt;run;
+r-&gt;expr([<span class="number">10</span>, <span class="number">20</span>, <span class="number">30</span>, <span class="number">40</span>, <span class="number">50</span>])-&gt;bracket(<span class="number">3</span>)-&gt;run;
+</code></pre>
+<p>Get a single field from an object or a single element from a&nbsp;sequence.</p>
+<h3 id="attr">attr</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;get(<span class="string">'IronMan'</span>)-&gt;attr(<span class="string">'firstAppearance'</span>)-&gt;run;
+r-&gt;expr([<span class="number">10</span>, <span class="number">20</span>, <span class="number">30</span>, <span class="number">40</span>, <span class="number">50</span>])-&gt;attr(<span class="number">3</span>)-&gt;run;
+</code></pre>
+<p>Get a single field from an object or a single element from a&nbsp;sequence.</p>
+<p><span class="caps">DEPERCATED</span>: This method has been renamed to <a href="/perl-rethinkdb/rethinkdb/query/#bracket">“bracket”</a>, but <a href="/perl-rethinkdb/rethinkdb/query/#attr">“attr”</a> will
+remain for a number of releases for backwards&nbsp;compatibility.</p>
 <h3 id="has_fields">has_fields</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'players'</span>)-&gt;has_fields(<span class="string">'games_won'</span>)-&gt;run;
 </code></pre>
@@ -682,6 +704,78 @@ either the text of the non-existence error or <code>null</code>.)</p>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;info-&gt;run;
 </code></pre>
 <p>Get information about a ReQL&nbsp;value.</p>
+<h3 id="fill">fill</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'geo'</span>)-&gt;insert(
+  {
+    <span class="string">'id'</span>        =&gt; <span class="number">201</span>,
+    <span class="string">'rectangle'</span> =&gt; r-&gt;line(
+      [ -<span class="number">122.423246</span>, <span class="number">37.779388</span> ],
+      [ -<span class="number">122.423246</span>, <span class="number">37.329898</span> ],
+      [ -<span class="number">121.886420</span>, <span class="number">37.329898</span> ],
+      [ -<span class="number">121.886420</span>, <span class="number">37.779388</span> ]
+    )
+  }
+)-&gt;run;
+
+r-&gt;table(<span class="string">'geo'</span>)-&gt;get(<span class="number">201</span>)
+  -&gt;update( { <span class="string">'rectangle'</span> =&gt; r-&gt;row-&gt;bracket(<span class="string">'rectangle'</span>)-&gt;fill },
+  { <span class="string">non_atomic =&gt;</span> r-&gt;true } )-&gt;run;
+</code></pre>
+<p>Convert a <code>Line</code> object into a <code>Polygon</code> object. If the last point does not
+specify the same coordinates as the first point, <code>polygon</code> will close the
+polygon by connecting&nbsp;them.</p>
+<h3 id="includes">includes</h3>
+<pre><code class="lang-perl">r-&gt;circle( r-&gt;point( -<span class="number">117.220406</span>, <span class="number">32.719464</span> ), <span class="number">2000</span> )
+  -&gt;includes( r-&gt;point( -<span class="number">117.206201</span>, <span class="number">32.725186</span> ) )-&gt;run(<span class="variable">$conn</span>);
+</code></pre>
+<p>Tests whether a geometry object is completely contained within another. When
+applied to a sequence of geometry objects, <a href="/perl-rethinkdb/rethinkdb/query/#includes">“includes”</a> acts as a <a href="/perl-rethinkdb/rethinkdb/query/#filter">“filter”</a>,
+returning a sequence of objects from the sequence that include the&nbsp;argument.</p>
+<h3 id="intersects">intersects</h3>
+<pre><code class="lang-perl">r-&gt;circle( r-&gt;point( -<span class="number">117.220406</span>, <span class="number">32.719464</span> ), <span class="number">2000</span> )
+  -&gt;intersects( r-&gt;point( -<span class="number">117.206201</span>, <span class="number">32.725186</span> ) )-&gt;run(<span class="variable">$conn</span>);
+</code></pre>
+<p>Tests whether two geometry objects intersect with one another. When applied
+to a sequence of geometry objects, <a href="/perl-rethinkdb/rethinkdb/query/#intersects">“intersects”</a> acts as a <a href="/perl-rethinkdb/rethinkdb/query/#filter">“filter”</a>,
+returning a sequence of objects from the sequence that intersect with the&nbsp;argument.</p>
+<h3 id="polygon_sub">polygon_sub</h3>
+<pre><code class="lang-perl">r-&gt;polygon(
+  [ -<span class="number">122.4</span>, <span class="number">37.7</span> ],
+  [ -<span class="number">122.4</span>, <span class="number">37.3</span> ],
+  [ -<span class="number">121.8</span>, <span class="number">37.3</span> ],
+  [ -<span class="number">121.8</span>, <span class="number">37.7</span> ]
+  )-&gt;polygon_sub(
+  r-&gt;polygon(
+    [ -<span class="number">122.3</span>, <span class="number">37.4</span> ],
+    [ -<span class="number">122.3</span>, <span class="number">37.6</span> ],
+    [ -<span class="number">122.0</span>, <span class="number">37.6</span> ],
+    [ -<span class="number">122.0</span>, <span class="number">37.4</span> ]
+  )
+  )-&gt;run(<span class="variable">$conn</span>);
+</code></pre>
+<p>Use <code>polygon2</code> to “punch out” a hole in <code>polygon1</code>. <code>polygon2</code> must be
+completely contained within <code>polygon1</code> and must have no holes itself (it must
+not be the output of <a href="/perl-rethinkdb/rethinkdb/query/#polygon_sub">“polygon_sub”</a>&nbsp;itself).</p>
+<h3 id="to_geojson">to_geojson</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'geo'</span>)-&gt;get(<span class="string">'sfo'</span>)-&gt;bracket(<span class="string">'location'</span>)-&gt;to_geojson-&gt;run;
+</code></pre>
+<p>Convert a ReQL geometry object to a <a href="http://geojson.org/">GeoJSON</a>&nbsp;object.</p>
+<h3 id="round">round</h3>
+<pre><code class="lang-perl">r-&gt;expr(-<span class="number">12.567</span>)-&gt;round-&gt;run(<span class="variable">$conn</span>);
+</code></pre>
+<p>Rounds the given value to the nearest whole integer. For example, values of
+1.0 up to but not including 1.5 will return 1.0, similar to <a href="/perl-rethinkdb/rethinkdb/query/#floor">“floor”</a>; values
+of 1.5 up to 2.0 will return 2.0, similar to <a href="/perl-rethinkdb/rethinkdb/query/#ceil">“ceil”</a>.</p>
+<h3 id="ceil">ceil</h3>
+<pre><code class="lang-perl">r-&gt;expr(-<span class="number">12.567</span>)-&gt;ceil-&gt;run(<span class="variable">$conn</span>);
+</code></pre>
+<p>Rounds the given value up, returning the smallest integer value greater than
+or equal to the given value (the value’s&nbsp;ceiling).</p>
+<h3 id="floor">floor</h3>
+<pre><code class="lang-perl">r-&gt;expr(-<span class="number">12.567</span>)-&gt;floor-&gt;run(<span class="variable">$conn</span>);
+</code></pre>
+<p>Rounds the given value down, returning the largest integer value less than or
+equal to the given value (the value’s&nbsp;floor).</p>
 <h2 id="see-also"><span class="caps">SEE</span>&nbsp;ALSO</h2>
 <p><a href="/perl-rethinkdb/rethinkdb">Rethinkdb</a>, <a href="http://rethinkdb.com">http://rethinkdb.com</a></p>
 </section>

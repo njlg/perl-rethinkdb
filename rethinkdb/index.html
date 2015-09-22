@@ -75,11 +75,20 @@
 <li><a href="#json">json</a></li>
 <li><a href="#http">http</a></li>
 <li><a href="#uuid">uuid</a></li>
+<li><a href="#circle">circle</a></li>
+<li><a href="#distance">distance</a></li>
+<li><a href="#geojson">geojson</a></li>
+<li><a href="#line">line</a></li>
+<li><a href="#point">point</a></li>
+<li><a href="#polygon">polygon</a></li>
 <li><a href="#asc">asc</a></li>
 <li><a href="#desc">desc</a></li>
 <li><a href="#wait">wait</a></li>
 <li><a href="#minval">minval</a></li>
 <li><a href="#maxval">maxval</a></li>
+<li><a href="#round">round</a></li>
+<li><a href="#ceil">ceil</a></li>
+<li><a href="#floor">floor</a></li>
 <li><a href="#true">true</a></li>
 <li><a href="#false">false</a></li>
 </ul>
@@ -420,6 +429,53 @@ r-&gt;http(<span class="string">'http://httpbin.org/post'</span>, {
 </code></pre>
 <p>Return a <span class="caps">UUID</span> (universally unique identifier), a string that can be used as a
 unique&nbsp;ID.</p>
+<h3 id="circle">circle</h3>
+<pre><code class="lang-perl">r-&gt;circle( [ -<span class="number">122.423246</span>, <span class="number">37.770378359</span> ], <span class="number">10</span>, { <span class="string">unit =&gt;</span> <span class="string">'mi'</span> } )
+</code></pre>
+<p>Construct a circular line or polygon. A circle in RethinkDB is a polygon or
+line approximating a circle of a given radius around a given center,
+consisting of a specified number of vertices (default&nbsp;32).</p>
+<h3 id="distance">distance</h3>
+<pre><code class="lang-perl">r-&gt;distance(
+  r-&gt;point( -<span class="number">122.423246</span>, <span class="number">37.779388</span> ),
+  r-&gt;point( -<span class="number">117.220406</span>, <span class="number">32.719464</span> ),
+  { <span class="string">unit =&gt;</span> <span class="string">'km'</span> }
+)-&gt;run;
+</code></pre>
+<p>Compute the distance between a point and another geometry object. At least
+one of the geometry objects specified must be a&nbsp;point.</p>
+<h3 id="geojson">geojson</h3>
+<pre><code class="lang-perl">r-&gt;geojson(
+  { <span class="string">'type'</span> =&gt; <span class="string">'Point'</span>, <span class="string">'coordinates'</span> =&gt; [ -<span class="number">122.423246</span>, <span class="number">37.779388</span> ] } )
+</code></pre>
+<p>Convert a <a href="http://geojson.org/">GeoJSON</a> object to a ReQL geometry&nbsp;object.</p>
+<h3 id="line">line</h3>
+<pre><code class="lang-perl">r-&gt;line( [ -<span class="number">122.423246</span>, <span class="number">37.779388</span> ], [ -<span class="number">121.886420</span>, <span class="number">37.329898</span> ] )
+</code></pre>
+<p>Construct a geometry object of type Line. The line can be specified in one of
+two ways:
+(1) Two or more two-item arrays, specifying latitude and longitude numbers of
+the line’s vertices;
+(2) Two or more <a href="/perl-rethinkdb/rethinkdb/#point">“point”</a> objects specifying the line’s&nbsp;vertices.</p>
+<h3 id="point">point</h3>
+<pre><code class="lang-perl">r-&gt;point( -<span class="number">122.423246</span>, <span class="number">37.779388</span> )
+</code></pre>
+<p>Construct a geometry object of type Point. The point is specified by two
+floating point numbers, the longitude (-180 to 180) and latitude (-90 to 90)
+of the point on a perfect&nbsp;sphere.</p>
+<h3 id="polygon">polygon</h3>
+<pre><code class="lang-perl">r-&gt;polygon(
+  [ -<span class="number">122.423246</span>, <span class="number">37.779388</span> ],
+  [ -<span class="number">122.423246</span>, <span class="number">37.329898</span> ],
+  [ -<span class="number">121.886420</span>, <span class="number">37.329898</span> ],
+  [ -<span class="number">121.886420</span>, <span class="number">37.779388</span> ]
+)
+</code></pre>
+<p>Construct a geometry object of type Polygon. The Polygon can be specified in
+one of two ways:
+(1) Three or more two-item arrays, specifying longitude and latitude numbers
+of the polygon’s vertices;
+(2) Three or more <a href="/perl-rethinkdb/rethinkdb/#point">“point”</a> objects specifying the polygon’s&nbsp;vertices.</p>
 <h3 id="asc">asc</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;order_by(r-&gt;asc(<span class="string">'enemies_vanquished'</span>))-&gt;run;
 </code></pre>
@@ -450,6 +506,22 @@ whose primary keys (or indexes) are less than the specified upper&nbsp;key.</p>
 represent “greater than any index key”. For instance, if you use <a href="/perl-rethinkdb/rethinkdb/#maxval">“maxval”</a> as
 the upper key, then <a href="/perl-rethinkdb/rethinkdb/query/table#between">“between” in Rethinkdb::Query::Table</a> will return all
 documents whose primary keys (or indexes) are greater than the specified lower&nbsp;key.</p>
+<h3 id="round">round</h3>
+<pre><code class="lang-perl">r-&gt;round(-<span class="number">12.567</span>)-&gt;run;
+</code></pre>
+<p>Rounds the given value to the nearest whole integer. For example, values of
+1.0 up to but not including 1.5 will return 1.0, similar to <a href="/perl-rethinkdb/rethinkdb/#floor">“floor”</a>; values
+of 1.5 up to 2.0 will return 2.0, similar to <a href="/perl-rethinkdb/rethinkdb/#ceil">“ceil”</a>.</p>
+<h3 id="ceil">ceil</h3>
+<pre><code class="lang-perl">r-&gt;ceil(-<span class="number">12.567</span>)-&gt;run;
+</code></pre>
+<p>Rounds the given value up, returning the smallest integer value greater than
+or equal to the given value (the value’s&nbsp;ceiling).</p>
+<h3 id="floor">floor</h3>
+<pre><code class="lang-perl">r-&gt;floor(-<span class="number">12.567</span>)-&gt;run;
+</code></pre>
+<p>Rounds the given value down, returning the largest integer value less than or
+equal to the given value (the value’s&nbsp;floor).</p>
 <h3 id="true">true</h3>
 <pre><code class="lang-perl">r-&gt;true-&gt;run;
 </code></pre>

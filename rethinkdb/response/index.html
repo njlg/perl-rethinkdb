@@ -29,8 +29,9 @@
 <li><a href="#type_description">type_description</a></li>
 <li><a href="#response">response</a></li>
 <li><a href="#token">token</a></li>
-<li><a href="#error_message">error_message</a></li>
+<li><a href="#error_type">error_type</a></li>
 <li><a href="#backtrace">backtrace</a></li>
+<li><a href="#profile">profile</a></li>
 </ul>
 </li>
 <li><a href="#see-also">SEE ALSO</a></li>
@@ -51,7 +52,8 @@
 <span class="keyword">say</span> <span class="variable">$res</span>-&gt;type_description;
 <span class="keyword">say</span> <span class="variable">$res</span>-&gt;response;
 <span class="keyword">say</span> <span class="variable">$res</span>-&gt;token;
-<span class="keyword">say</span> <span class="variable">$res</span>-&gt;error_message;
+<span class="keyword">say</span> <span class="variable">$res</span>-&gt;error_type;
+<span class="keyword">say</span> <span class="variable">$res</span>-&gt;profile;
 <span class="keyword">say</span> <span class="variable">$res</span>-&gt;backtrace;
 </code></pre>
 <h2 id="attributes"><span class="caps">ATTRIBUTES</span></h2>
@@ -87,9 +89,9 @@
 </code></pre>
 <p>Each request made to the database must have a unique token. The response from
 the database includes that token incase further actions are&nbsp;required.</p>
-<h3 id="error_message">error_message</h3>
+<h3 id="error_type">error_type</h3>
 <pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$res</span> = r-&gt;table(<span class="string">'marvel'</span>)-&gt;run;
-<span class="keyword">say</span> <span class="variable">$res</span>-&gt;error_message;
+<span class="keyword">say</span> <span class="variable">$res</span>-&gt;error_type;
 </code></pre>
 <p>If the request cause an error, this attribute will contain the error message
 from the&nbsp;database.</p>
@@ -98,6 +100,12 @@ from the&nbsp;database.</p>
 <span class="keyword">say</span> <span class="variable">$res</span>-&gt;backtrace;
 </code></pre>
 <p>If the request cause an error, this attribute will contain a backtrace for the&nbsp;error.</p>
+<h3 id="profile">profile</h3>
+<pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$res</span> = r-&gt;table(<span class="string">'marvel'</span>)-&gt;run;
+<span class="keyword">say</span> <span class="variable">$res</span>-&gt;profile;
+</code></pre>
+<p>If profiling information was requested as a global argument for a query, then
+this attribute will contain that profiling&nbsp;data.</p>
 <h2 id="see-also"><span class="caps">SEE</span>&nbsp;ALSO</h2>
 <p><a href="/perl-rethinkdb/rethinkdb">Rethinkdb</a>, <a href="http://rethinkdb.com">http://rethinkdb.com</a></p>
 </section>

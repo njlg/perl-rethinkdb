@@ -43,6 +43,8 @@
 <li><a href="#get">get</a></li>
 <li><a href="#get_all">get_all</a></li>
 <li><a href="#between">between</a></li>
+<li><a href="#get_intersecting">get_intersecting</a></li>
+<li><a href="#get_nearest">get_nearest</a></li>
 <li><a href="#config">config</a></li>
 <li><a href="#rebalance">rebalance</a></li>
 <li><a href="#reconfigure">reconfigure</a></li>
@@ -115,10 +117,10 @@ r-&gt;table(<span class="string">'test'</span>)-&gt;index_wait(<span class="stri
 <p>Wait for the specified indexes on this table to be ready, or for all indexes on
 this table to be ready if no indexes are&nbsp;specified.</p>
 <h3 id="changes">changes</h3>
-<pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$stream</span> = r-&gt;table(<span class="string">'games'</span>)-&gt;changes-&gt;run;
-<span class="keyword">foreach</span>( @{<span class="variable">$stream</span>} ) {
+<pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$stream</span> = r-&gt;table(<span class="string">'games'</span>)-&gt;changes(<span class="sub"><span class="keyword">sub</span> {</span>
+  <span class="keyword">my</span> <span class="variable">$item</span>;
   <span class="keyword">say</span> Dumper <span class="variable">$_</span>;
-}
+})-&gt;run;
 </code></pre>
 <p>Return an infinite stream of objects representing changes to a table. Whenever
 an <code>insert</code>, <code>delete</code>, <code>update</code> or <code>replace</code> is performed on the table, an
@@ -157,6 +159,22 @@ is in the specified range (it uses the primary key by default). <code>left_bound
 or <code>right_bound</code> may be set to open or closed to indicate whether or not to
 include that endpoint of the range (by default, <code>left_bound</code> is closed and
 <code>right_bound</code> is&nbsp;open).</p>
+<h3 id="get_intersecting">get_intersecting</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'geo'</span>)
+  -&gt;get_intersecting(
+  r-&gt;circle( [ -<span class="number">122.423246</span>, <span class="number">37.770378359</span> ], <span class="number">10</span>, { <span class="string">unit =&gt;</span> <span class="string">'mi'</span> } ),
+  { <span class="string">index =&gt;</span> <span class="string">'location'</span> } )-&gt;run;
+</code></pre>
+<p>Get all documents where the given geometry object intersects the geometry
+object of the requested geospatial&nbsp;index.</p>
+<h3 id="get_nearest">get_nearest</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'geo'</span>)-&gt;get_nearest(
+  r-&gt;point( -<span class="number">122.422876</span>, <span class="number">37.777128</span> ),
+  { <span class="string">index =&gt;</span> <span class="string">'location'</span>, <span class="string">max_dist =&gt;</span> <span class="number">5000</span> }
+)-&gt;run;
+</code></pre>
+<p>Get all documents where the specified geospatial index is within a certain
+distance of the specified point (default 100&nbsp;kilometers).</p>
 <h3 id="config">config</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;config-&gt;run;
 </code></pre>
