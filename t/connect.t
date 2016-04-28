@@ -163,6 +163,13 @@ $res = r->db('test')->table('battle')->run(sub {
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct response for callback return';
 
+# check default database parameter is being used
+r->connect('localhost', 28015, 'random' .  int(rand(1000)))->repl;
+$res = r->table('superheroes')->create->run;
+
+is $res->{error_type}, 4100000, 'Expected error_type';
+like $res->{response}->[0], qr/Database `random[0-9]+` does not exist./;
+
 # clean up
 r->db('test')->drop->run;
 

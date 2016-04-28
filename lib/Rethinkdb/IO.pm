@@ -124,6 +124,11 @@ sub _start {
     $self->_callbacks->{ $q->{token} } = $callback;
   }
 
+  # add our database
+  if(!$args->{db}) {
+    $args->{db} = $self->default_db;
+  }
+
   return $self->_send( $q, $args );
 }
 

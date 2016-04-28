@@ -175,12 +175,6 @@ is_deeply $res->response->{status},
   },
   'Correct structure returned';
 
-# wait
-$res = r->wait->run;
-
-is $res->type, 1, 'Correct response type';
-is $res->response->{ready},              1,       'Correct response type';
-
 # wait - database
 $res = r->db('test')->wait->run;
 
