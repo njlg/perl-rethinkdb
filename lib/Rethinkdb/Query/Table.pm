@@ -424,10 +424,10 @@ this table to be ready if no indexes are specified.
 
 =head2 changes
 
-  my $stream = r->table('games')->changes(sub {
+  my $stream = r->table('games')->changes->run(sub {
     my $item;
     say Dumper $_;
-  })->run;
+  });
 
 Return an infinite stream of objects representing changes to a table. Whenever
 an C<insert>, C<delete>, C<update> or C<replace> is performed on the table, an
