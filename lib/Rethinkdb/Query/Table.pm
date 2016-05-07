@@ -425,8 +425,8 @@ this table to be ready if no indexes are specified.
 =head2 changes
 
   my $stream = r->table('games')->changes->run(sub {
-    my $item;
-    say Dumper $_;
+    my ($response) = @_;
+    say Dumper $response;
   });
 
 Return an infinite stream of objects representing changes to a table. Whenever
