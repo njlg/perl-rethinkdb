@@ -130,10 +130,12 @@ sub index_wait {
 
 sub changes {
   my $self = shift;
+  my $params = shift;
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,
     _type   => $self->_termType->changes,
+    optargs => $params,
   );
 
   return $q;
