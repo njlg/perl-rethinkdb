@@ -11,7 +11,7 @@ use Rethinkdb::Query::Table;
 use Rethinkdb::Query;
 use Rethinkdb::Util;
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
 # this is set only when connect->repl()
 has 'io';
