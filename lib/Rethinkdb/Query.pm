@@ -564,7 +564,7 @@ sub pluck {
 
 sub without {
   my $self = shift;
-  my $args = @_ ? @_ > 1 ? [@_] : [ @{ $_[0] } ] : [];
+  my $args = [@_];
 
   my $q = Rethinkdb::Query->new(
     _parent => $self,

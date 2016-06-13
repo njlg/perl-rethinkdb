@@ -298,6 +298,23 @@ is_deeply $res->response,
   },
   'Correct response';
 
+
+# remove nested key(s)
+$res = r->table('marvel')->get('Iron Man')
+    ->without( 'personalVictoriesList', 'equipment', { stuff => { laserCannons => r->true } } )->run;
+
+is $res->type, 1, 'Correct response type';
+is_deeply $res->response,
+  {
+  reactorState => 'medium',
+  reactorPower => 4500,
+  age          => 30,
+  superhero    => 'Iron Man',
+  stuff        => { missels => 12 },
+  },
+  'Correct response';
+
+
 # Insert a value in to an array at a given index. Returns the modified array.
 $res = r->expr( [ 'Iron Man', 'Spider-Man' ] )->insert_at( 1, 'Hulk' )
   ->run($conn);
