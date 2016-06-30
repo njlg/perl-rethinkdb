@@ -346,6 +346,9 @@ sub _send {
   $self->_handle->recv( $length, 4 );
   $length = unpack 'L<', $length;
 
+  # if we couldn't unpack a length, say it is zero
+  $length ||= 0;
+
   my $_data;
   do {
     $self->_handle->recv( $_data, 4096 );
