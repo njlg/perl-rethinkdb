@@ -1,3 +1,15 @@
+0.14  2016-07-01
+  - bumping to v0.12
+  - callback should be passed to run() instead of changes()
+  - update changes callback for clarity
+  - pass along optargs to changes for things like include_initial
+  - preping a release
+  - filter nested keys in without()
+  - fix for issue #28
+  - adding new RethinkDB v2.3.4 functionality & tests
+  - test needs to clean itself up + test for the correct thing
+  - updating changes for last release
+
 0.12  2016-04-29
   - Fix for Issue #22
   - Fixing some bad tests
