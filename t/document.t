@@ -371,7 +371,7 @@ is_deeply $res->response,
   ],
   'Correct keys';
 
-# Return an array containing all of an object’s values. values() guarantees
+# Return an array containing all of an object's values. values() guarantees
 # the values will come out in the same order as keys.
 $res = r->table('marvel')->get('Iron Man')->values->run;
 

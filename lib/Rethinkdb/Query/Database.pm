@@ -262,8 +262,8 @@ List all table names in a database. The result is a list of strings.
 
 =head2 grant
 
-r->db('test')->grant( 'username', { read => r->true, write => r->false } )
-  ->run;
+  r->db('test')
+    ->grant( 'username', { read => r->true, write => r->false } )->run;
 
 Grant or deny access permissions for a user account on a database.
 

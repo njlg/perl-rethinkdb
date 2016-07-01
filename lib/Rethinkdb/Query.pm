@@ -1911,7 +1911,7 @@ Return an array containing all of the object's keys.
 
   r->table('marvel')->get('ironman')->values->run;
 
-Return an array containing all of an object’s values. C<values> guarantees the
+Return an array containing all of an object's values. C<values> guarantees the
 values will come out in the same order as L<keys>.
 
 =head2 match

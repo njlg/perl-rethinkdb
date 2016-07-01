@@ -573,10 +573,10 @@ The server command returns either two or three fields:
 
 =item C<id>: the UUID of the server the client is connected to.
 
-=item C<proxy>: a boolean indicating whether the server is a L<RethinkDB proxy node!http://rethinkdb.com/docs/sharding-and-replication/#running-a-proxy-node>.
+=item C<proxy>: a boolean indicating whether the server is a L<RethinkDB proxy node|http://rethinkdb.com/docs/sharding-and-replication/#running-a-proxy-node>.
 
-=item C<name>: the server name. If proxy is C<r->true>, this field will not be
-returned.
+=item C<name>: the server name. If proxy is C<< r->true >>, this field will not
+be returned.
 
 =back
 

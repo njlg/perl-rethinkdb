@@ -519,8 +519,8 @@ distance of the specified point (default 100 kilometers).
 
 =head2 grant
 
-r->table('marvel')->grant( 'username', { read => r->true, write => r->false } )
-  ->run;
+  r->table('marvel')
+    ->grant( 'username', { read => r->true, write => r->false } )->run;
 
 Grant or deny access permissions for a user account on a table.
 
