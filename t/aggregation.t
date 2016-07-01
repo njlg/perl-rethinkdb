@@ -213,13 +213,54 @@ $res = r->table('marvel')->map( r->row->bracket('age') )->reduce(
 )->default(0)->run;
 
 is $res->type,     1,      'Correct response type';
-is $res->response, '1400', 'Correct number of documents';
+is $res->response, '1400', 'Correct response';
+
+# fold
+$res = r->table('marvel')->fold(
+  0,
+  sub ($$) {
+    my ( $acc, $row ) = @_;
+    return $acc->add( $row->attr('age') );
+  }
+)->run;
+
+is $res->type,     1,      'Correct response type';
+is $res->response, '1400', 'Correct response';
+
+$res = r->table('marvel')->fold(
+  [],
+  sub ($$) {
+    my ( $acc, $row ) = @_;
+    return $acc->append( $row->attr('age') );
+  }
+)->run;
+
+is $res->type, 1, 'Correct response type';
+is_deeply $res->response, [ 135, 35, 35, 35, 35, 1035, 35, 20, 35 ],
+  'Correct response';
+
+$res = r->table('marvel')->fold(
+  0,
+  sub ($$) {
+    my ( $acc, $row ) = @_;
+    return $acc->add(1);
+  },
+  sub ($$$) {
+    my ( $acc, $row, $newAcc ) = @_;
+    return r->branch( $acc->mod(2)->eq(0), [$row], [] );
+  }
+)->run;
+
+is $res->type, 2, 'Correct response type';
+is_deeply [ map { $_->{superhero} } @{ $res->response } ],
+  [ 'Captain America', 'Ant-Man', 'Hawk-Eye', 'Wasp', 'Iron Man' ],
+  'Correct response';
 
 # count
 $res = r->table('marvel')->count->run;
 
 is $res->type,     1,   'Correct response type';
-is $res->response, '9', 'Correct number of documents';
+is $res->response, '9', 'Correct response';
 
 # count (with parameter)
 $res = r->table('marvel')->concat_map(
@@ -230,7 +271,7 @@ $res = r->table('marvel')->concat_map(
 )->count('Batman')->run;
 
 is $res->type,     1,   'Correct response type';
-is $res->response, '4', 'Correct number of documents';
+is $res->response, '4', 'Correct response';
 
 $res = r->table('marvel')->count(
   sub {
@@ -240,7 +281,7 @@ $res = r->table('marvel')->count(
 )->run;
 
 is $res->type,     1,   'Correct response type';
-is $res->response, '4', 'Correct number of documents';
+is $res->response, '4', 'Correct response';
 
 # sum
 $res = r->expr( [ 3, 5, 7 ] )->sum->run($conn);
@@ -324,13 +365,13 @@ is $res->response->{age}, 1035, 'Correct response';
 $res = r->table('marvel')->distinct->run;
 
 is $res->type, 2, 'Correct response type';
-is scalar @{ $res->response }, 9, 'Correct number of documents';
+is scalar @{ $res->response }, 9, 'Correct response';
 
 # distinct (on query)
 $res = r->expr( [ 1, 1, 1, 1, 1, 2, 3 ] )->distinct->run($conn);
 
 is $res->type, 1, 'Correct response type';
-is scalar @{ $res->response }, 3, 'Correct number of documents';
+is scalar @{ $res->response }, 3, 'Correct response';
 
 # contains
 $res = r->table('marvel')->get('Iron Man')->bracket('dc_buddies')

@@ -138,37 +138,66 @@ r->db('test')->table('battle')->insert(
 )->run;
 
 # group_format
-$res = r->db('test')->table('battle')->group('superhero')->run( { group_format => 'raw' } );
+$res = r->db('test')->table('battle')->group('superhero')
+  ->run( { group_format => 'raw' } );
 
-is $res->response->{'$reql_type$'}, 'GROUPED_DATA', 'Correct group_format response data';
+is $res->response->{'$reql_type$'}, 'GROUPED_DATA',
+  'Correct group_format response data';
 isa_ok $res->response->{data}, 'ARRAY', 'Correct group_format response data';
-isa_ok $res->response->{data}[0][1], 'ARRAY', 'Correct group_format response data';
+isa_ok $res->response->{data}[0][1], 'ARRAY',
+  'Correct group_format response data';
 
 # db
-$res = r->table('cluster_config')->run({db => 'rethinkdb'});
-ok ($res->response->[0]->{id} eq 'auth' or $res->response->[0]->{id} eq 'heartbeat'), 'Correct response for db change';
+$res = r->table('cluster_config')->run( { db => 'rethinkdb' } );
+ok(
+       $res->response->[0]->{id} eq 'auth'
+    or $res->response->[0]->{id} eq 'heartbeat'
+  ),
+  'Correct response for db change';
 
 # array_limit (doesn't seem to change response)
-r->db('test')->table('battle')->run({array_limit => 2});
+r->db('test')->table('battle')->run( { array_limit => 2 } );
 
 # noreply
-$res = r->db('test')->table('battle')->run({noreply => 1});
+$res = r->db('test')->table('battle')->run( { noreply => 1 } );
 is $res, undef, 'Correct response for noreply';
 
 # test a callback
-$res = r->db('test')->table('battle')->run(sub {
-  my $res = shift;
-  isa_ok $res, 'Rethinkdb::Response', 'Correct response for callback';
-});
+$res = r->db('test')->table('battle')->run(
+  sub {
+    my $res = shift;
+    isa_ok $res, 'Rethinkdb::Response', 'Correct response for callback';
+  }
+);
 
 isa_ok $res, 'Rethinkdb::Response', 'Correct response for callback return';
 
 # check default database parameter is being used
-r->connect('localhost', 28015, 'random' .  int(rand(1000)))->repl;
+r->connect( 'localhost', 28015, 'random' . int( rand(1000) ) )->repl;
 $res = r->table('superheroes')->create->run;
 
 is $res->{error_type}, 4100000, 'Expected error_type';
 like $res->{response}->[0], qr/Database `random[0-9]+` does not exist./;
+
+# server information
+$res = r->server;
+
+is $res->type, 5, 'Expected response type';
+is_deeply [ sort( keys %{ $res->response->[0] } ) ],
+  [ 'id', 'name', 'proxy' ], 'Correct response keys';
+like $res->response->[0]->{id},
+  qr/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/,
+  'Correct response';
+
+$conn = r->connect;
+$res = $conn->server;
+
+is $res->type, 5, 'Expected response type';
+is_deeply [ sort( keys %{ $res->response->[0] } ) ],
+  [ 'id', 'name', 'proxy' ], 'Correct response keys';
+like $res->response->[0]->{id},
+  qr/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/,
+  'Correct response';
 
 # clean up
 r->db('test')->drop->run;

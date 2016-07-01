@@ -63,6 +63,12 @@ sub connect {
   return $io->connect;
 }
 
+sub server {
+  my $self = shift;
+
+  return $self->io->server;
+}
+
 # DATABASES
 
 sub db_create {
@@ -110,9 +116,9 @@ sub db {
   my $name = shift;
 
   my $db = Rethinkdb::Query::Database->new(
-    _rdb  => $self,
-    name  => $name,
-    args  => $name,
+    _rdb => $self,
+    name => $name,
+    args => $name,
   );
 
   weaken $db->{_rdb};
@@ -811,6 +817,20 @@ sub floor {
   return $q;
 }
 
+sub grant {
+  my $self  = shift;
+  my $user  = shift;
+  my $perms = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _rdb  => $self,
+    _type => $self->term->termType->grant,
+    args => [ $user, $perms ]
+  );
+
+  return $q;
+}
+
 sub true  { return Rethinkdb::_True->new; }
 sub false { return Rethinkdb::_False->new; }
 
@@ -911,6 +931,25 @@ connection will be set via C<io> in the new instance.
 
 Create a new connection to a RethinkDB shard. Creating a connection tries to
 contact the RethinkDB shard immediately and will fail if the connection fails.
+
+=head2 server
+
+  r->server->run;
+
+Return information about the server being used by the default connection.
+
+The server command returns either two or three fields:
+
+=over
+
+=item C<id>: the UUID of the server the client is connected to.
+
+=item C<proxy>: a boolean indicating whether the server is a L<RethinkDB proxy node!http://rethinkdb.com/docs/sharding-and-replication/#running-a-proxy-node>.
+
+=item C<name>: the server name. If proxy is C<r->true>, this field will not be
+returned.
+
+=back
 
 =head2 db_create
 
@@ -1405,6 +1444,12 @@ or equal to the given value (the value's ceiling).
 
 Rounds the given value down, returning the largest integer value less than or
 equal to the given value (the value's floor).
+
+=head2 grant
+
+  r->grant('username', {read => r->true, write => r->false })->run;
+
+Grant or deny access permissions for a user account globally.
 
 =head2 true
 

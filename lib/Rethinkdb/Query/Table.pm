@@ -129,7 +129,7 @@ sub index_wait {
 }
 
 sub changes {
-  my $self = shift;
+  my $self   = shift;
   my $params = shift;
 
   my $q = Rethinkdb::Query->new(
@@ -267,6 +267,20 @@ sub get_nearest {
     _type   => $self->_termType->get_nearest,
     args    => $args,
     optargs => $optargs,
+  );
+
+  return $q;
+}
+
+sub grant {
+  my $self  = shift;
+  my $user  = shift;
+  my $perms = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _rdb  => $self->_rdb,
+    _type => $self->_termType->grant,
+    args  => [ $user, $perms ]
   );
 
   return $q;
@@ -502,6 +516,13 @@ object of the requested geospatial index.
 
 Get all documents where the specified geospatial index is within a certain
 distance of the specified point (default 100 kilometers).
+
+=head2 grant
+
+r->table('marvel')->grant( 'username', { read => r->true, write => r->false } )
+  ->run;
+
+Grant or deny access permissions for a user account on a table.
 
 =head2 config
 
