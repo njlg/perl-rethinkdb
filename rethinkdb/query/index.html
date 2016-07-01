@@ -55,6 +55,7 @@
 <li><a href="#group">group</a></li>
 <li><a href="#ungroup">ungroup</a></li>
 <li><a href="#reduce">reduce</a></li>
+<li><a href="#fold">fold</a></li>
 <li><a href="#count">count</a></li>
 <li><a href="#sum">sum</a></li>
 <li><a href="#avg">avg</a></li>
@@ -81,6 +82,7 @@
 <li><a href="#delete_at">delete_at</a></li>
 <li><a href="#change_at">change_at</a></li>
 <li><a href="#keys">keys</a></li>
+<li><a href="#values">values</a></li>
 <li><a href="#match">match</a></li>
 <li><a href="#split">split</a></li>
 <li><a href="#upcase">upcase</a></li>
@@ -322,6 +324,30 @@ if you want to e.g. order the groups by the value of their&nbsp;reduction.</p>
 </code></pre>
 <p>Produce a single value from a sequence through repeated application of a
 reduction&nbsp;function.</p>
+<h3 id="fold">fold</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'words'</span>)-&gt;order_by(<span class="string">'id'</span>)-&gt;fold(
+  <span class="string">''</span>,
+  <span class="sub"><span class="keyword">sub</span> ($$) {</span>
+    <span class="keyword">my</span> ( <span class="variable">$acc</span>, <span class="variable">$word</span> ) = <span class="variable">@_</span>;
+    <span class="keyword">return</span> <span class="variable">$acc</span>-&gt;add( r-&gt;branch( <span class="variable">$acc</span>-&gt;e<span class="string">q('')</span>, <span class="string">''</span>, <span class="string">', '</span> )-&gt;add(<span class="variable">$word</span>) );
+  }
+)-&gt;run;
+
+r-&gt;table(<span class="string">'tracker'</span>)-&gt;filter( { <span class="string">name =&gt;</span> <span class="string">'bob'</span> } )-&gt;order_by(<span class="string">'date'</span>)
+  -&gt;bracket(<span class="string">'weight'</span>)-&gt;fold(
+  [],
+  <span class="sub"><span class="keyword">sub</span> ($$) {</span>
+    <span class="keyword">my</span> ( <span class="variable">$acc</span>, <span class="variable">$row</span> ) = <span class="variable">@_</span>;
+    <span class="keyword">return</span> <span class="variable">$acc</span>-&gt;append(<span class="variable">$row</span>)-&gt;limit(<span class="number">5</span>);
+  },
+  <span class="sub"><span class="keyword">sub</span> ($$$) {</span>
+    <span class="keyword">my</span> ( <span class="variable">$acc</span>, <span class="variable">$row</span>, <span class="variable">$new_acc</span> ) = <span class="variable">@_</span>;
+    <span class="keyword">return</span> r-&gt;branch( new_acc-&gt;size()-&gt;e<span class="string">q(5)</span>, [ new_acc-&gt;avg() ], [] );
+  }
+  )-&gt;run;
+</code></pre>
+<p>Apply a function to a sequence in order, maintaining state via an accumulator.
+The fold command returns either a single value or a new&nbsp;sequence.</p>
 <h3 id="count">count</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;count-&gt;add(r-&gt;table(<span class="string">'dc'</span>)-&gt;count-&gt;run
 </code></pre>
@@ -473,6 +499,11 @@ modified&nbsp;array.</p>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;get(<span class="string">'ironman'</span>)-&gt;<span class="keyword">keys</span>-&gt;run;
 </code></pre>
 <p>Return an array containing all of the object’s&nbsp;keys.</p>
+<h3 id="values">values</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;get(<span class="string">'ironman'</span>)-&gt;<span class="keyword">values</span>-&gt;run;
+</code></pre>
+<p>Return an array containing all of an object’s values. <code>values</code> guarantees the
+values will come out in the same order as <a href="http://metacpan.org/pod/keys">keys</a>.</p>
 <h3 id="match">match</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'users'</span>)-&gt;filter(<span class="sub"><span class="keyword">sub</span> {</span>
   <span class="keyword">my</span> <span class="variable">$doc</span> = <span class="keyword">shift</span>;
@@ -786,17 +817,17 @@ equal to the given value (the value’s&nbsp;floor).</p>
     <footer>
       <div class="content-wrap">
         <div class="nav"><a href="/perl-rethinkdb/">« Back</a><a href="#content" id="top">↑ Top</a></div>
-        <section class="about"><p>Unless otherwise noted: Copyright &copy; 2013-2015, <a href="http://njlg.info">Nathan Levin-Greenhaw</a></p>
+        <section class="about"><p>Unless otherwise noted: Copyright &copy; 2013-2016, <a href="http://njlg.info">Nathan Levin-Greenhaw</a></p>
 <p>A lot of the above documentation herein was taken from the
 <a href="http://rethinkdb.com/api/">official documentation</a>.
-Copyright &copy; 2010-2015 RethinkDB.</p>
+Copyright &copy; 2010-2016 RethinkDB.</p>
 <p>This program is free software, you can redistribute it and/or modify it under
 the terms of the Artistic License version 2.0.</p>
 
         </section>
         <section class="copy">
           <p>
-            &copy; 2015
+            &copy; 2016
             <a href="http://njlg.info">Nathan Levin-Greenhaw</a>
             &mdash; powered by
             <a href="https://github.com/jnordberg/wintersmith">Wintersmith</a>

@@ -45,6 +45,7 @@
 <li><a href="#between">between</a></li>
 <li><a href="#get_intersecting">get_intersecting</a></li>
 <li><a href="#get_nearest">get_nearest</a></li>
+<li><a href="#grant">grant</a></li>
 <li><a href="#config">config</a></li>
 <li><a href="#rebalance">rebalance</a></li>
 <li><a href="#reconfigure">reconfigure</a></li>
@@ -117,10 +118,10 @@ r-&gt;table(<span class="string">'test'</span>)-&gt;index_wait(<span class="stri
 <p>Wait for the specified indexes on this table to be ready, or for all indexes on
 this table to be ready if no indexes are&nbsp;specified.</p>
 <h3 id="changes">changes</h3>
-<pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$stream</span> = r-&gt;table(<span class="string">'games'</span>)-&gt;changes(<span class="sub"><span class="keyword">sub</span> {</span>
-  <span class="keyword">my</span> <span class="variable">$item</span>;
-  <span class="keyword">say</span> Dumper <span class="variable">$_</span>;
-})-&gt;run;
+<pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$stream</span> = r-&gt;table(<span class="string">'games'</span>)-&gt;changes-&gt;run(<span class="sub"><span class="keyword">sub</span> {</span>
+  <span class="keyword">my</span> (<span class="variable">$response</span>) = <span class="variable">@_</span>;
+  <span class="keyword">say</span> Dumper <span class="variable">$response</span>;
+});
 </code></pre>
 <p>Return an infinite stream of objects representing changes to a table. Whenever
 an <code>insert</code>, <code>delete</code>, <code>update</code> or <code>replace</code> is performed on the table, an
@@ -175,6 +176,11 @@ object of the requested geospatial&nbsp;index.</p>
 </code></pre>
 <p>Get all documents where the specified geospatial index is within a certain
 distance of the specified point (default 100&nbsp;kilometers).</p>
+<h3 id="grant">grant</h3>
+<pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)
+  -&gt;grant( <span class="string">'username'</span>, { <span class="string">read =&gt;</span> r-&gt;true, <span class="string">write =&gt;</span> r-&gt;false } )-&gt;run;
+</code></pre>
+<p>Grant or deny access permissions for a user account on a&nbsp;table.</p>
 <h3 id="config">config</h3>
 <pre><code class="lang-perl">r-&gt;table(<span class="string">'marvel'</span>)-&gt;config-&gt;run;
 </code></pre>
@@ -213,17 +219,17 @@ blocks until the given table is fully up to&nbsp;date.</p>
     <footer>
       <div class="content-wrap">
         <div class="nav"><a href="/perl-rethinkdb/">« Back</a><a href="#content" id="top">↑ Top</a></div>
-        <section class="about"><p>Unless otherwise noted: Copyright &copy; 2013-2015, <a href="http://njlg.info">Nathan Levin-Greenhaw</a></p>
+        <section class="about"><p>Unless otherwise noted: Copyright &copy; 2013-2016, <a href="http://njlg.info">Nathan Levin-Greenhaw</a></p>
 <p>A lot of the above documentation herein was taken from the
 <a href="http://rethinkdb.com/api/">official documentation</a>.
-Copyright &copy; 2010-2015 RethinkDB.</p>
+Copyright &copy; 2010-2016 RethinkDB.</p>
 <p>This program is free software, you can redistribute it and/or modify it under
 the terms of the Artistic License version 2.0.</p>
 
         </section>
         <section class="copy">
           <p>
-            &copy; 2015
+            &copy; 2016
             <a href="http://njlg.info">Nathan Levin-Greenhaw</a>
             &mdash; powered by
             <a href="https://github.com/jnordberg/wintersmith">Wintersmith</a>

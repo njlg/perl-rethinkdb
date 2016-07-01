@@ -39,6 +39,7 @@
 <li><a href="#repl">repl</a></li>
 <li><a href="#use">use</a></li>
 <li><a href="#noreply_wait">noreply_wait</a></li>
+<li><a href="#server">server</a></li>
 </ul>
 </li>
 <li><a href="#see-also">SEE ALSO</a></li>
@@ -138,6 +139,18 @@ use this&nbsp;connection.</p>
 </code></pre>
 <p>The <code>noreply_wait</code> method will tell the database to wait until all “no reply”
 have executed before&nbsp;responding.</p>
+<h3 id="server">server</h3>
+<pre><code class="lang-perl"><span class="keyword">my</span> <span class="variable">$conn</span> = r-&gt;<span class="keyword">connect</span>;
+<span class="variable">$conn</span>-&gt;server;
+</code></pre>
+<p>Return information about the server being used by this&nbsp;connection.</p>
+<p>The server command returns either two or three&nbsp;fields:</p>
+<ul>
+<li><code>id</code>: the <span class="caps">UUID</span> of the server the client is connected&nbsp;to.</li>
+<li><code>proxy</code>: a boolean indicating whether the server is a <a href="http://rethinkdb.com/docs/sharding-and-replication/#running-a-proxy-node">RethinkDB proxy node</a>.</li>
+<li><code>name</code>: the server name. If proxy is <code>r-&gt;true</code>, this field will not
+be&nbsp;returned.</li>
+</ul>
 <h2 id="see-also"><span class="caps">SEE</span>&nbsp;ALSO</h2>
 <p><a href="/perl-rethinkdb/rethinkdb">Rethinkdb</a>, <a href="http://rethinkdb.com">http://rethinkdb.com</a></p>
 </section>
@@ -148,17 +161,17 @@ have executed before&nbsp;responding.</p>
     <footer>
       <div class="content-wrap">
         <div class="nav"><a href="/perl-rethinkdb/">« Back</a><a href="#content" id="top">↑ Top</a></div>
-        <section class="about"><p>Unless otherwise noted: Copyright &copy; 2013-2015, <a href="http://njlg.info">Nathan Levin-Greenhaw</a></p>
+        <section class="about"><p>Unless otherwise noted: Copyright &copy; 2013-2016, <a href="http://njlg.info">Nathan Levin-Greenhaw</a></p>
 <p>A lot of the above documentation herein was taken from the
 <a href="http://rethinkdb.com/api/">official documentation</a>.
-Copyright &copy; 2010-2015 RethinkDB.</p>
+Copyright &copy; 2010-2016 RethinkDB.</p>
 <p>This program is free software, you can redistribute it and/or modify it under
 the terms of the Artistic License version 2.0.</p>
 
         </section>
         <section class="copy">
           <p>
-            &copy; 2015
+            &copy; 2016
             <a href="http://njlg.info">Nathan Levin-Greenhaw</a>
             &mdash; powered by
             <a href="https://github.com/jnordberg/wintersmith">Wintersmith</a>

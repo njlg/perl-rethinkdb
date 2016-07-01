@@ -32,6 +32,7 @@
 <li><a href="#methods">METHODS</a><ul>
 <li><a href="#r">r</a></li>
 <li><a href="#connect">connect</a></li>
+<li><a href="#server">server</a></li>
 <li><a href="#db_create">db_create</a></li>
 <li><a href="#db_drop">db_drop</a></li>
 <li><a href="#db_list">db_list</a></li>
@@ -89,6 +90,7 @@
 <li><a href="#round">round</a></li>
 <li><a href="#ceil">ceil</a></li>
 <li><a href="#floor">floor</a></li>
+<li><a href="#grant">grant</a></li>
 <li><a href="#true">true</a></li>
 <li><a href="#false">false</a></li>
 </ul>
@@ -145,6 +147,17 @@ connection will be set via <code>io</code> in the new&nbsp;instance.</p>
 </code></pre>
 <p>Create a new connection to a RethinkDB shard. Creating a connection tries to
 contact the RethinkDB shard immediately and will fail if the connection&nbsp;fails.</p>
+<h3 id="server">server</h3>
+<pre><code class="lang-perl">r-&gt;server-&gt;run;
+</code></pre>
+<p>Return information about the server being used by the default&nbsp;connection.</p>
+<p>The server command returns either two or three&nbsp;fields:</p>
+<ul>
+<li><code>id</code>: the <span class="caps">UUID</span> of the server the client is connected&nbsp;to.</li>
+<li><code>proxy</code>: a boolean indicating whether the server is a <a href="http://rethinkdb.com/docs/sharding-and-replication/#running-a-proxy-node">RethinkDB proxy node</a>.</li>
+<li><code>name</code>: the server name. If proxy is <code>r-&gt;true</code>, this field will not
+be&nbsp;returned.</li>
+</ul>
 <h3 id="db_create">db_create</h3>
 <pre><code class="lang-perl">r-&gt;db_create(<span class="string">'test'</span>)-&gt;run;
 </code></pre>
@@ -522,6 +535,10 @@ or equal to the given value (the value’s&nbsp;ceiling).</p>
 </code></pre>
 <p>Rounds the given value down, returning the largest integer value less than or
 equal to the given value (the value’s&nbsp;floor).</p>
+<h3 id="grant">grant</h3>
+<pre><code class="lang-perl">r-&gt;grant(<span class="string">'username'</span>, {<span class="string">read =&gt;</span> r-&gt;true, <span class="string">write =&gt;</span> r-&gt;false })-&gt;run;
+</code></pre>
+<p>Grant or deny access permissions for a user account&nbsp;globally.</p>
 <h3 id="true">true</h3>
 <pre><code class="lang-perl">r-&gt;true-&gt;run;
 </code></pre>
@@ -538,17 +555,17 @@ equal to the given value (the value’s&nbsp;floor).</p>
     <footer>
       <div class="content-wrap">
         <div class="nav"><a href="/perl-rethinkdb/">« Back</a><a href="#content" id="top">↑ Top</a></div>
-        <section class="about"><p>Unless otherwise noted: Copyright &copy; 2013-2015, <a href="http://njlg.info">Nathan Levin-Greenhaw</a></p>
+        <section class="about"><p>Unless otherwise noted: Copyright &copy; 2013-2016, <a href="http://njlg.info">Nathan Levin-Greenhaw</a></p>
 <p>A lot of the above documentation herein was taken from the
 <a href="http://rethinkdb.com/api/">official documentation</a>.
-Copyright &copy; 2010-2015 RethinkDB.</p>
+Copyright &copy; 2010-2016 RethinkDB.</p>
 <p>This program is free software, you can redistribute it and/or modify it under
 the terms of the Artistic License version 2.0.</p>
 
         </section>
         <section class="copy">
           <p>
-            &copy; 2015
+            &copy; 2016
             <a href="http://njlg.info">Nathan Levin-Greenhaw</a>
             &mdash; powered by
             <a href="https://github.com/jnordberg/wintersmith">Wintersmith</a>
