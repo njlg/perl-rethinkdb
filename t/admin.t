@@ -129,7 +129,7 @@ is_deeply [ sort keys %{ $res->response->{permissions_changes}->[0] } ],
 is_deeply $res->response->{permissions_changes}->[0],
   {
   'new_val' => { 'read'  => r->true, 'write' => r->true },
-  'old_val' => { 'write' => r->true, 'read'  => r->true }
+  'old_val' => undef
   },
   'Correct structure returned';
 
@@ -148,7 +148,7 @@ is $res->response->{granted}, 1, 'Correct response';
 is_deeply $res->response->{permissions_changes}->[0],
   {
   'new_val' => { 'read'  => r->true, 'write' => r->false, 'connect' => r->false, 'config' => r->false },
-  'old_val' => { 'read'  => r->true, 'write' => r->false, 'connect' => r->false, 'config' => r->false }
+  'old_val' => undef
   },
   'Correct structure returned';
 
@@ -307,5 +307,11 @@ $res = r->table('marvel')->wait->run;
 
 is $res->type, 1, 'Correct response type';
 is $res->response->{ready}, 1, 'Correct response type';
+
+# clean up
+r->db('test')->drop->run;
+r->db('rethinkdb')->table('users')->get('chatapp')->delete->run;
+r->db('rethinkdb')->table('users')->get('monitoring')->delete->run;
+r->db('rethinkdb')->table('users')->get('bob')->delete->run;
 
 done_testing();
