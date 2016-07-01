@@ -45,6 +45,7 @@ sub _build {
       }
     }
   }
+
   # else {
   #   push @{ $q->{args} }, undef;
   # }
@@ -412,16 +413,16 @@ sub sample {
 # AGGREGATION
 
 sub group {
-  my $self = shift;
-  my $args = [@_];
+  my $self    = shift;
+  my $args    = [@_];
   my $optargs = {};
 
   if ( ref $args->[ $#{$args} ] eq 'HASH' ) {
     $optargs = pop @{$args};
   }
 
-  if( ref $args->[0] && ref $args->[0] ne 'CODE' ) {
-    $args = Rethinkdb::Util->_wrap_func($args->[0]);
+  if ( ref $args->[0] && ref $args->[0] ne 'CODE' ) {
+    $args = Rethinkdb::Util->_wrap_func( $args->[0] );
   }
 
   my $q = Rethinkdb::Query->new(
@@ -453,6 +454,29 @@ sub reduce {
     _parent => $self,
     _type   => $self->_termType->reduce,
     args    => $function,
+  );
+
+  return $q;
+}
+
+sub fold {
+  my $self    = shift;
+  my $acc     = shift;
+  my $fn      = shift;
+  my $emitter = shift;
+
+  my $args = [$acc, $fn];
+  my $optargs = {};
+
+  if($emitter) {
+    $optargs = { emit => $emitter };
+  }
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->fold,
+    args    => $args,
+    optargs => $optargs
   );
 
   return $q;
@@ -787,6 +811,19 @@ sub keys {
   my $q = Rethinkdb::Query->new(
     _parent => $self,
     _type   => $self->_termType->keys,
+    args    => $args,
+  );
+
+  return $q;
+}
+
+sub values {
+  my $self = shift;
+  my $args = [@_];
+
+  my $q = Rethinkdb::Query->new(
+    _parent => $self,
+    _type   => $self->_termType->values,
     args    => $args,
   );
 
@@ -1638,6 +1675,32 @@ if you want to e.g. order the groups by the value of their reduction.
 Produce a single value from a sequence through repeated application of a
 reduction function.
 
+=head2 fold
+
+  r->table('words')->order_by('id')->fold(
+    '',
+    sub ($$) {
+      my ( $acc, $word ) = @_;
+      return $acc->add( r->branch( $acc->eq(''), '', ', ' )->add($word) );
+    }
+  )->run;
+
+  r->table('tracker')->filter( { name => 'bob' } )->order_by('date')
+    ->bracket('weight')->fold(
+    [],
+    sub ($$) {
+      my ( $acc, $row ) = @_;
+      return $acc->append($row)->limit(5);
+    },
+    sub ($$$) {
+      my ( $acc, $row, $new_acc ) = @_;
+      return r->branch( new_acc->size()->eq(5), [ new_acc->avg() ], [] );
+    }
+    )->run;
+
+Apply a function to a sequence in order, maintaining state via an accumulator.
+The fold command returns either a single value or a new sequence.
+
 =head2 count
 
   r->table('marvel')->count->add(r->table('dc')->count->run
@@ -1843,6 +1906,13 @@ Change a value in an array at a given index. Returns the modified array.
   r->table('marvel')->get('ironman')->keys->run;
 
 Return an array containing all of the object's keys.
+
+=head2 values
+
+  r->table('marvel')->get('ironman')->values->run;
+
+Return an array containing all of an object’s values. C<values> guarantees the
+values will come out in the same order as L<keys>.
 
 =head2 match
 

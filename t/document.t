@@ -235,7 +235,7 @@ is $res->response, 'medium', 'Correct response';
 $res = r->table('marvel')->get_field('superpower')->run;
 
 is $res->type, 2, 'Correct response type';
-is_deeply [sort @{$res->response}],
+is_deeply [ sort @{ $res->response } ],
   [
   'Adamantium', 'Bio-lasers', 'Bow-n-arrow', 'God-like powers',
   'Size',       'Smash',      'Spidy Sense', 'Super Strength',
@@ -251,7 +251,7 @@ is $res->response, 'medium', 'Correct response';
 $res = r->table('marvel')->bracket('superpower')->run;
 
 is $res->type, 2, 'Correct response type';
-is_deeply [sort @{$res->response}],
+is_deeply [ sort @{ $res->response } ],
   [
   'Adamantium', 'Bio-lasers', 'Bow-n-arrow', 'God-like powers',
   'Size',       'Smash',      'Spidy Sense', 'Super Strength',
@@ -267,7 +267,7 @@ is $res->response, 'medium', 'Correct response';
 $res = r->table('marvel')->attr('superpower')->run;
 
 is $res->type, 2, 'Correct response type';
-is_deeply [sort @{$res->response}],
+is_deeply [ sort @{ $res->response } ],
   [
   'Adamantium', 'Bio-lasers', 'Bow-n-arrow', 'God-like powers',
   'Size',       'Smash',      'Spidy Sense', 'Super Strength',
@@ -300,8 +300,10 @@ is_deeply $res->response,
 
 
 # remove nested key(s)
-$res = r->table('marvel')->get('Iron Man')
-    ->without( 'personalVictoriesList', 'equipment', { stuff => { laserCannons => r->true } } )->run;
+$res
+  = r->table('marvel')->get('Iron Man')
+  ->without( 'personalVictoriesList', 'equipment',
+  { stuff => { laserCannons => r->true } } )->run;
 
 is $res->type, 1, 'Correct response type';
 is_deeply $res->response,
@@ -366,6 +368,21 @@ is_deeply $res->response,
   'personalVictoriesList', 'reactorPower',
   'reactorState',          'stuff',
   'superhero'
+  ],
+  'Correct keys';
+
+# Return an array containing all of an object’s values. values() guarantees
+# the values will come out in the same order as keys.
+$res = r->table('marvel')->get('Iron Man')->values->run;
+
+is $res->type, 1, 'Correct response type';
+is_deeply $res->response,
+  [
+  30,
+  [ 'oldBoots', 'oldHelm' ],
+  [ 'Fing Fang Foom', 'Iron Monger', 'Mandarin' ],
+  4500, 'medium', { 'laserCannons' => 2, 'missels' => 12 },
+  'Iron Man'
   ],
   'Correct keys';
 

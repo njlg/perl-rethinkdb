@@ -106,6 +106,20 @@ sub table {
   return $t;
 }
 
+sub grant {
+  my $self  = shift;
+  my $user  = shift;
+  my $perms = shift;
+
+  my $q = Rethinkdb::Query->new(
+    _rdb  => $self->_rdb,
+    _type => $self->_termType->grant,
+    args  => [ $user, $perms ]
+  );
+
+  return $q;
+}
+
 sub config {
   my $self = shift;
 
@@ -245,6 +259,13 @@ specified table doesn't exist a C<runtime_error> is returned.
   r->db('test')->table_list->run;
 
 List all table names in a database. The result is a list of strings.
+
+=head2 grant
+
+r->db('test')->grant( 'username', { read => r->true, write => r->false } )
+  ->run;
+
+Grant or deny access permissions for a user account on a database.
 
 =head2 config
 

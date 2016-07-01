@@ -99,7 +99,125 @@ r->table('marvel')->insert(
   ]
 )->run;
 
+# create a few users
+r->db('rethinkdb')->table('users')->insert(
+  [
+    {
+      id       => 'chatapp',
+      password => { password => 'chatapp-secret', iterations => 1024 }
+    },
+    {
+      id       => 'monitoring',
+      password => { password => 'monitoring-secret', iterations => 1024 }
+    },
+    {
+      id       => 'bob',
+      password => { password => 'bob-secret', iterations => 1024 }
+    }
+  ]
+)->run;
+
 my $res;
+
+# grant global
+$res = r->grant( 'chatapp', { read => r->true, write => r->true } )->run;
+
+is $res->type, 1, 'Correct response type';
+is $res->response->{granted}, 1, 'Correct response';
+is_deeply [ sort keys %{ $res->response->{permissions_changes}->[0] } ],
+  [ 'new_val', 'old_val' ], 'Correct structure returned';
+is_deeply $res->response->{permissions_changes}->[0],
+  {
+  'new_val' => { 'read'  => r->true, 'write' => r->true },
+  'old_val' => { 'write' => r->true, 'read'  => r->true }
+  },
+  'Correct structure returned';
+
+$res = r->grant(
+  'monitoring',
+  {
+    read    => r->true,
+    write   => r->false,
+    connect => r->false,
+    config  => r->false
+  }
+)->run;
+
+is $res->type, 1, 'Correct response type';
+is $res->response->{granted}, 1, 'Correct response';
+is_deeply $res->response->{permissions_changes}->[0],
+  {
+  'new_val' => { 'read'  => r->true, 'write' => r->false, 'connect' => r->false, 'config' => r->false },
+  'old_val' => { 'read'  => r->true, 'write' => r->false, 'connect' => r->false, 'config' => r->false }
+  },
+  'Correct structure returned';
+
+# grant database
+$res = r->db('test')->grant( 'chatapp', { read => r->true, write => r->true } )->run;
+
+is $res->type, 1, 'Correct response type';
+is $res->response->{granted}, 1, 'Correct response';
+is_deeply [ sort keys %{ $res->response->{permissions_changes}->[0] } ],
+  [ 'new_val', 'old_val' ], 'Correct structure returned';
+is_deeply $res->response->{permissions_changes}->[0],
+  {
+  'new_val' => { 'read'  => r->true, 'write' => r->true },
+  'old_val' => { 'write' => r->true, 'read'  => r->true }
+  },
+  'Correct structure returned';
+
+$res = r->db('test')->grant(
+  'monitoring',
+  {
+    read    => r->true,
+    write   => r->false,
+    connect => r->false,
+    config  => r->false
+  }
+)->run;
+
+is $res->type, 1, 'Correct response type';
+is $res->response->{granted}, 1, 'Correct response';
+is_deeply $res->response->{permissions_changes}->[0],
+  {
+  'new_val' => { 'read'  => r->true, 'write' => r->false, 'connect' => r->false, 'config' => r->false },
+  'old_val' => { 'read'  => r->true, 'write' => r->false, 'connect' => r->false, 'config' => r->false }
+  },
+  'Correct structure returned';
+
+# grant table
+$res = r->table('marvel')->grant( 'chatapp', { read => r->true, write => r->true } )->run;
+
+is $res->type, 1, 'Correct response type';
+is $res->response->{granted}, 1, 'Correct response';
+is_deeply [ sort keys %{ $res->response->{permissions_changes}->[0] } ],
+  [ 'new_val', 'old_val' ], 'Correct structure returned';
+is_deeply $res->response->{permissions_changes}->[0],
+  {
+  'new_val' => { 'read'  => r->true, 'write' => r->true },
+  'old_val' => { 'write' => r->true, 'read'  => r->true }
+  },
+  'Correct structure returned';
+
+$res = r->table('marvel')->grant(
+  'monitoring',
+  {
+    read    => r->true,
+    write   => r->false,
+    connect => r->false,
+    config  => r->false
+  }
+)->run;
+
+is $res->type, 1, 'Correct response type';
+is $res->response->{granted}, 1, 'Correct response';
+is_deeply $res->response->{permissions_changes}->[0],
+  {
+  'new_val' => { 'read'  => r->true, 'write' => r->false, 'connect' => r->false, 'config' => r->false },
+  'old_val' => { 'read'  => r->true, 'write' => r->false, 'connect' => r->false, 'config' => r->false }
+  },
+  'Correct structure returned';
+
 
 # config - database
 $res = r->db('test')->config->run;
@@ -113,7 +231,10 @@ $res = r->table('marvel')->config->run;
 
 is $res->type, 1, 'Correct response type';
 is_deeply [ sort keys %{ $res->response } ],
-  [ 'db', 'durability', 'id', 'indexes', 'name', 'primary_key', 'shards', 'write_acks' ],
+  [
+  'db',   'durability',  'id',     'indexes',
+  'name', 'primary_key', 'shards', 'write_acks'
+  ],
   'Correct structure returned';
 
 # rebalance - database
@@ -179,12 +300,12 @@ is_deeply $res->response->{status},
 $res = r->db('test')->wait->run;
 
 is $res->type, 1, 'Correct response type';
-is $res->response->{ready},              1,       'Correct response type';
+is $res->response->{ready}, 1, 'Correct response type';
 
 # wait - table
 $res = r->table('marvel')->wait->run;
 
 is $res->type, 1, 'Correct response type';
-is $res->response->{ready},              1,       'Correct response type';
+is $res->response->{ready}, 1, 'Correct response type';
 
 done_testing();

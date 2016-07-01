@@ -110,6 +110,17 @@ sub noreply_wait {
   );
 }
 
+sub server {
+  my $self = shift;
+
+  return $self->_send(
+    {
+      type  => $self->_protocol->query->queryType->server_info,
+      token => Rethinkdb::Util::_token(),
+    }
+  );
+}
+
 sub _start {
   my $self = shift;
   my ( $query, $args, $callback ) = @_;
@@ -125,7 +136,7 @@ sub _start {
   }
 
   # add our database
-  if(!$args->{db}) {
+  if ( !$args->{db} ) {
     $args->{db} = $self->default_db;
   }
 
@@ -159,10 +170,12 @@ sub _simple_encode_hash {
   }
 
   if ( $json->{db} ) {
-    $json->{db} = Rethinkdb::IO->_encode_recurse(Rethinkdb::Query::Database->new(
-      name => $json->{db},
-      args => $json->{db},
-    )->_build);
+    $json->{db} = Rethinkdb::IO->_encode_recurse(
+      Rethinkdb::Query::Database->new(
+        name => $json->{db},
+        args => $json->{db},
+      )->_build
+    );
   }
 
   return $json;
@@ -359,8 +372,8 @@ sub _send {
   my $res_data = $self->_decode($data);
   $res_data->{token} = $token;
 
-  # handle partial and feed responses
-  if ( $res_data->{t} == 3 or $res_data->{t} == 5 ) {
+  # handle partial response
+  if ( $res_data->{t} == 3 ) {
     if ( $self->_callbacks->{$token} ) {
       my $res = Rethinkdb::Response->_init( $res_data, $args );
 
@@ -386,7 +399,7 @@ sub _send {
         say {*STDERR} Dumper $res_data;
       }
 
-      # fetch the rest of the data if stream/partial/feed
+      # fetch the rest of the data if partial
       my $more = $self->_send(
         {
           type  => $self->_protocol->query->queryType->continue,
@@ -546,6 +559,26 @@ use this connection.
 
 The C<noreply_wait> method will tell the database to wait until all "no reply"
 have executed before responding.
+
+=head2 server
+
+  my $conn = r->connect;
+  $conn->server;
+
+Return information about the server being used by this connection.
+
+The server command returns either two or three fields:
+
+=over
+
+=item C<id>: the UUID of the server the client is connected to.
+
+=item C<proxy>: a boolean indicating whether the server is a L<RethinkDB proxy node!http://rethinkdb.com/docs/sharding-and-replication/#running-a-proxy-node>.
+
+=item C<name>: the server name. If proxy is C<r->true>, this field will not be
+returned.
+
+=back
 
 =head1 SEE ALSO
 
