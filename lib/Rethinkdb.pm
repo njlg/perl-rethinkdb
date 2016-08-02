@@ -32,7 +32,7 @@ sub r {
   my $self;
 
   no strict "refs";
-  my $_rdb_io = ${$package . "::_rdb_io"};
+  my $_rdb_io = ${$package . '::_rdb_io'};
   if ($_rdb_io) {
     $self = __PACKAGE__->new( io => $_rdb_io );
     $self->io->_rdb($self);

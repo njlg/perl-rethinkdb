@@ -87,8 +87,8 @@ sub repl {
   my $self    = shift;
   my $package = caller || 'main';
 
-  no strict "refs";
-  ${$package . "::_rdb_io"} = $self;
+  no strict 'refs';
+  ${$package . '::_rdb_io'} = $self;
   return $self;
 }
 
