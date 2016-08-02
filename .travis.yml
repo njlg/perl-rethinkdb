@@ -10,11 +10,7 @@ perl:
 env:
   - "TEST_POD=1 TEST_ONLINE=1 HARNESS_PERL_SWITCHES=-MDevel::Cover"
 addons:
-  apt:
-    sources:
-      - ppa:rethinkdb/ppa
-    packages:
-      - rethinkdb
+  rethinkdb: "2.3"
 install:
   - cpanm -n Test::Pod Test::Pod::Coverage
   - cpanm -n Devel::Cover::Report::Coveralls
