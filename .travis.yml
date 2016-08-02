@@ -16,7 +16,6 @@ install:
   - cpanm -n Devel::Cover::Report::Coveralls
   - cpanm -n --installdeps .
 before_script:
-  - ulimit -S -n 2048
   - rethinkdb --io-threads 2048 --daemon
   - until nc -z localhost 28015; do echo Waiting for RethinkDB; sleep 1; done
 after_success:
