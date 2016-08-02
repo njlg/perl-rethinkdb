@@ -85,9 +85,10 @@ sub reconnect {
 # put the handle into main package
 sub repl {
   my $self    = shift;
-  my $package = caller;
+  my $package = caller || 'main';
 
-  $package::_rdb_io = $self;
+  no strict "refs";
+  ${$package . "::_rdb_io"} = $self;
   return $self;
 }
 

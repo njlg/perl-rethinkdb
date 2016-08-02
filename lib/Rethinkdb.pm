@@ -19,7 +19,7 @@ has 'term' => sub { Rethinkdb::Protocol->new->term; };
 
 sub import {
   my $class   = shift;
-  my $package = caller;
+  my $package = caller || 'main';
 
   no strict;
   *{"$package\::r"} = \&r;
@@ -28,11 +28,13 @@ sub import {
 }
 
 sub r {
-  my $package = caller;
+  my $package = caller || 'main';
   my $self;
 
-  if ($package::_rdb_io) {
-    $self = __PACKAGE__->new( io => $package::_rdb_io );
+  no strict "refs";
+  my $_rdb_io = ${$package . "::_rdb_io"}
+  if ($_rdb_io) {
+    $self = __PACKAGE__->new( io => $_rdb_io );
     $self->io->_rdb($self);
   }
   else {
